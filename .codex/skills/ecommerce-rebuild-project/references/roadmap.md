@@ -9,6 +9,7 @@ Step 3: Amazon Reviews 2023 product metadata fields
 Step 4: current user profile scoring and personalized ranking
 Step 5: current user behavior collection and profile aggregation
 Step 6: SQLite persistence for current user behavior
+Step 7: Supervisor + 4 Agent skeleton
 ```
 
 Step notes:
@@ -17,6 +18,7 @@ Step notes:
 steps/step-04-user-profile-ranking/README.md
 steps/step-05-current-user-behavior/README.md
 steps/step-06-sqlite-persistence/README.md
+steps/step-07-supervisor-agent-skeleton/README.md
 ```
 
 ## Architecture Rule
@@ -31,27 +33,21 @@ Do not jump directly to ML ranking training or RAG before the multi-agent spine 
 
 ## Immediate Next Step
 
-Step 7 should introduce the multi-agent skeleton from the original project, without adding LLM calls yet.
+Step 8 should add A/B testing and metrics endpoints.
 
 Recommended scope:
 
 ```text
-1. Add app/agents/base_agent.py with AgentResult, timeout, fallback, latency.
-2. Split current direct logic into simple non-LLM agents:
-   - UserProfileAgent: build profile from SQLite behavior + request.
-   - ProductRecAgent: rule recall/rerank using current personalization score.
-   - InventoryAgent: reuse current inventory filtering/status rules.
-   - MarketingCopyAgent: template copy only, no LLM yet.
-3. Add app/orchestrator/supervisor.py.
-4. Keep /api/v1/recommend response backward-compatible for the frontend.
-5. Add optional agent_results/debug field only if it does not break the UI.
-6. Write step note to steps/step-07-supervisor-agent-skeleton/README.md.
+1. Add ABTestEngine with stable user_id hashing.
+2. Add MetricsCollector for agent latency/success and business events.
+3. Add /api/v1/experiments and /api/v1/metrics endpoints.
+4. Attach experiment_group and metrics to RecommendResponse without breaking the frontend.
+5. Write step note to steps/step-08-ab-test-metrics/README.md.
 ```
 
 ## After Step 7
 
 ```text
-Step 8: add A/B testing and metrics endpoints
 Step 9: add Chroma product vector recall inside ProductRecAgent
 Step 10: add Redis feature store for real-time sliding-window profile features
 Step 11: add MarketingCopyAgent LLM generation and compliance fallback
@@ -103,4 +99,3 @@ D:\anaconda\envs\py3.10\python.exe scripts\import_amazon_products.py --limit 100
 ```
 
 The importer streams Hugging Face JSONL files and writes only adapted rows. It should not download whole multi-GB raw files.
-

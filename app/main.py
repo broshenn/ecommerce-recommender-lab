@@ -24,7 +24,7 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.6.0",
+    version="0.7.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -41,7 +41,12 @@ def index():
 @app.get("/health")
 def health():
     init_db()
-    return {"status": "healthy", "step": 6, "storage": "sqlite"}
+    return {
+        "status": "healthy",
+        "step": 7,
+        "storage": "sqlite",
+        "orchestrator": "supervisor",
+    }
 
 
 @app.get("/api/v1/products", response_model=list[Product])

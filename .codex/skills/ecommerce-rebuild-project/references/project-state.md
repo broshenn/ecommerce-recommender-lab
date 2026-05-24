@@ -21,14 +21,14 @@ D:\anaconda\envs\py3.10\python.exe -m pytest -q
 Current step:
 
 ```text
-Step 6: SQLite persistence for current user behavior
+Step 7: Supervisor + 4 Agent skeleton
 ```
 
 Architecture alignment:
 
 ```text
-Current project is still a direct recommender flow.
-Next step should introduce Supervisor + AgentResult + 4 Agent skeleton.
+Current project now has Supervisor + AgentResult + 4 non-LLM Agents.
+Next step should add A/B testing and Metrics.
 ```
 
 Important files:
@@ -38,6 +38,8 @@ app/models.py                  request/response/product/event/profile schemas
 app/catalog.py                 CSV product loader
 app/database.py                SQLite connection and table initialization
 app/behavior.py                current-user event store and profile builder
+app/agents/                    BaseAgent and four concrete agents
+app/orchestrator/supervisor.py Supervisor orchestration
 app/inventory.py               stock status and purchase limit rules
 app/personalization.py         user profile scoring rules
 app/recommender.py             recommendation orchestration

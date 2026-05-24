@@ -16,4 +16,5 @@
 step-04-user-profile-ranking/README.md
 step-05-current-user-behavior/README.md
 step-06-sqlite-persistence/README.md
+step-07-supervisor-agent-skeleton/README.md
 ```

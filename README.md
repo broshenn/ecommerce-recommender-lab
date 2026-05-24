@@ -2,7 +2,7 @@
 
 这是从零重构的学习版项目。目标不是一次性做完所有能力，而是每次只增加一个功能，让你能按阶段看懂系统如何成长。
 
-## 当前阶段：Step 6 SQLite 持久化
+## 当前阶段：Step 7 Supervisor + 4 Agent 骨架
 
 当前已经实现：
 
@@ -14,6 +14,8 @@
 - 当前用户行为事件：查看、喜欢、不喜欢、加购
 - 根据行为事件自动聚合画像
 - SQLite 持久化：用户行为事件会写入 `data/app.sqlite3`
+- Supervisor 编排器：推荐请求由 Supervisor 协调多个 Agent
+- 4 个非 LLM Agent：用户画像、商品推荐、库存决策、营销文案
 - 个性化打分排序
 - 库存过滤：无库存商品不会被推荐
 - 库存提示：低库存、热销限购会展示给前端
@@ -38,6 +40,12 @@
 - `app/models.py`：商品、推荐请求、用户行为、用户画像模型
 - `app/database.py`：SQLite 连接、建表和索引初始化
 - `app/behavior.py`：记录当前用户行为，并把行为聚合成用户画像
+- `app/agents/base_agent.py`：Agent 统一计时、错误捕获和降级
+- `app/agents/user_profile_agent.py`：从 SQLite 行为和请求参数生成画像
+- `app/agents/product_rec_agent.py`：使用当前规则分数召回/排序商品
+- `app/agents/inventory_agent.py`：检查库存、低库存预警
+- `app/agents/marketing_copy_agent.py`：生成模板营销文案
+- `app/orchestrator/supervisor.py`：按原项目思路编排 4 个 Agent
 - `app/personalization.py`：当前用户画像打分规则，推荐排序的核心
 - `app/inventory.py`：把“库存是否可卖、是否限购、是否紧张”单独拆出来
 - `app/recommender.py`：合并手动画像和行为画像，再过滤库存、打分排序
@@ -215,7 +223,7 @@ Step 11：LLM 营销文案
 Step 12：RAG 商品问答/推荐解释
 ```
 
-## Step 快照
+## Step 文档
 
 这个项目是学习版，每个阶段都应该有单独说明，但 `steps/` 里不保存代码快照，只保存阶段 README。
 
@@ -225,6 +233,7 @@ Step 12：RAG 商品问答/推荐解释
 steps/step-04-user-profile-ranking/README.md
 steps/step-05-current-user-behavior/README.md
 steps/step-06-sqlite-persistence/README.md
+steps/step-07-supervisor-agent-skeleton/README.md
 ```
 
 后续约定：

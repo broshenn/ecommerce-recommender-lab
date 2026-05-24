@@ -27,7 +27,9 @@ def test_recommend_prefers_selected_categories():
 
     assert len(response.products) == 2
     assert all(product.category == "电子数码" for product in response.products)
-    assert response.strategy == "behavior_profile_scoring+inventory_filter"
+    assert response.strategy == "supervisor_agents+inventory_filter"
+    assert "user_profile" in response.agent_results
+    assert "product_rerank" in response.agent_results
 
 
 def test_products_endpoint_returns_catalog():
@@ -196,7 +198,7 @@ def test_recorded_behavior_affects_recommendation_profile():
         )
     )
 
-    assert response.strategy == "behavior_profile_scoring+inventory_filter"
+    assert response.strategy == "supervisor_agents+inventory_filter"
     assert response.products[0].category == product.category
     assert "类目匹配" in response.products[0].recommendation_reason
 

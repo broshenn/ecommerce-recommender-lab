@@ -53,6 +53,8 @@ class RecommendResponse(BaseModel):
     products: list[RecommendedProduct]
     strategy: str
     reason: str
+    marketing_copies: list[MarketingCopy] = Field(default_factory=list)
+    agent_results: dict[str, AgentResult] = Field(default_factory=dict)
 
 
 class UserEventCreate(BaseModel):
@@ -75,3 +77,17 @@ class UserProfile(BaseModel):
     disliked_products: list[str] = Field(default_factory=list)
     cart_items: list[str] = Field(default_factory=list)
     event_count: int = 0
+
+
+class MarketingCopy(BaseModel):
+    product_id: str
+    text: str
+
+
+class AgentResult(BaseModel):
+    agent_name: str
+    success: bool = True
+    latency_ms: float = 0.0
+    error: str | None = None
+    data: dict[str, Any] = Field(default_factory=dict)
+    confidence: float = 1.0
