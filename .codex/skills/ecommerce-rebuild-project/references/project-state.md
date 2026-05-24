@@ -1,0 +1,81 @@
+# Project State
+
+Project root:
+
+```text
+D:\pycode\agent\cluade\ecommerce-rebuild-step-by-step
+```
+
+Run:
+
+```powershell
+D:\anaconda\envs\py3.10\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8010
+```
+
+Test:
+
+```powershell
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+```
+
+Current step:
+
+```text
+Step 5: current user behavior collection and profile aggregation
+```
+
+Important files:
+
+```text
+app/models.py                  request/response/product/event/profile schemas
+app/catalog.py                 CSV product loader
+app/behavior.py                current-user event store and profile builder
+app/inventory.py               stock status and purchase limit rules
+app/personalization.py         user profile scoring rules
+app/recommender.py             recommendation orchestration
+app/main.py                    FastAPI routes
+app/static/index.html          single-page frontend
+data/products_amazon_sample.csv 1000 product rows
+scripts/import_amazon_products.py Amazon metadata importer
+tests/test_recommender.py      regression tests
+steps/                         frozen step snapshots
+```
+
+Current recommendation request fields:
+
+```json
+{
+  "user_id": "u001",
+  "scene": "homepage",
+  "num_items": 3,
+  "preferred_categories": ["手机", "电子数码"],
+  "liked_brands": ["Bastmei", "Sharp"],
+  "preferred_tags": ["手机配件", "办公"],
+  "budget_min": 50,
+  "budget_max": 500,
+  "recent_views": ["B07ZPSG8P5"],
+  "disliked_products": []
+}
+```
+
+Behavior APIs:
+
+```text
+POST /api/v1/events
+GET /api/v1/users/{user_id}/events
+GET /api/v1/users/{user_id}/profile
+```
+
+Scoring rules:
+
+```text
+category match +40
+brand match +25
+each matching tag +10
+within budget +20
+outside budget -20
+rating adds rating * 4
+recently viewed -30
+disliked product -100
+out-of-stock products are filtered before scoring
+```

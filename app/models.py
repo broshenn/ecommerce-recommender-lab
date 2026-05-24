@@ -1,0 +1,77 @@
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Literal
+from typing import Any
+
+from pydantic import BaseModel, Field
+
+EventType = Literal["view", "like", "dislike", "add_to_cart"]
+
+
+class Product(BaseModel):
+    product_id: str
+    name: str
+    category: str
+    price: float
+    brand: str
+    stock: int
+    tags: list[str] = Field(default_factory=list)
+    source_name: str | None = None
+    source_category: str | None = None
+    source_dataset: str = "local"
+    image_url: str | None = None
+    rating: float | None = None
+    rating_count: int | None = None
+
+
+class RecommendedProduct(Product):
+    stock_status: str = "normal"
+    stock_message: str = "库存充足"
+    purchase_limit: int | None = None
+    recommendation_score: float = 0
+    recommendation_reason: str = "基础推荐"
+
+
+class RecommendRequest(BaseModel):
+    user_id: str
+    scene: str = "homepage"
+    num_items: int = 3
+    preferred_categories: list[str] = Field(default_factory=list)
+    liked_brands: list[str] = Field(default_factory=list)
+    preferred_tags: list[str] = Field(default_factory=list)
+    budget_min: float | None = None
+    budget_max: float | None = None
+    recent_views: list[str] = Field(default_factory=list)
+    disliked_products: list[str] = Field(default_factory=list)
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
+class RecommendResponse(BaseModel):
+    user_id: str
+    scene: str
+    products: list[RecommendedProduct]
+    strategy: str
+    reason: str
+
+
+class UserEventCreate(BaseModel):
+    user_id: str
+    product_id: str
+    event_type: EventType
+
+
+class UserEvent(UserEventCreate):
+    event_id: int
+    created_at: datetime
+
+
+class UserProfile(BaseModel):
+    user_id: str
+    preferred_categories: list[str] = Field(default_factory=list)
+    liked_brands: list[str] = Field(default_factory=list)
+    preferred_tags: list[str] = Field(default_factory=list)
+    recent_views: list[str] = Field(default_factory=list)
+    disliked_products: list[str] = Field(default_factory=list)
+    cart_items: list[str] = Field(default_factory=list)
+    event_count: int = 0
