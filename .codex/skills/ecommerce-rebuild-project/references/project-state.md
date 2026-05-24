@@ -24,6 +24,13 @@ Current step:
 Step 6: SQLite persistence for current user behavior
 ```
 
+Architecture alignment:
+
+```text
+Current project is still a direct recommender flow.
+Next step should introduce Supervisor + AgentResult + 4 Agent skeleton.
+```
+
 Important files:
 
 ```text

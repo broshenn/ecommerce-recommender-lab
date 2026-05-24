@@ -18,6 +18,7 @@ description: Continue the local step-by-step ecommerce recommendation rebuild pr
 ## Current State
 
 Read `references/project-state.md` for the latest architecture and files.
+Read `references/architecture-alignment.md` before choosing any next feature.
 
 Important current capabilities:
 
@@ -44,8 +45,10 @@ Read `references/roadmap.md` before deciding the next step.
 
 Preferred next step:
 
-- Step 7: add Chroma semantic retrieval for product title/features.
+- Step 7: introduce the Supervisor + 4 Agent skeleton from the original project, without LLM calls yet.
 
 Deferred:
 
-- Do not train recommendation weights yet. Save Amazon Reviews 2023 review/rating training work until after the framework is complete and after reviewing `D:\pycode\agent\cluade\multi-agent-ecommerce-system`.
+- Do not train recommendation weights yet.
+- Do not jump to RAG before Chroma/vector recall exists.
+- Do not add Redis before the Agent/Supervisor spine exists. Redis should later serve online feature windows, not replace SQLite.

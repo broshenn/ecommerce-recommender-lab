@@ -19,31 +19,62 @@ steps/step-05-current-user-behavior/README.md
 steps/step-06-sqlite-persistence/README.md
 ```
 
+## Architecture Rule
+
+Stay aligned with the original project:
+
+```text
+Supervisor + 4 Agent + Feature Store + Vector Recall + Inventory + Copy + A/B + Metrics
+```
+
+Do not jump directly to ML ranking training or RAG before the multi-agent spine exists.
+
 ## Immediate Next Step
 
-Step 7 should add Chroma semantic retrieval for product title/features.
+Step 7 should introduce the multi-agent skeleton from the original project, without adding LLM calls yet.
 
 Recommended scope:
 
 ```text
-1. Add Chroma dependency and local vector store.
-2. Embed product source_name/name/tags with a lightweight deterministic embedding first.
-3. Add semantic recall endpoint or blend semantic candidates into recommendation.
-4. Keep SQLite behavior storage unchanged.
-5. Write step note to steps/step-07-chroma-semantic-retrieval/README.md.
+1. Add app/agents/base_agent.py with AgentResult, timeout, fallback, latency.
+2. Split current direct logic into simple non-LLM agents:
+   - UserProfileAgent: build profile from SQLite behavior + request.
+   - ProductRecAgent: rule recall/rerank using current personalization score.
+   - InventoryAgent: reuse current inventory filtering/status rules.
+   - MarketingCopyAgent: template copy only, no LLM yet.
+3. Add app/orchestrator/supervisor.py.
+4. Keep /api/v1/recommend response backward-compatible for the frontend.
+5. Add optional agent_results/debug field only if it does not break the UI.
+6. Write step note to steps/step-07-supervisor-agent-skeleton/README.md.
 ```
 
-Later steps:
+## After Step 7
 
 ```text
-Step 8: add RAG product Q&A based on product metadata
-Step 9: add LLM-generated recommendation explanations
-Step 10: add offline evaluation metrics such as CTR proxy, recall, diversity
+Step 8: add A/B testing and metrics endpoints
+Step 9: add Chroma product vector recall inside ProductRecAgent
+Step 10: add Redis feature store for real-time sliding-window profile features
+Step 11: add MarketingCopyAgent LLM generation and compliance fallback
+Step 12: add RAG product Q&A or product explanation, after Chroma exists
+Step 13: add offline evaluation and ML ranking training
 ```
+
+## Why Redis Is Not Next
+
+Redis in the original project is a real-time feature store:
+
+```text
+behavior:{user_id}:{behavior_type} sorted sets
+sliding windows: 1h / 24h / 7d
+profile:{user_id} offline tag cache
+RFM and real-time feature aggregation
+```
+
+Our project already has durable behavior storage in SQLite. Redis should be added later as an online feature/cache layer, not as a replacement for SQLite.
 
 ## Deferred ML Ranking Training
 
-Save this for after the full basic framework is in place and after reviewing the original project at:
+Save this for after the architecture spine exists and after reviewing the original project again:
 
 ```text
 D:\pycode\agent\cluade\multi-agent-ecommerce-system
@@ -59,7 +90,7 @@ Future training scope:
 5. Generate training samples:
    user/profile features + product features -> liked/disliked label.
 6. Train a lightweight model first, such as LogisticRegression or LightGBM.
-7. Replace hard-coded Step 4 weights with model probabilities.
+7. Replace hard-coded ranking weights with model probabilities.
 8. Keep rule scoring as fallback when the model is unavailable.
 ```
 
@@ -73,4 +104,3 @@ D:\anaconda\envs\py3.10\python.exe scripts\import_amazon_products.py --limit 100
 
 The importer streams Hugging Face JSONL files and writes only adapted rows. It should not download whole multi-GB raw files.
 
-Keep this project focused on product metadata plus current-user behavior. Avoid introducing large historical multi-user behavior datasets unless the user changes the product direction.

@@ -24,6 +24,7 @@
 
 - LLM
 - Agent
+- Supervisor 编排器
 - Chroma
 - Redis
 - A/B 测试
@@ -179,6 +180,39 @@ rating <= 2        -> 负向偏好
 verified_purchase  -> 更强购买信号
 用户特征 + 商品特征 -> LogisticRegression / LightGBM 排序模型
 模型预测概率       -> 替代现在写死的推荐分数
+```
+
+## 架构对齐路线
+
+原始项目主线是：
+
+```text
+Supervisor + 4 Agent + Redis Feature Store + 向量召回 + 库存决策 + 营销文案 + A/B测试
+```
+
+我们当前 Step 6 还只是“直接推荐函数 + SQLite 行为持久化”。为了不跑偏，下一步不是先训练模型，也不是先做 RAG，而是先补：
+
+```text
+Step 7：Supervisor + 4 Agent 骨架
+```
+
+四个 Agent 先不接 LLM：
+
+```text
+UserProfileAgent  -> 从 SQLite 行为生成画像
+ProductRecAgent   -> 用当前规则打分召回/排序
+InventoryAgent    -> 复用库存过滤和限购
+MarketingCopyAgent-> 先用模板文案
+```
+
+后续再按顺序接：
+
+```text
+Step 8：A/B 测试和 Metrics
+Step 9：Chroma 商品向量召回
+Step 10：Redis 实时特征窗口
+Step 11：LLM 营销文案
+Step 12：RAG 商品问答/推荐解释
 ```
 
 ## Step 快照
