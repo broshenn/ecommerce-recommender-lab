@@ -125,6 +125,11 @@
       cursor: pointer;
     }
 
+    .primary:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
     .profile-box {
       margin-top: 14px;
       padding: 12px;
@@ -371,6 +376,7 @@
       <div class="panel summary">
         <span>策略：<strong id="strategy">-</strong></span>
         <span>商品数：<strong id="count">0</strong></span>
+        <span>状态：<strong id="status">待生成</strong></span>
         <span id="reason">等待推荐</span>
       </div>
       <div class="products" id="products">
@@ -396,6 +402,11 @@
     }
 
     function renderProducts(products) {
+      if (!products.length) {
+        $("products").innerHTML = `<div class="panel empty">没有匹配到商品</div>`;
+        return;
+      }
+
       $("products").innerHTML = products.map((product) => `
         <article class="panel product">
           <div class="thumb">
@@ -428,6 +439,7 @@
     }
 
     async function recommend() {
+      setLoading(true);
       const payload = {
         user_id: $("userId").value || "u001",
         scene: "homepage",
@@ -440,36 +452,64 @@
         recent_views: splitInput($("recentViews").value)
       };
 
-      const res = await fetch("/api/v1/recommend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      $("strategy").textContent = data.strategy;
-      $("count").textContent = data.products.length;
-      $("reason").textContent = data.reason;
-      renderProducts(data.products);
-      loadProfile();
+      try {
+        const res = await fetch("/api/v1/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const detail = await res.text();
+          throw new Error(`推荐接口失败：${res.status} ${detail}`);
+        }
+
+        const data = await res.json();
+        $("strategy").textContent = data.strategy;
+        $("count").textContent = data.products.length;
+        $("reason").textContent = data.reason;
+        $("status").textContent = `已生成 ${new Date().toLocaleTimeString("zh-CN")}`;
+        renderProducts(data.products);
+        await loadProfile();
+      } catch (error) {
+        $("status").textContent = "生成失败";
+        $("reason").textContent = error.message || "未知错误";
+        $("products").innerHTML = `<div class="panel empty">推荐失败，请查看错误信息</div>`;
+      } finally {
+        setLoading(false);
+      }
     }
 
     async function recordBehavior(productId, eventType) {
-      await fetch("/api/v1/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: $("userId").value || "u001",
-          product_id: productId,
-          event_type: eventType
-        })
-      });
-      await loadProfile();
-      await recommend();
+      try {
+        setLoading(true, "记录中");
+        const res = await fetch("/api/v1/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: $("userId").value || "u001",
+            product_id: productId,
+            event_type: eventType
+          })
+        });
+
+        if (!res.ok) {
+          const detail = await res.text();
+          throw new Error(`行为接口失败：${res.status} ${detail}`);
+        }
+
+        await recommend();
+      } catch (error) {
+        $("status").textContent = "行为记录失败";
+        $("reason").textContent = error.message || "未知错误";
+        setLoading(false);
+      }
     }
 
     async function loadProfile() {
       const userId = $("userId").value || "u001";
       const res = await fetch(`/api/v1/users/${encodeURIComponent(userId)}/profile`);
+      if (!res.ok) return;
       const profile = await res.json();
       $("profileBox").innerHTML = `
         <strong>行为画像 · ${profile.event_count} 条行为</strong>
@@ -493,6 +533,15 @@
       if (value === "") return null;
       const num = Number(value);
       return Number.isFinite(num) ? num : null;
+    }
+
+    function setLoading(isLoading, text = "生成中") {
+      const button = $("recommendBtn");
+      button.disabled = isLoading;
+      button.textContent = isLoading ? text : "生成推荐";
+      if (isLoading) {
+        $("status").textContent = text;
+      }
     }
 
     document.querySelectorAll(".chip").forEach((chip) => {
