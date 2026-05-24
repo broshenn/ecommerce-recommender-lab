@@ -27,6 +27,8 @@
       letter-spacing: 0;
     }
 
+    [v-cloak] { display: none; }
+
     header {
       padding: 20px 24px;
       background: #fff;
@@ -90,6 +92,12 @@
       padding: 8px 10px;
     }
 
+    input[type="range"] {
+      min-height: auto;
+      padding: 0;
+      accent-color: var(--brand);
+    }
+
     .chips {
       display: flex;
       flex-wrap: wrap;
@@ -128,6 +136,28 @@
     .primary:disabled {
       opacity: 0.65;
       cursor: wait;
+    }
+
+    .budget-panel {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fbfd;
+    }
+
+    .budget-line {
+      display: grid;
+      gap: 6px;
+    }
+
+    .budget-label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .profile-box {
@@ -196,12 +226,6 @@
       display: flex;
       justify-content: space-between;
       gap: 12px;
-    }
-
-    .field-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
     }
 
     .name {
@@ -316,253 +340,315 @@
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>电商推荐系统 Step 5</h1>
-      <div class="subtitle">当前用户行为采集：查看、喜欢、不喜欢、加购会自动沉淀成画像</div>
-    </div>
-    <div id="health">检查服务中</div>
-  </header>
-
-  <main>
-    <aside class="panel controls">
-      <label for="userId">用户 ID</label>
-      <input id="userId" value="u001" />
-
-      <label for="numItems">推荐数量</label>
-      <select id="numItems">
-        <option value="3">3 个</option>
-        <option value="5">5 个</option>
-      </select>
-
-      <label>偏好类目</label>
-      <div class="chips" id="categories">
-        <button class="chip active" data-value="手机">手机</button>
-        <button class="chip active" data-value="电子数码">电子数码</button>
-        <button class="chip" data-value="游戏">游戏</button>
-        <button class="chip" data-value="办公">办公</button>
-        <button class="chip" data-value="摄影">摄影</button>
+  <div id="app" v-cloak>
+    <header>
+      <div>
+        <h1>电商推荐系统 Step 5</h1>
+        <div class="subtitle">当前用户行为采集：查看、喜欢、不喜欢、加购会自动沉淀成画像</div>
       </div>
+      <div>{{ healthText }}</div>
+    </header>
 
-      <label for="likedBrands">偏好品牌</label>
-      <input id="likedBrands" value="Bastmei, Sharp" />
+    <main>
+      <aside class="panel controls">
+        <label for="userId">用户 ID</label>
+        <input id="userId" v-model.trim="userId" @change="loadProfile" />
 
-      <label for="preferredTags">偏好标签</label>
-      <input id="preferredTags" value="手机配件, 办公, 保护壳" />
+        <label for="numItems">推荐数量</label>
+        <select id="numItems" v-model.number="numItems">
+          <option :value="3">3 个</option>
+          <option :value="5">5 个</option>
+        </select>
 
-      <div class="field-row">
-        <div>
-          <label for="budgetMin">最低预算</label>
-          <input id="budgetMin" type="number" value="50" />
+        <label>偏好类目</label>
+        <div class="chips">
+          <button
+            v-for="category in categoryOptions"
+            :key="category"
+            class="chip"
+            :class="{ active: selectedCategories.includes(category) }"
+            type="button"
+            @click="toggle(selectedCategories, category)"
+          >{{ category }}</button>
         </div>
-        <div>
-          <label for="budgetMax">最高预算</label>
-          <input id="budgetMax" type="number" value="500" />
+
+        <label>偏好品牌</label>
+        <div class="chips">
+          <button
+            v-for="brand in brandOptions"
+            :key="brand.value"
+            class="chip"
+            :class="{ active: selectedBrands.includes(brand.value) }"
+            type="button"
+            @click="toggle(selectedBrands, brand.value)"
+          >{{ brand.label }}</button>
         </div>
-      </div>
 
-      <label for="recentViews">最近浏览商品 ID</label>
-      <input id="recentViews" value="B07ZPSG8P5" />
+        <label>偏好标签</label>
+        <div class="chips">
+          <button
+            v-for="tag in tagOptions"
+            :key="tag"
+            class="chip"
+            :class="{ active: selectedTags.includes(tag) }"
+            type="button"
+            @click="toggle(selectedTags, tag)"
+          >{{ tag }}</button>
+        </div>
 
-      <button class="primary" id="recommendBtn">生成推荐</button>
+        <label>预算范围</label>
+        <div class="budget-panel">
+          <div class="budget-line">
+            <div class="budget-label">
+              <span>最低预算</span>
+              <strong>{{ money(normalizedBudget.min) }}</strong>
+            </div>
+            <input v-model.number="budgetMin" type="range" min="0" max="7000" step="50" />
+          </div>
+          <div class="budget-line">
+            <div class="budget-label">
+              <span>最高预算</span>
+              <strong>{{ money(normalizedBudget.max) }}</strong>
+            </div>
+            <input v-model.number="budgetMax" type="range" min="0" max="7000" step="50" />
+          </div>
+        </div>
 
-      <div class="profile-box" id="profileBox">
-        <strong>行为画像</strong>
-        <span>暂无行为</span>
-      </div>
-    </aside>
+        <button class="primary" type="button" :disabled="loading" @click="recommend">
+          {{ loading ? loadingText : "生成推荐" }}
+        </button>
 
-    <section>
-      <div class="panel summary">
-        <span>策略：<strong id="strategy">-</strong></span>
-        <span>商品数：<strong id="count">0</strong></span>
-        <span>状态：<strong id="status">待生成</strong></span>
-        <span id="reason">等待推荐</span>
-      </div>
-      <div class="products" id="products">
-        <div class="panel empty">点击左侧按钮生成推荐</div>
-      </div>
-    </section>
-  </main>
+        <div class="profile-box">
+          <strong>行为画像 · {{ profile.event_count || 0 }} 条行为</strong>
+          <span>类目：{{ joinOrDash(profile.preferred_categories) }}</span>
+          <span>品牌：{{ joinOrDash(profile.liked_brands) }}</span>
+          <span>标签：{{ joinOrDash((profile.preferred_tags || []).slice(0, 6)) }}</span>
+          <span>最近浏览：{{ joinOrDash((profile.recent_views || []).slice(0, 3)) }}</span>
+          <span>不喜欢：{{ joinOrDash((profile.disliked_products || []).slice(0, 3)) }}</span>
+          <span>加购：{{ joinOrDash((profile.cart_items || []).slice(0, 3)) }}</span>
+        </div>
+      </aside>
 
+      <section>
+        <div class="panel summary">
+          <span>策略：<strong>{{ strategy }}</strong></span>
+          <span>商品数：<strong>{{ products.length }}</strong></span>
+          <span>状态：<strong>{{ statusText }}</strong></span>
+          <span>{{ reason }}</span>
+        </div>
+
+        <div class="products">
+          <div v-if="!products.length" class="panel empty">{{ emptyText }}</div>
+
+          <article v-for="product in products" :key="product.product_id" class="panel product">
+            <div class="thumb">
+              <img v-if="product.image_url" :src="product.image_url" :alt="product.name" loading="lazy" />
+              <span v-else>{{ product.category.slice(0, 1) }}</span>
+            </div>
+
+            <div class="body">
+              <div class="row">
+                <h2 class="name">{{ product.name }}</h2>
+                <div class="price">{{ money(product.price) }}</div>
+              </div>
+              <div class="meta">
+                {{ product.product_id }} · {{ product.category }} · {{ product.brand }} · 库存 {{ product.stock }}
+              </div>
+              <div class="source">
+                来源：{{ product.source_dataset }}
+                <template v-if="product.rating"> · 评分 {{ product.rating }} / {{ product.rating_count || 0 }}</template>
+              </div>
+              <div class="score">
+                <strong>{{ product.recommendation_score }} 分</strong>
+                <span>{{ product.recommendation_reason }}</span>
+              </div>
+              <div class="tags">
+                <span v-for="tag in product.tags" :key="tag" class="tag">{{ tag }}</span>
+              </div>
+              <div class="stock" :class="product.stock_status">
+                {{ product.stock_message }}
+                <template v-if="product.purchase_limit"> · 限购 {{ product.purchase_limit }} 件</template>
+              </div>
+              <div class="actions">
+                <button class="action" type="button" @click="recordBehavior(product.product_id, 'view')">查看</button>
+                <button class="action" type="button" @click="recordBehavior(product.product_id, 'like')">喜欢</button>
+                <button class="action" type="button" @click="recordBehavior(product.product_id, 'dislike')">不喜欢</button>
+                <button class="action" type="button" @click="recordBehavior(product.product_id, 'add_to_cart')">加购</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script>
-    const $ = (id) => document.getElementById(id);
+    const { createApp } = Vue;
 
-    function selectedCategories() {
-      return [...$("categories").querySelectorAll(".chip.active")]
-        .map((chip) => chip.dataset.value);
-    }
+    createApp({
+      data() {
+        return {
+          userId: "u001",
+          numItems: 3,
+          selectedCategories: ["手机", "电子数码"],
+          selectedBrands: ["Bastmei", "Sharp"],
+          selectedTags: ["手机配件", "办公", "保护壳"],
+          budgetMin: 50,
+          budgetMax: 500,
+          categoryOptions: ["手机", "电子数码", "游戏", "办公", "摄影"],
+          brandOptions: [
+            { label: "Bastmei", value: "Bastmei" },
+            { label: "Sharp", value: "Sharp" },
+            { label: "Sony", value: "Sony" },
+            { label: "Nintendo", value: "Nintendo" },
+            { label: "Amazon Renewed", value: "Amazon Renewed" },
+            { label: "BANDAI", value: "BANDAI NAMCO Entertainment" }
+          ],
+          tagOptions: ["手机配件", "办公", "保护壳", "保护膜", "电子产品", "PlayStation", "任天堂", "摄像头"],
+          products: [],
+          profile: {},
+          strategy: "-",
+          reason: "等待推荐",
+          statusText: "待生成",
+          healthText: "检查服务中",
+          emptyText: "点击左侧按钮生成推荐",
+          loading: false,
+          loadingText: "生成中"
+        };
+      },
 
-    function money(value) {
-      return new Intl.NumberFormat("zh-CN", {
-        style: "currency",
-        currency: "CNY",
-        maximumFractionDigits: 0
-      }).format(value);
-    }
-
-    function renderProducts(products) {
-      if (!products.length) {
-        $("products").innerHTML = `<div class="panel empty">没有匹配到商品</div>`;
-        return;
-      }
-
-      $("products").innerHTML = products.map((product) => `
-        <article class="panel product">
-          <div class="thumb">
-            ${product.image_url ? `<img src="${product.image_url}" alt="${product.name}" loading="lazy" />` : product.category.slice(0, 1)}
-          </div>
-          <div class="body">
-            <div class="row">
-              <h2 class="name">${product.name}</h2>
-              <div class="price">${money(product.price)}</div>
-            </div>
-            <div class="meta">${product.product_id} · ${product.category} · ${product.brand} · 库存 ${product.stock}</div>
-            <div class="source">来源：${product.source_dataset}${product.rating ? ` · 评分 ${product.rating} / ${product.rating_count || 0}` : ""}</div>
-            <div class="score">
-              <strong>${product.recommendation_score} 分</strong>
-              <span>${product.recommendation_reason}</span>
-            </div>
-            <div class="tags">${product.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
-            <div class="stock ${product.stock_status}">
-              ${product.stock_message}${product.purchase_limit ? ` · 限购 ${product.purchase_limit} 件` : ""}
-            </div>
-            <div class="actions">
-              <button class="action" data-event="view" data-product-id="${product.product_id}">查看</button>
-              <button class="action" data-event="like" data-product-id="${product.product_id}">喜欢</button>
-              <button class="action" data-event="dislike" data-product-id="${product.product_id}">不喜欢</button>
-              <button class="action" data-event="add_to_cart" data-product-id="${product.product_id}">加购</button>
-            </div>
-          </div>
-        </article>
-      `).join("");
-    }
-
-    async function recommend() {
-      setLoading(true);
-      const payload = {
-        user_id: $("userId").value || "u001",
-        scene: "homepage",
-        num_items: Number($("numItems").value),
-        preferred_categories: selectedCategories(),
-        liked_brands: splitInput($("likedBrands").value),
-        preferred_tags: splitInput($("preferredTags").value),
-        budget_min: numberOrNull($("budgetMin").value),
-        budget_max: numberOrNull($("budgetMax").value),
-        recent_views: splitInput($("recentViews").value)
-      };
-
-      try {
-        const res = await fetch("/api/v1/recommend", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) {
-          const detail = await res.text();
-          throw new Error(`推荐接口失败：${res.status} ${detail}`);
+      computed: {
+        normalizedBudget() {
+          const min = Math.min(this.budgetMin, this.budgetMax);
+          const max = Math.max(this.budgetMin, this.budgetMax);
+          return { min, max };
         }
+      },
 
-        const data = await res.json();
-        $("strategy").textContent = data.strategy;
-        $("count").textContent = data.products.length;
-        $("reason").textContent = data.reason;
-        $("status").textContent = `已生成 ${new Date().toLocaleTimeString("zh-CN")}`;
-        renderProducts(data.products);
-        await loadProfile();
-      } catch (error) {
-        $("status").textContent = "生成失败";
-        $("reason").textContent = error.message || "未知错误";
-        $("products").innerHTML = `<div class="panel empty">推荐失败，请查看错误信息</div>`;
-      } finally {
-        setLoading(false);
-      }
-    }
+      mounted() {
+        this.loadHealth();
+        this.loadProfile();
+        this.recommend();
+      },
 
-    async function recordBehavior(productId, eventType) {
-      try {
-        setLoading(true, "记录中");
-        const res = await fetch("/api/v1/events", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: $("userId").value || "u001",
-            product_id: productId,
-            event_type: eventType
-          })
-        });
+      methods: {
+        toggle(list, value) {
+          const index = list.indexOf(value);
+          if (index >= 0) {
+            list.splice(index, 1);
+          } else {
+            list.push(value);
+          }
+        },
 
-        if (!res.ok) {
-          const detail = await res.text();
-          throw new Error(`行为接口失败：${res.status} ${detail}`);
+        money(value) {
+          return new Intl.NumberFormat("zh-CN", {
+            style: "currency",
+            currency: "CNY",
+            maximumFractionDigits: 0
+          }).format(value || 0);
+        },
+
+        joinOrDash(values) {
+          return values && values.length ? values.join("、") : "-";
+        },
+
+        async loadHealth() {
+          try {
+            const res = await fetch("/health");
+            const data = await res.json();
+            this.healthText = `服务：${data.status} · Step ${data.step}`;
+          } catch {
+            this.healthText = "服务异常";
+          }
+        },
+
+        async loadProfile() {
+          const userId = this.userId || "u001";
+          const res = await fetch(`/api/v1/users/${encodeURIComponent(userId)}/profile`);
+          if (res.ok) {
+            this.profile = await res.json();
+          }
+        },
+
+        async recommend() {
+          this.setLoading(true, "生成中");
+          const payload = {
+            user_id: this.userId || "u001",
+            scene: "homepage",
+            num_items: this.numItems,
+            preferred_categories: this.selectedCategories,
+            liked_brands: this.selectedBrands,
+            preferred_tags: this.selectedTags,
+            budget_min: this.normalizedBudget.min,
+            budget_max: this.normalizedBudget.max
+          };
+
+          try {
+            const res = await fetch("/api/v1/recommend", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+              const detail = await res.text();
+              throw new Error(`推荐接口失败：${res.status} ${detail}`);
+            }
+
+            const data = await res.json();
+            this.products = data.products;
+            this.strategy = data.strategy;
+            this.reason = data.reason;
+            this.statusText = `已生成 ${new Date().toLocaleTimeString("zh-CN")}`;
+            this.emptyText = "没有匹配到商品";
+            await this.loadProfile();
+          } catch (error) {
+            this.products = [];
+            this.statusText = "生成失败";
+            this.reason = error.message || "未知错误";
+            this.emptyText = "推荐失败，请查看错误信息";
+          } finally {
+            this.setLoading(false);
+          }
+        },
+
+        async recordBehavior(productId, eventType) {
+          this.setLoading(true, "记录中");
+          try {
+            const res = await fetch("/api/v1/events", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_id: this.userId || "u001",
+                product_id: productId,
+                event_type: eventType
+              })
+            });
+
+            if (!res.ok) {
+              const detail = await res.text();
+              throw new Error(`行为接口失败：${res.status} ${detail}`);
+            }
+
+            await this.recommend();
+          } catch (error) {
+            this.statusText = "行为记录失败";
+            this.reason = error.message || "未知错误";
+            this.setLoading(false);
+          }
+        },
+
+        setLoading(isLoading, text = "生成中") {
+          this.loading = isLoading;
+          this.loadingText = text;
+          if (isLoading) {
+            this.statusText = text;
+          }
         }
-
-        await recommend();
-      } catch (error) {
-        $("status").textContent = "行为记录失败";
-        $("reason").textContent = error.message || "未知错误";
-        setLoading(false);
       }
-    }
-
-    async function loadProfile() {
-      const userId = $("userId").value || "u001";
-      const res = await fetch(`/api/v1/users/${encodeURIComponent(userId)}/profile`);
-      if (!res.ok) return;
-      const profile = await res.json();
-      $("profileBox").innerHTML = `
-        <strong>行为画像 · ${profile.event_count} 条行为</strong>
-        <span>类目：${profile.preferred_categories.join("、") || "-"}</span>
-        <span>品牌：${profile.liked_brands.join("、") || "-"}</span>
-        <span>标签：${profile.preferred_tags.slice(0, 6).join("、") || "-"}</span>
-        <span>最近浏览：${profile.recent_views.slice(0, 3).join("、") || "-"}</span>
-        <span>不喜欢：${profile.disliked_products.slice(0, 3).join("、") || "-"}</span>
-        <span>加购：${profile.cart_items.slice(0, 3).join("、") || "-"}</span>
-      `;
-    }
-
-    function splitInput(value) {
-      return value
-        .split(/[,，]/)
-        .map((item) => item.trim())
-        .filter(Boolean);
-    }
-
-    function numberOrNull(value) {
-      if (value === "") return null;
-      const num = Number(value);
-      return Number.isFinite(num) ? num : null;
-    }
-
-    function setLoading(isLoading, text = "生成中") {
-      const button = $("recommendBtn");
-      button.disabled = isLoading;
-      button.textContent = isLoading ? text : "生成推荐";
-      if (isLoading) {
-        $("status").textContent = text;
-      }
-    }
-
-    document.querySelectorAll(".chip").forEach((chip) => {
-      chip.addEventListener("click", () => chip.classList.toggle("active"));
-    });
-
-    $("recommendBtn").addEventListener("click", recommend);
-    $("userId").addEventListener("change", loadProfile);
-    $("products").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-event]");
-      if (!button) return;
-      recordBehavior(button.dataset.productId, button.dataset.event);
-    });
-
-    fetch("/health")
-      .then((res) => res.json())
-      .then((data) => $("health").textContent = `服务：${data.status} · Step ${data.step}`)
-      .catch(() => $("health").textContent = "服务异常");
-
-    loadProfile();
-    recommend();
+    }).mount("#app");
   </script>
 </body>
 </html>

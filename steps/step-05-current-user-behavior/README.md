@@ -44,7 +44,7 @@ app/behavior.py
 app/personalization.py
 app/recommender.py
 app/main.py
-app/static/index.html
+app/static/index.html  # Vue 3 前端页面
 tests/test_recommender.py
 ```
 
