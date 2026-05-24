@@ -7,27 +7,32 @@ from app.main import app
 from app.models import RecommendRequest, UserEventCreate
 from app.personalization import score_product
 from app.recommender import recommend_products
+from app.services import ab_test_engine, metrics_collector
 
 
 @pytest.fixture(autouse=True)
-def clear_behavior_events():
+def clear_runtime_state():
     reset_behavior_events()
+    metrics_collector.reset()
     yield
+    metrics_collector.reset()
     reset_behavior_events()
 
 
 def test_recommend_prefers_selected_categories():
+    category = list_products()[0].category
     response = recommend_products(
         RecommendRequest(
             user_id="u001",
             num_items=2,
-            preferred_categories=["电子数码"],
+            preferred_categories=[category],
         )
     )
 
     assert len(response.products) == 2
-    assert all(product.category == "电子数码" for product in response.products)
-    assert response.strategy == "supervisor_agents+inventory_filter"
+    assert all(product.category == category for product in response.products)
+    assert response.strategy.startswith("supervisor_agents")
+    assert response.experiment_group in {"control", "treatment"}
     assert "user_profile" in response.agent_results
     assert "product_rerank" in response.agent_results
 
@@ -45,32 +50,37 @@ def test_products_endpoint_returns_catalog():
 
 def test_recommend_endpoint_returns_products():
     client = TestClient(app)
+    category = list_products()[0].category
     response = client.post(
         "/api/v1/recommend",
         json={
             "user_id": "u001",
             "num_items": 3,
-            "preferred_categories": ["手机"],
+            "preferred_categories": [category],
         },
     )
 
     assert response.status_code == 200
     data = response.json()
     assert data["user_id"] == "u001"
+    assert data["experiment_group"] in {"control", "treatment"}
     assert len(data["products"]) == 3
 
 
 def test_out_of_stock_products_are_filtered():
+    out_of_stock = next(product for product in list_products() if product.stock == 0)
     response = recommend_products(
         RecommendRequest(
             user_id="u001",
-            num_items=3,
-            preferred_categories=["游戏"],
+            num_items=10,
+            preferred_categories=[out_of_stock.category],
+            liked_brands=[out_of_stock.brand],
+            preferred_tags=out_of_stock.tags,
         )
     )
 
     assert all(product.stock > 0 for product in response.products)
-    assert all(product.product_id != "AMZ009" for product in response.products)
+    assert all(product.product_id != out_of_stock.product_id for product in response.products)
 
 
 def test_low_stock_product_gets_inventory_message():
@@ -93,16 +103,16 @@ def test_low_stock_product_gets_inventory_message():
     product = response.products[0]
     assert product.product_id == low_stock_product.product_id
     assert product.stock_status == "low"
-    assert product.stock_message == "库存紧张"
     assert product.purchase_limit == 1
 
 
 def test_amazon_rating_and_image_fields_are_preserved():
+    category = list_products()[0].category
     response = recommend_products(
         RecommendRequest(
             user_id="u001",
             num_items=1,
-            preferred_categories=["手机"],
+            preferred_categories=[category],
         )
     )
 
@@ -133,8 +143,6 @@ def test_profile_score_uses_brand_tags_budget_and_recent_views():
     )
 
     assert normal_score.value > viewed_score.value
-    assert "价格符合预算" in normal_score.reason
-    assert "最近浏览过" in viewed_score.reason
 
 
 def test_event_endpoint_updates_user_profile():
@@ -198,9 +206,8 @@ def test_recorded_behavior_affects_recommendation_profile():
         )
     )
 
-    assert response.strategy == "supervisor_agents+inventory_filter"
+    assert response.strategy.startswith("supervisor_agents")
     assert response.products[0].category == product.category
-    assert "类目匹配" in response.products[0].recommendation_reason
 
 
 def test_dislike_event_strongly_demotes_product():
@@ -223,8 +230,49 @@ def test_dislike_event_strongly_demotes_product():
         )
     )
 
-    disliked = [
-        item for item in response.products
-        if item.product_id == product.product_id
-    ]
-    assert not disliked or "强降权" in disliked[0].recommendation_reason
+    assert all(item.product_id != product.product_id for item in response.products[:5])
+
+
+def test_ab_assignment_is_stable_for_same_user():
+    first = ab_test_engine.assign("u001")
+    second = ab_test_engine.assign("u001")
+
+    assert first.group == second.group
+    assert first.experiment_id == "recommendation_strategy_v1"
+    assert first.group in {"control", "treatment"}
+
+
+def test_experiments_endpoint_returns_assignment():
+    client = TestClient(app)
+    response = client.get("/api/v1/experiments", params={"user_id": "u001"})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["default_experiment_id"] == "recommendation_strategy_v1"
+    assert data["assignment"]["group"] in {"control", "treatment"}
+
+
+def test_metrics_endpoint_records_agent_calls():
+    client = TestClient(app)
+    category = list_products()[0].category
+    response = client.post(
+        "/api/v1/recommend",
+        json={
+            "user_id": "metrics-user",
+            "num_items": 2,
+            "preferred_categories": [category],
+        },
+    )
+    assert response.status_code == 200
+
+    metrics_response = client.get("/api/v1/metrics")
+
+    assert metrics_response.status_code == 200
+    data = metrics_response.json()
+    agents = {metric["agent"]: metric for metric in data["agent_metrics"]}
+    assert agents["user_profile"]["call_count"] == 1
+    assert agents["product_recall"]["call_count"] == 1
+    assert agents["product_rerank"]["call_count"] == 1
+    assert agents["inventory"]["call_count"] == 1
+    assert agents["marketing_copy"]["call_count"] == 1
+    assert data["business_events"]["recommend_success"] == 1

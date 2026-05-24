@@ -21,51 +21,48 @@ D:\anaconda\envs\py3.10\python.exe -m pytest -q
 Current step:
 
 ```text
-Step 7: Supervisor + 4 Agent skeleton
+Step 8: A/B testing and metrics
 ```
 
 Architecture alignment:
 
 ```text
-Current project now has Supervisor + AgentResult + 4 non-LLM Agents.
-Next step should add A/B testing and Metrics.
+Current project has Supervisor + AgentResult + 4 non-LLM Agents + ABTestEngine + MetricsCollector.
+Next step should add Chroma vector recall inside ProductRecAgent.
 ```
 
 Important files:
 
 ```text
-app/models.py                  request/response/product/event/profile schemas
-app/catalog.py                 CSV product loader
-app/database.py                SQLite connection and table initialization
-app/behavior.py                current-user event store and profile builder
-app/agents/                    BaseAgent and four concrete agents
-app/orchestrator/supervisor.py Supervisor orchestration
-app/inventory.py               stock status and purchase limit rules
-app/personalization.py         user profile scoring rules
-app/recommender.py             recommendation orchestration
-app/main.py                    FastAPI routes
-app/static/index.html          single-page frontend
-data/products_amazon_sample.csv 1000 product rows
+app/models.py                    request/response/product/event/profile/experiment schemas
+app/catalog.py                   CSV product loader
+app/database.py                  SQLite connection and table initialization
+app/behavior.py                  current-user event store and profile builder
+app/agents/                      BaseAgent and four concrete agents
+app/orchestrator/supervisor.py   Supervisor orchestration
+app/services/ab_test.py          stable user_id experiment bucketing
+app/services/metrics.py          in-memory agent and business metrics
+app/inventory.py                 stock status and purchase limit rules
+app/personalization.py           user profile scoring rules
+app/recommender.py               recommendation entrypoint
+app/main.py                      FastAPI routes
+app/static/index.html            Vue 3 frontend
+data/products_amazon_sample.csv  1000 product rows
 scripts/import_amazon_products.py Amazon metadata importer
-tests/test_recommender.py      regression tests
-steps/                         step notes
+tests/test_recommender.py        regression tests
+steps/                           step notes only, no code snapshots
 ```
 
-Current recommendation request fields:
+Current recommendation response includes:
 
-```json
-{
-  "user_id": "u001",
-  "scene": "homepage",
-  "num_items": 3,
-  "preferred_categories": ["手机", "电子数码"],
-  "liked_brands": ["Bastmei", "Sharp"],
-  "preferred_tags": ["手机配件", "办公"],
-  "budget_min": 50,
-  "budget_max": 500,
-  "recent_views": ["B07ZPSG8P5"],
-  "disliked_products": []
-}
+```text
+products
+strategy
+reason
+experiment_group
+experiment
+marketing_copies
+agent_results
 ```
 
 Behavior APIs:
@@ -74,6 +71,14 @@ Behavior APIs:
 POST /api/v1/events
 GET /api/v1/users/{user_id}/events
 GET /api/v1/users/{user_id}/profile
+```
+
+Experiment and metrics APIs:
+
+```text
+GET /api/v1/experiments
+GET /api/v1/experiments?user_id=u001
+GET /api/v1/metrics
 ```
 
 Runtime database:

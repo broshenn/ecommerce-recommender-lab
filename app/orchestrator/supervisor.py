@@ -13,25 +13,38 @@ from app.catalog import list_products
 from app.inventory import enrich_inventory
 from app.models import (
     AgentResult,
+    ExperimentAssignment,
     MarketingCopy,
     Product,
     RecommendRequest,
     RecommendResponse,
     UserProfile,
 )
+from app.services import ab_test_engine, metrics_collector
+from app.services.ab_test import ABTestEngine
+from app.services.metrics import MetricsCollector
 
 
 class SupervisorOrchestrator:
     """Coordinate the four-agent recommendation skeleton."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        ab_engine: ABTestEngine | None = None,
+        metrics: MetricsCollector | None = None,
+    ):
         self.user_profile_agent = UserProfileAgent()
         self.product_rec_agent = ProductRecAgent()
         self.inventory_agent = InventoryAgent()
         self.marketing_copy_agent = MarketingCopyAgent()
+        self.ab_engine = ab_engine or ab_test_engine
+        self.metrics = metrics or metrics_collector
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
     def recommend(self, request: RecommendRequest) -> RecommendResponse:
+        experiment = self.ab_engine.assign(request.user_id)
+        self.metrics.record_business_event("recommend_request")
+
         all_products = list_products()
         products_by_id = {product.product_id: product for product in all_products}
 
@@ -122,16 +135,26 @@ class SupervisorOrchestrator:
             "inventory": inventory_result,
             "marketing_copy": copy_result,
         }
+        self._record_agent_metrics(agent_results)
+        self.metrics.record_business_event("recommend_success")
 
         return RecommendResponse(
             user_id=request.user_id,
             scene=request.scene,
             products=recommended,
-            strategy="supervisor_agents+inventory_filter",
-            reason="Supervisor 编排用户画像、商品推荐、库存决策和营销文案 Agent 后生成推荐。",
+            strategy="supervisor_agents+inventory_filter+ab_test",
+            reason="Supervisor 编排用户画像、商品推荐、库存决策、营销文案和 A/B 分桶后生成推荐。",
+            experiment_group=experiment.group,
+            experiment=experiment,
             marketing_copies=marketing_copies,
             agent_results=agent_results,
         )
+
+    def assign_experiment(self, user_id: str) -> ExperimentAssignment:
+        return self.ab_engine.assign(user_id)
+
+    def metrics_snapshot(self) -> dict[str, Any]:
+        return self.metrics.snapshot()
 
     def _result_or_fallback(
         self,
@@ -167,3 +190,7 @@ class SupervisorOrchestrator:
             for product_id in product_ids
             if product_id in products_by_id
         ]
+
+    def _record_agent_metrics(self, agent_results: dict[str, AgentResult]) -> None:
+        for metric_key, result in agent_results.items():
+            self.metrics.record_agent_result(metric_key, result)

@@ -10,6 +10,7 @@ Step 4: current user profile scoring and personalized ranking
 Step 5: current user behavior collection and profile aggregation
 Step 6: SQLite persistence for current user behavior
 Step 7: Supervisor + 4 Agent skeleton
+Step 8: A/B testing and metrics endpoints
 ```
 
 Step notes:
@@ -19,6 +20,7 @@ steps/step-04-user-profile-ranking/README.md
 steps/step-05-current-user-behavior/README.md
 steps/step-06-sqlite-persistence/README.md
 steps/step-07-supervisor-agent-skeleton/README.md
+steps/step-08-ab-test-metrics/README.md
 ```
 
 ## Architecture Rule
@@ -29,26 +31,26 @@ Stay aligned with the original project:
 Supervisor + 4 Agent + Feature Store + Vector Recall + Inventory + Copy + A/B + Metrics
 ```
 
-Do not jump directly to ML ranking training or RAG before the multi-agent spine exists.
+Do not jump directly to ML ranking training or RAG before vector recall exists.
 
 ## Immediate Next Step
 
-Step 8 should add A/B testing and metrics endpoints.
+Step 9 should add Chroma vector recall inside `ProductRecAgent`.
 
 Recommended scope:
 
 ```text
-1. Add ABTestEngine with stable user_id hashing.
-2. Add MetricsCollector for agent latency/success and business events.
-3. Add /api/v1/experiments and /api/v1/metrics endpoints.
-4. Attach experiment_group and metrics to RecommendResponse without breaking the frontend.
-5. Write step note to steps/step-08-ab-test-metrics/README.md.
+1. Add a small Chroma service that indexes product text from the current CSV.
+2. Build product documents from name, source_name, category, brand, tags, rating, price.
+3. Let ProductRecAgent recall candidates from Chroma first.
+4. Keep the current rule scorer as rerank/fallback.
+5. Add /api/v1/search or a debug endpoint only if it helps learning.
+6. Write step note to steps/step-09-chroma-vector-recall/README.md.
 ```
 
-## After Step 7
+## After Step 9
 
 ```text
-Step 9: add Chroma product vector recall inside ProductRecAgent
 Step 10: add Redis feature store for real-time sliding-window profile features
 Step 11: add MarketingCopyAgent LLM generation and compliance fallback
 Step 12: add RAG product Q&A or product explanation, after Chroma exists
@@ -70,7 +72,7 @@ Our project already has durable behavior storage in SQLite. Redis should be adde
 
 ## Deferred ML Ranking Training
 
-Save this for after the architecture spine exists and after reviewing the original project again:
+Save this for after the architecture spine, Chroma recall, Redis feature windows, and event tracking exist:
 
 ```text
 D:\pycode\agent\cluade\multi-agent-ecommerce-system

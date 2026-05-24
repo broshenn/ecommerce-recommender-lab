@@ -28,18 +28,18 @@ FastAPI
 Original storage roles:
 
 ```text
-SQLite/MySQL  -> business data and durable records
-Redis         -> real-time feature store, sliding-window behavior features, offline tag cache
-Milvus/Chroma -> product vector retrieval
+SQLite/MySQL   -> business data and durable records
+Redis          -> real-time feature store, sliding-window behavior features, offline tag cache
+Milvus/Chroma  -> product vector retrieval
 ```
 
 Original Agent roles:
 
 ```text
-UserProfileAgent  -> real-time features + RFM + segments
-ProductRecAgent   -> multi-route recall + rerank
-InventoryAgent    -> stock filtering + alerts + purchase limits
-MarketingCopyAgent-> personalized copy + compliance filter
+UserProfileAgent   -> real-time features + RFM + segments
+ProductRecAgent    -> multi-route recall + rerank
+InventoryAgent     -> stock filtering + alerts + purchase limits
+MarketingCopyAgent -> personalized copy + compliance filter
 ```
 
 Original reliability ideas:
@@ -58,7 +58,7 @@ A/B bucket assignment
 
 ## Current Project State
 
-Current project has:
+Current project now has:
 
 ```text
 FastAPI
@@ -68,25 +68,35 @@ SQLite persisted current-user behavior events
 behavior profile aggregation
 rule-based personalization scoring
 inventory filtering
+BaseAgent
+AgentResult
+SupervisorOrchestrator
+UserProfileAgent
+ProductRecAgent
+InventoryAgent
+MarketingCopyAgent
+ABTestEngine
+MetricsCollector
 ```
 
 Current project does not yet have:
 
 ```text
-BaseAgent
-AgentResult
-SupervisorOrchestrator
-MarketingCopyAgent
-ABTestEngine
-MetricsCollector
 Redis feature store
 Chroma vector recall
-LLM fallback wrapper
+LLM marketing copy generation
+RAG product Q&A / recommendation explanation
+trained ranking model
 ```
 
 ## Do Not Drift
 
-Do not jump straight to ML training, RAG, or a large frontend redesign before the architecture spine is aligned.
+Do not jump straight to ML training or RAG before vector recall exists.
 
-The next priority is to reshape the current direct recommender into the original project's modular multi-agent architecture while keeping every step runnable and easy to read.
+The next priority is:
 
+```text
+Step 9: Chroma product vector recall inside ProductRecAgent
+```
+
+Redis should come after Chroma in this learning path, because SQLite already covers durable behavior storage and Redis should be added as the online feature/cache layer.

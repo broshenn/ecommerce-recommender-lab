@@ -432,6 +432,7 @@
       <section>
         <div class="panel summary">
           <span>策略：<strong>{{ strategy }}</strong></span>
+          <span>实验组：<strong>{{ experimentGroup }}</strong></span>
           <span>商品数：<strong>{{ products.length }}</strong></span>
           <span>状态：<strong>{{ statusText }}</strong></span>
           <span>{{ reason }}</span>
@@ -509,6 +510,7 @@
           products: [],
           profile: {},
           strategy: "-",
+          experimentGroup: "-",
           reason: "等待推荐",
           statusText: "待生成",
           healthText: "检查服务中",
@@ -600,12 +602,14 @@
             const data = await res.json();
             this.products = data.products;
             this.strategy = data.strategy;
+            this.experimentGroup = data.experiment_group || "-";
             this.reason = data.reason;
             this.statusText = `已生成 ${new Date().toLocaleTimeString("zh-CN")}`;
             this.emptyText = "没有匹配到商品";
             await this.loadProfile();
           } catch (error) {
             this.products = [];
+            this.experimentGroup = "-";
             this.statusText = "生成失败";
             this.reason = error.message || "未知错误";
             this.emptyText = "推荐失败，请查看错误信息";

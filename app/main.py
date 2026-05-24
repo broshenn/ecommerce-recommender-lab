@@ -18,13 +18,14 @@ from app.models import (
     UserProfile,
 )
 from app.recommender import recommend_products
+from app.services import ab_test_engine, metrics_collector
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.7.0",
+    version="0.8.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -43,9 +44,11 @@ def health():
     init_db()
     return {
         "status": "healthy",
-        "step": 7,
+        "step": 8,
         "storage": "sqlite",
         "orchestrator": "supervisor",
+        "experiments": "ab_test",
+        "metrics": "in_memory",
     }
 
 
@@ -57,6 +60,19 @@ def products():
 @app.post("/api/v1/recommend", response_model=RecommendResponse)
 def recommend(request: RecommendRequest):
     return recommend_products(request)
+
+
+@app.get("/api/v1/experiments")
+def experiments(user_id: str | None = None):
+    payload = ab_test_engine.list_experiments()
+    if user_id:
+        payload["assignment"] = ab_test_engine.assign(user_id).model_dump()
+    return payload
+
+
+@app.get("/api/v1/metrics")
+def metrics():
+    return metrics_collector.snapshot()
 
 
 @app.post("/api/v1/events", response_model=UserEvent)

@@ -1,20 +1,28 @@
-# Step Notes
+# Steps
 
-这里不保存代码快照，只保存每个阶段的学习说明。
+这个目录只保存每个阶段的 README 学习文档，不保存代码快照。代码历史交给 Git commit 管理。
 
-代码历史交给 Git commit 管理；`steps/` 只回答三个问题：
+当前阶段：
 
 ```text
-这个 Step 做了什么？
-应该重点看哪些文件？
-下一步要接什么？
+Step 8: A/B 测试 + Metrics 指标统计
 ```
 
-当前已有：
+已保存的阶段文档：
 
 ```text
-step-04-user-profile-ranking/README.md
-step-05-current-user-behavior/README.md
-step-06-sqlite-persistence/README.md
-step-07-supervisor-agent-skeleton/README.md
+steps/step-04-user-profile-ranking/README.md
+steps/step-05-current-user-behavior/README.md
+steps/step-06-sqlite-persistence/README.md
+steps/step-07-supervisor-agent-skeleton/README.md
+steps/step-08-ab-test-metrics/README.md
+```
+
+继续开发时的约定：
+
+```text
+1. 根目录永远是最新可运行版本。
+2. 每完成一个功能，就新增一个 step README。
+3. steps/ 里不放完整代码快照。
+4. 每一步都要能运行、能测试、能解释清楚为什么这么拆。
 ```

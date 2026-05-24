@@ -47,12 +47,21 @@ class RecommendRequest(BaseModel):
     context: dict[str, Any] = Field(default_factory=dict)
 
 
+class ExperimentAssignment(BaseModel):
+    experiment_id: str
+    group: str
+    reason: str
+    config: dict[str, Any] = Field(default_factory=dict)
+
+
 class RecommendResponse(BaseModel):
     user_id: str
     scene: str
     products: list[RecommendedProduct]
     strategy: str
     reason: str
+    experiment_group: str | None = None
+    experiment: ExperimentAssignment | None = None
     marketing_copies: list[MarketingCopy] = Field(default_factory=list)
     agent_results: dict[str, AgentResult] = Field(default_factory=dict)
 
