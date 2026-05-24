@@ -8,6 +8,7 @@ Step 2: inventory filtering and stock messages
 Step 3: Amazon Reviews 2023 product metadata fields
 Step 4: current user profile scoring and personalized ranking
 Step 5: current user behavior collection and profile aggregation
+Step 6: SQLite persistence for current user behavior
 ```
 
 Step notes:
@@ -15,26 +16,26 @@ Step notes:
 ```text
 steps/step-04-user-profile-ranking/README.md
 steps/step-05-current-user-behavior/README.md
+steps/step-06-sqlite-persistence/README.md
 ```
 
 ## Immediate Next Step
 
-Step 6 should persist products and behavior with SQLite.
+Step 7 should add Chroma semantic retrieval for product title/features.
 
 Recommended scope:
 
 ```text
-1. Add SQLite connection and table creation.
-2. Persist behavior events instead of using memory only.
-3. Keep /api/v1/events and profile APIs unchanged.
-4. Preserve the existing CSV importer as a product seed source.
-5. Write step note to steps/step-06-sqlite-persistence/README.md.
+1. Add Chroma dependency and local vector store.
+2. Embed product source_name/name/tags with a lightweight deterministic embedding first.
+3. Add semantic recall endpoint or blend semantic candidates into recommendation.
+4. Keep SQLite behavior storage unchanged.
+5. Write step note to steps/step-07-chroma-semantic-retrieval/README.md.
 ```
 
 Later steps:
 
 ```text
-Step 7: add Chroma semantic retrieval for product title/features
 Step 8: add RAG product Q&A based on product metadata
 Step 9: add LLM-generated recommendation explanations
 Step 10: add offline evaluation metrics such as CTR proxy, recall, diversity

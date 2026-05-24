@@ -21,7 +21,7 @@ D:\anaconda\envs\py3.10\python.exe -m pytest -q
 Current step:
 
 ```text
-Step 5: current user behavior collection and profile aggregation
+Step 6: SQLite persistence for current user behavior
 ```
 
 Important files:
@@ -29,6 +29,7 @@ Important files:
 ```text
 app/models.py                  request/response/product/event/profile schemas
 app/catalog.py                 CSV product loader
+app/database.py                SQLite connection and table initialization
 app/behavior.py                current-user event store and profile builder
 app/inventory.py               stock status and purchase limit rules
 app/personalization.py         user profile scoring rules
@@ -38,7 +39,7 @@ app/static/index.html          single-page frontend
 data/products_amazon_sample.csv 1000 product rows
 scripts/import_amazon_products.py Amazon metadata importer
 tests/test_recommender.py      regression tests
-steps/                         frozen step snapshots
+steps/                         step notes
 ```
 
 Current recommendation request fields:
@@ -64,6 +65,18 @@ Behavior APIs:
 POST /api/v1/events
 GET /api/v1/users/{user_id}/events
 GET /api/v1/users/{user_id}/profile
+```
+
+Runtime database:
+
+```text
+data/app.sqlite3
+```
+
+Persisted table:
+
+```text
+user_events(event_id, user_id, product_id, event_type, created_at)
 ```
 
 Scoring rules:

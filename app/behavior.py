@@ -1,30 +1,52 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.catalog import list_products
+from app.database import get_connection, init_db
 from app.models import RecommendRequest, UserEvent, UserEventCreate, UserProfile
-
-_EVENTS_BY_USER: dict[str, list[UserEvent]] = defaultdict(list)
-_NEXT_EVENT_ID = 1
 
 
 def record_event(event: UserEventCreate) -> UserEvent:
-    global _NEXT_EVENT_ID
+    init_db()
+    created_at = datetime.now(timezone.utc)
 
-    stored_event = UserEvent(
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO user_events (user_id, product_id, event_type, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                event.user_id,
+                event.product_id,
+                event.event_type,
+                created_at.isoformat(),
+            ),
+        )
+        event_id = int(cursor.lastrowid)
+
+    return UserEvent(
         **event.model_dump(),
-        event_id=_NEXT_EVENT_ID,
-        created_at=datetime.utcnow(),
+        event_id=event_id,
+        created_at=created_at,
     )
-    _NEXT_EVENT_ID += 1
-    _EVENTS_BY_USER[event.user_id].append(stored_event)
-    return stored_event
 
 
 def list_user_events(user_id: str) -> list[UserEvent]:
-    return list(_EVENTS_BY_USER.get(user_id, []))
+    init_db()
+    with get_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT event_id, user_id, product_id, event_type, created_at
+            FROM user_events
+            WHERE user_id = ?
+            ORDER BY event_id ASC
+            """,
+            (user_id,),
+        ).fetchall()
+
+    return [_row_to_event(row) for row in rows]
 
 
 def build_user_profile(user_id: str) -> UserProfile:
@@ -86,9 +108,23 @@ def merge_behavior_profile(request: RecommendRequest) -> RecommendRequest:
 
 
 def reset_behavior_events() -> None:
-    global _NEXT_EVENT_ID
-    _EVENTS_BY_USER.clear()
-    _NEXT_EVENT_ID = 1
+    init_db()
+    with get_connection() as connection:
+        connection.execute("DELETE FROM user_events")
+        connection.execute(
+            "DELETE FROM sqlite_sequence WHERE name = ?",
+            ("user_events",),
+        )
+
+
+def _row_to_event(row) -> UserEvent:
+    return UserEvent(
+        event_id=row["event_id"],
+        user_id=row["user_id"],
+        product_id=row["product_id"],
+        event_type=row["event_type"],
+        created_at=datetime.fromisoformat(row["created_at"]),
+    )
 
 
 def _unique(values) -> list[str]:

@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.behavior import build_user_profile, list_user_events, record_event
 from app.catalog import list_products
+from app.database import init_db
 from app.models import (
     Product,
     RecommendRequest,
@@ -23,7 +24,7 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.5.0",
+    version="0.6.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -39,7 +40,8 @@ def index():
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "step": 5}
+    init_db()
+    return {"status": "healthy", "step": 6, "storage": "sqlite"}
 
 
 @app.get("/api/v1/products", response_model=list[Product])

@@ -159,6 +159,26 @@ def test_event_endpoint_updates_user_profile():
     assert product.brand in profile["liked_brands"]
 
 
+def test_events_are_loaded_from_sqlite_storage():
+    product = list_products()[0]
+    stored_event = record_event(
+        UserEventCreate(
+            user_id="sqlite-user",
+            product_id=product.product_id,
+            event_type="view",
+        )
+    )
+
+    client = TestClient(app)
+    events_response = client.get("/api/v1/users/sqlite-user/events")
+
+    assert events_response.status_code == 200
+    events = events_response.json()
+    assert events[0]["event_id"] == stored_event.event_id
+    assert events[0]["product_id"] == product.product_id
+    assert events[0]["event_type"] == "view"
+
+
 def test_recorded_behavior_affects_recommendation_profile():
     product = list_products()[0]
     record_event(

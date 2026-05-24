@@ -2,7 +2,7 @@
 
 这是从零重构的学习版项目。目标不是一次性做完所有能力，而是每次只增加一个功能，让你能按阶段看懂系统如何成长。
 
-## 当前阶段：Step 5 当前用户行为采集
+## 当前阶段：Step 6 SQLite 持久化
 
 当前已经实现：
 
@@ -13,6 +13,7 @@
 - 当前用户画像：类目、品牌、标签、预算、最近浏览
 - 当前用户行为事件：查看、喜欢、不喜欢、加购
 - 根据行为事件自动聚合画像
+- SQLite 持久化：用户行为事件会写入 `data/app.sqlite3`
 - 个性化打分排序
 - 库存过滤：无库存商品不会被推荐
 - 库存提示：低库存、热销限购会展示给前端
@@ -34,11 +35,38 @@
 - `scripts/import_amazon_products.py`：从 Hugging Face 流式读取 Amazon Reviews 2023 元数据并生成 CSV
 - `app/catalog.py`：从 CSV 读取商品，而不是把商品写死在代码里
 - `app/models.py`：商品、推荐请求、用户行为、用户画像模型
+- `app/database.py`：SQLite 连接、建表和索引初始化
 - `app/behavior.py`：记录当前用户行为，并把行为聚合成用户画像
 - `app/personalization.py`：当前用户画像打分规则，推荐排序的核心
 - `app/inventory.py`：把“库存是否可卖、是否限购、是否紧张”单独拆出来
 - `app/recommender.py`：合并手动画像和行为画像，再过滤库存、打分排序
 - `app/static/index.html`：Vue 3 前端，展示画像输入、行为按钮、商品图、评分、分数、库存提示
+
+## SQLite 持久化
+
+运行时会自动创建：
+
+```text
+data/app.sqlite3
+```
+
+目前持久化的表：
+
+```text
+user_events
+```
+
+字段：
+
+```text
+event_id
+user_id
+product_id
+event_type
+created_at
+```
+
+这个数据库文件是运行时产物，已经被 `.gitignore` 忽略，不会提交到 GitHub。
 
 ## 当前用户行为接口
 
@@ -162,12 +190,12 @@ verified_purchase  -> 更强购买信号
 ```text
 steps/step-04-user-profile-ranking/README.md
 steps/step-05-current-user-behavior/README.md
+steps/step-06-sqlite-persistence/README.md
 ```
 
 后续约定：
 
 ```text
-开发 Step 6 -> 测试通过 -> 写 steps/step-06-xxx/README.md
 开发 Step 7 -> 测试通过 -> 写 steps/step-07-xxx/README.md
 ```
 
