@@ -8,15 +8,19 @@ from app.models import RecommendRequest, UserEventCreate
 from app.personalization import score_product
 from app.recommender import recommend_products
 from app.services import ab_test_engine, metrics_collector
+from app.services.vector_store import get_product_vector_store
 
 
 @pytest.fixture(autouse=True)
-def clear_runtime_state():
+def clear_runtime_state(monkeypatch):
+    monkeypatch.setenv("PRODUCT_VECTOR_EMBEDDING_PROVIDER", "local")
+    get_product_vector_store.cache_clear()
     reset_behavior_events()
     metrics_collector.reset()
     yield
     metrics_collector.reset()
     reset_behavior_events()
+    get_product_vector_store.cache_clear()
 
 
 def test_recommend_prefers_selected_categories():
@@ -32,8 +36,11 @@ def test_recommend_prefers_selected_categories():
     assert len(response.products) == 2
     assert all(product.category == category for product in response.products)
     assert response.strategy.startswith("supervisor_agents")
+    assert "vector_recall" in response.strategy
     assert response.experiment_group in {"control", "treatment"}
     assert "user_profile" in response.agent_results
+    assert response.agent_results["product_recall"].data["mode"] == "recall"
+    assert response.agent_results["product_recall"].data["backend"].startswith("chroma:")
     assert "product_rerank" in response.agent_results
 
 
@@ -276,3 +283,13 @@ def test_metrics_endpoint_records_agent_calls():
     assert agents["inventory"]["call_count"] == 1
     assert agents["marketing_copy"]["call_count"] == 1
     assert data["business_events"]["recommend_success"] == 1
+
+
+def test_vector_store_endpoint_returns_chroma_status():
+    client = TestClient(app)
+    response = client.get("/api/v1/vector-store")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["backend"].startswith("chroma:")
+    assert data["collection"].startswith("products_")

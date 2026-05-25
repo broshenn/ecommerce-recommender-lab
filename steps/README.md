@@ -5,7 +5,7 @@
 当前阶段：
 
 ```text
-Step 8: A/B 测试 + Metrics 指标统计
+Step 9: Chroma 向量召回
 ```
 
 已保存的阶段文档：
@@ -16,6 +16,7 @@ steps/step-05-current-user-behavior/README.md
 steps/step-06-sqlite-persistence/README.md
 steps/step-07-supervisor-agent-skeleton/README.md
 steps/step-08-ab-test-metrics/README.md
+steps/step-09-chroma-vector-recall/README.md
 ```
 
 继续开发时的约定：

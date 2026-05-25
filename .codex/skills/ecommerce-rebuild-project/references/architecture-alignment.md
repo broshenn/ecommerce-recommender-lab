@@ -73,6 +73,7 @@ AgentResult
 SupervisorOrchestrator
 UserProfileAgent
 ProductRecAgent
+Chroma vector recall
 InventoryAgent
 MarketingCopyAgent
 ABTestEngine
@@ -83,7 +84,6 @@ Current project does not yet have:
 
 ```text
 Redis feature store
-Chroma vector recall
 LLM marketing copy generation
 RAG product Q&A / recommendation explanation
 trained ranking model
@@ -91,12 +91,12 @@ trained ranking model
 
 ## Do Not Drift
 
-Do not jump straight to ML training or RAG before vector recall exists.
+Do not jump straight to ML training or RAG before the vector recall path is stable.
 
 The next priority is:
 
 ```text
-Step 9: Chroma product vector recall inside ProductRecAgent
+Step 10: Redis real-time feature windows
 ```
 
-Redis should come after Chroma in this learning path, because SQLite already covers durable behavior storage and Redis should be added as the online feature/cache layer.
+SQLite already covers durable behavior storage. Redis should now be added as the online feature/cache layer.

@@ -11,6 +11,7 @@ Step 5: current user behavior collection and profile aggregation
 Step 6: SQLite persistence for current user behavior
 Step 7: Supervisor + 4 Agent skeleton
 Step 8: A/B testing and metrics endpoints
+Step 9: Chroma vector recall with optional Qwen embeddings
 ```
 
 Step notes:
@@ -21,6 +22,7 @@ steps/step-05-current-user-behavior/README.md
 steps/step-06-sqlite-persistence/README.md
 steps/step-07-supervisor-agent-skeleton/README.md
 steps/step-08-ab-test-metrics/README.md
+steps/step-09-chroma-vector-recall/README.md
 ```
 
 ## Architecture Rule
@@ -31,44 +33,29 @@ Stay aligned with the original project:
 Supervisor + 4 Agent + Feature Store + Vector Recall + Inventory + Copy + A/B + Metrics
 ```
 
-Do not jump directly to ML ranking training or RAG before vector recall exists.
-
 ## Immediate Next Step
 
-Step 9 should add Chroma vector recall inside `ProductRecAgent`.
+Step 10 should add Redis real-time feature windows.
 
 Recommended scope:
 
 ```text
-1. Add a small Chroma service that indexes product text from the current CSV.
-2. Build product documents from name, source_name, category, brand, tags, rating, price.
-3. Let ProductRecAgent recall candidates from Chroma first.
-4. Keep the current rule scorer as rerank/fallback.
-5. Add /api/v1/search or a debug endpoint only if it helps learning.
-6. Write step note to steps/step-09-chroma-vector-recall/README.md.
+1. Keep SQLite as durable behavior storage.
+2. Add Redis as online feature/cache layer.
+3. Record recent behavior into Redis sorted sets or lists.
+4. Build 1h / 24h / 7d behavior windows for UserProfileAgent.
+5. Add graceful fallback when Redis is unavailable.
+6. Add /api/v1/feature-store or profile debug endpoint if useful.
+7. Write step note to steps/step-10-redis-feature-store/README.md.
 ```
 
-## After Step 9
+## After Step 10
 
 ```text
-Step 10: add Redis feature store for real-time sliding-window profile features
 Step 11: add MarketingCopyAgent LLM generation and compliance fallback
-Step 12: add RAG product Q&A or product explanation, after Chroma exists
+Step 12: add RAG product Q&A or recommendation explanation
 Step 13: add offline evaluation and ML ranking training
 ```
-
-## Why Redis Is Not Next
-
-Redis in the original project is a real-time feature store:
-
-```text
-behavior:{user_id}:{behavior_type} sorted sets
-sliding windows: 1h / 24h / 7d
-profile:{user_id} offline tag cache
-RFM and real-time feature aggregation
-```
-
-Our project already has durable behavior storage in SQLite. Redis should be added later as an online feature/cache layer, not as a replacement for SQLite.
 
 ## Deferred ML Ranking Training
 
@@ -91,13 +78,3 @@ Future training scope:
 7. Replace hard-coded ranking weights with model probabilities.
 8. Keep rule scoring as fallback when the model is unavailable.
 ```
-
-## Data Expansion Notes
-
-Use:
-
-```powershell
-D:\anaconda\envs\py3.10\python.exe scripts\import_amazon_products.py --limit 1000 --output data\products_amazon_sample.csv
-```
-
-The importer streams Hugging Face JSONL files and writes only adapted rows. It should not download whole multi-GB raw files.

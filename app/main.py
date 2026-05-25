@@ -19,13 +19,14 @@ from app.models import (
 )
 from app.recommender import recommend_products
 from app.services import ab_test_engine, metrics_collector
+from app.services.vector_store import get_product_vector_store
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.8.0",
+    version="0.9.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -44,11 +45,12 @@ def health():
     init_db()
     return {
         "status": "healthy",
-        "step": 8,
+        "step": 9,
         "storage": "sqlite",
         "orchestrator": "supervisor",
         "experiments": "ab_test",
         "metrics": "in_memory",
+        "vector_recall": "chroma",
     }
 
 
@@ -73,6 +75,11 @@ def experiments(user_id: str | None = None):
 @app.get("/api/v1/metrics")
 def metrics():
     return metrics_collector.snapshot()
+
+
+@app.get("/api/v1/vector-store")
+def vector_store():
+    return get_product_vector_store().status()
 
 
 @app.post("/api/v1/events", response_model=UserEvent)

@@ -22,10 +22,10 @@ Read `references/architecture-alignment.md` before choosing any next feature.
 
 Important current capabilities:
 
-- Step 8 is the latest root version.
+- Step 9 is the latest root version.
 - Product data comes from `data/products_amazon_sample.csv`.
 - The current dataset has 1000 Amazon Reviews 2023 product metadata rows.
-- Recommendation flow is: FastAPI -> Supervisor -> UserProfileAgent + ProductRecAgent -> ProductRecAgent rerank + InventoryAgent -> MarketingCopyAgent -> ABTestEngine -> MetricsCollector -> response.
+- Recommendation flow is: FastAPI -> Supervisor -> UserProfileAgent + ProductRecAgent vector recall -> ProductRecAgent rule rerank + InventoryAgent -> MarketingCopyAgent -> ABTestEngine -> MetricsCollector -> response.
 - Step notes are README-only docs under `steps/`.
 
 ## Data Rules
@@ -42,10 +42,10 @@ Read `references/roadmap.md` before deciding the next step.
 
 Preferred next step:
 
-- Step 9: add Chroma product vector recall inside `ProductRecAgent`.
+- Step 10: add Redis real-time feature windows.
 
 Deferred:
 
 - Do not train recommendation weights yet.
-- Do not jump to RAG before Chroma/vector recall exists.
-- Redis should later serve online feature windows, not replace SQLite.
+- Do not jump to RAG before the vector recall path is stable.
+- Redis should serve online feature windows, not replace SQLite.

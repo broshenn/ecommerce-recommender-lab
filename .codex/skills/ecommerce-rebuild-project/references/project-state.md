@@ -21,14 +21,14 @@ D:\anaconda\envs\py3.10\python.exe -m pytest -q
 Current step:
 
 ```text
-Step 8: A/B testing and metrics
+Step 9: Chroma vector recall
 ```
 
 Architecture alignment:
 
 ```text
-Current project has Supervisor + AgentResult + 4 non-LLM Agents + ABTestEngine + MetricsCollector.
-Next step should add Chroma vector recall inside ProductRecAgent.
+Current project has Supervisor + AgentResult + 4 non-LLM Agents + Chroma vector recall + ABTestEngine + MetricsCollector.
+Next step should add Redis real-time feature windows.
 ```
 
 Important files:
@@ -40,6 +40,7 @@ app/database.py                  SQLite connection and table initialization
 app/behavior.py                  current-user event store and profile builder
 app/agents/                      BaseAgent and four concrete agents
 app/orchestrator/supervisor.py   Supervisor orchestration
+app/services/vector_store.py     Chroma vector recall and Qwen/local embedding
 app/services/ab_test.py          stable user_id experiment bucketing
 app/services/metrics.py          in-memory agent and business metrics
 app/inventory.py                 stock status and purchase limit rules
@@ -79,6 +80,7 @@ Experiment and metrics APIs:
 GET /api/v1/experiments
 GET /api/v1/experiments?user_id=u001
 GET /api/v1/metrics
+GET /api/v1/vector-store
 ```
 
 Runtime database:

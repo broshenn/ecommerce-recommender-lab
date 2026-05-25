@@ -57,7 +57,8 @@ class SupervisorOrchestrator:
             self.product_rec_agent.run,
             request=request,
             products=all_products,
-            limit=len(all_products),
+            limit=max(request.num_items * 20, 50),
+            mode="recall",
         )
 
         profile_result = self._result_or_fallback(profile_future, self.user_profile_agent)
@@ -71,6 +72,11 @@ class SupervisorOrchestrator:
         )
         if not recalled_products:
             recalled_products = all_products
+        recalled_products = self._expand_candidates_with_profile(
+            recalled_products,
+            all_products,
+            effective_request,
+        )
 
         # Phase 2: rerank candidates while checking inventory on the same pool.
         rerank_future = self.executor.submit(
@@ -78,6 +84,7 @@ class SupervisorOrchestrator:
             request=effective_request,
             products=recalled_products,
             limit=request.num_items * 2,
+            mode="rerank",
         )
         inventory_future = self.executor.submit(
             self.inventory_agent.run,
@@ -142,8 +149,8 @@ class SupervisorOrchestrator:
             user_id=request.user_id,
             scene=request.scene,
             products=recommended,
-            strategy="supervisor_agents+inventory_filter+ab_test",
-            reason="Supervisor 编排用户画像、商品推荐、库存决策、营销文案和 A/B 分桶后生成推荐。",
+            strategy="supervisor_agents+vector_recall+inventory_filter+ab_test",
+            reason="Supervisor 编排用户画像、Chroma 向量召回、规则重排、库存决策、营销文案和 A/B 分桶后生成推荐。",
             experiment_group=experiment.group,
             experiment=experiment,
             marketing_copies=marketing_copies,
@@ -190,6 +197,31 @@ class SupervisorOrchestrator:
             for product_id in product_ids
             if product_id in products_by_id
         ]
+
+    def _expand_candidates_with_profile(
+        self,
+        recalled_products: list[Product],
+        all_products: list[Product],
+        request: RecommendRequest,
+    ) -> list[Product]:
+        existing_ids = {product.product_id for product in recalled_products}
+        expanded = list(recalled_products)
+        for product in all_products:
+            if product.product_id in existing_ids:
+                continue
+            if self._matches_profile(product, request):
+                expanded.append(product)
+                existing_ids.add(product.product_id)
+        return expanded
+
+    def _matches_profile(self, product: Product, request: RecommendRequest) -> bool:
+        if request.preferred_categories and product.category in request.preferred_categories:
+            return True
+        if request.liked_brands and product.brand in request.liked_brands:
+            return True
+        if request.preferred_tags and set(product.tags) & set(request.preferred_tags):
+            return True
+        return False
 
     def _record_agent_metrics(self, agent_results: dict[str, AgentResult]) -> None:
         for metric_key, result in agent_results.items():

@@ -4,6 +4,7 @@ from typing import Any
 
 from app.models import AgentResult, Product, RecommendRequest
 from app.personalization import score_product
+from app.services.vector_store import VectorRecallUnavailable, get_product_vector_store
 
 from app.agents.base_agent import BaseAgent
 
@@ -18,7 +19,53 @@ class ProductRecAgent(BaseAgent):
         request: RecommendRequest = kwargs["request"]
         products: list[Product] = kwargs.get("products", [])
         limit: int = kwargs.get("limit", request.num_items)
+        mode: str = kwargs.get("mode", "rerank")
 
+        if mode == "recall":
+            return self._recall(request, products, limit)
+
+        return self._rerank(request, products, limit, backend="rule_rerank")
+
+    def _recall(
+        self,
+        request: RecommendRequest,
+        products: list[Product],
+        limit: int,
+    ) -> AgentResult:
+        try:
+            vector_store = get_product_vector_store()
+            product_ids = vector_store.recall(request, products, limit)
+            return AgentResult(
+                agent_name=self.name,
+                success=True,
+                data={
+                    "product_ids": product_ids,
+                    "scores": {},
+                    "candidate_count": len(products),
+                    "returned_count": len(product_ids),
+                    "mode": "recall",
+                    "backend": vector_store.backend_name,
+                    "query": vector_store.status(),
+                },
+                confidence=0.8,
+            )
+        except VectorRecallUnavailable as exc:
+            fallback = self._rerank(
+                request,
+                products,
+                limit,
+                backend="rule_fallback_after_vector_unavailable",
+            )
+            fallback.data["fallback_reason"] = str(exc)
+            return fallback
+
+    def _rerank(
+        self,
+        request: RecommendRequest,
+        products: list[Product],
+        limit: int,
+        backend: str,
+    ) -> AgentResult:
         scored = [(score_product(product, request), product) for product in products]
         scored.sort(
             key=lambda item: (
@@ -44,6 +91,8 @@ class ProductRecAgent(BaseAgent):
                 },
                 "candidate_count": len(products),
                 "returned_count": len(selected),
+                "mode": "rerank",
+                "backend": backend,
             },
             confidence=0.85,
         )
