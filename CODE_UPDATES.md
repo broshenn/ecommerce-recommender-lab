@@ -300,3 +300,55 @@ app/orchestrator/supervisor.py
 app/static/index.html
 steps/step-12a-llm-marketing-copy/README.md
 ```
+
+## Step 12b: LLM 商品重排 Agent
+
+### 新增文件
+
+```text
+steps/step-12b-llm-rerank/README.md
+```
+
+### 修改文件
+
+```text
+app/agents/product_rec_agent.py
+app/main.py
+app/static/index.html
+tests/test_recommender.py
+README.md
+steps/README.md
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. ProductRecAgent._rerank() 在 request.context["llm_hint"] 存在时优先尝试 LLM 重排。
+2. 新增 RERANK_PROMPT，要求 LLM 返回商品 ID JSON 数组。
+3. 新增 _llm_rerank()，把用户偏好、预算、llm_hint 和候选商品列表交给 LLM。
+4. 新增 _normalize_llm_product_ids()，校验 LLM 返回的 product_id、去重、不足补齐。
+5. LLM 重排成功时返回 mode=llm_rerank，backend=llm+rule_rerank。
+6. LLM 不可用、返回格式异常或 ID 无效时自动回退原 score_product 规则排序。
+7. 前端 LLM 面板新增“重排模式”和“文案模式”。
+8. /health 升级为 step=12b，版本升级到 0.12.1。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+17 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+```
+
+### 你应该重点阅读
+
+```text
+app/agents/product_rec_agent.py
+app/personalization.py
+tests/test_recommender.py
+steps/step-12b-llm-rerank/README.md
+```

@@ -5,7 +5,7 @@
 当前阶段：
 
 ```text
-Step 12a: LLM 营销文案 Agent
+Step 12b: LLM 商品重排 Agent
 ```
 
 已保存的阶段文档：
@@ -20,6 +20,7 @@ steps/step-09-chroma-vector-recall/README.md
 steps/step-10-redis-feature-store/README.md
 steps/step-11-llm-user-profile/README.md
 steps/step-12a-llm-marketing-copy/README.md
+steps/step-12b-llm-rerank/README.md
 ```
 
 继续开发时的约定：

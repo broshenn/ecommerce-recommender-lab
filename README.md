@@ -2,7 +2,7 @@
 
 这是一个从 0 开始、按步骤重构的电商推荐学习项目。目标不是一次性做完所有能力，而是每次只加一个核心功能，让你能看懂推荐系统如何从“规则推荐”逐步长成“多 Agent 推荐系统”。
 
-## 当前阶段：Step 12a LLM 营销文案 Agent
+## 当前阶段：Step 12b LLM 商品重排 Agent
 
 当前已经实现：
 
@@ -22,6 +22,7 @@
 - OpenAI-compatible LLM Client，支持 DeepSeek / 千问配置
 - UserProfileAgent 使用 LLM 分析 SQLite 长期画像和 Redis 实时行为，输出 `llm_profile`
 - Supervisor 会把 `llm_profile.recommendation_hint` 透传到 `effective_request.context.llm_hint`
+- ProductRecAgent 在规则重排前尝试 LLM 重排，失败时回退 `score_product`
 - MarketingCopyAgent 使用 `llm_profile.segments` 选择 Prompt 模板，生成个性化营销文案
 - LLM 文案带规则 fallback 和广告法敏感词过滤
 - 规则重排、库存过滤、低库存提示、限购提示
@@ -60,7 +61,7 @@ app/personalization.py             当前规则打分
 app/inventory.py                   库存状态、低库存、限购规则
 app/agents/base_agent.py           Agent 统一计时、错误捕获、降级
 app/agents/user_profile_agent.py   用户画像 Agent
-app/agents/product_rec_agent.py    商品向量召回 / 规则重排 Agent
+app/agents/product_rec_agent.py    商品向量召回 / LLM 重排 + 规则 fallback
 app/agents/inventory_agent.py      库存决策 Agent
 app/agents/marketing_copy_agent.py LLM 营销文案 Agent + 规则 fallback
 app/orchestrator/supervisor.py     Supervisor 编排器

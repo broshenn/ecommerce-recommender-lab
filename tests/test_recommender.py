@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from app.behavior import record_event, reset_behavior_events
 from app.catalog import list_products
+from app.agents.product_rec_agent import ProductRecAgent
 from app.main import app
 from app.models import RecommendRequest, UserEventCreate
 from app.personalization import score_product
@@ -159,6 +160,42 @@ def test_profile_score_uses_brand_tags_budget_and_recent_views():
     )
 
     assert normal_score.value > viewed_score.value
+
+
+def test_product_rerank_can_use_llm_hint(monkeypatch):
+    products = list_products()[:4]
+    expected_order = [products[2].product_id, products[0].product_id]
+
+    def fake_chat_json(**kwargs):
+        return [products[2].product_id, "missing-product", products[0].product_id]
+
+    monkeypatch.setattr(llm_client, "chat_json", fake_chat_json)
+    monkeypatch.setattr(
+        llm_client,
+        "status",
+        lambda: {
+            "available": True,
+            "base_url": "mock://llm",
+            "model": "mock-model",
+            "last_error": None,
+        },
+    )
+
+    result = ProductRecAgent().run(
+        request=RecommendRequest(
+            user_id="llm-rerank-user",
+            num_items=2,
+            context={"llm_hint": "优先推荐手机配件和办公商品"},
+        ),
+        products=products,
+        limit=2,
+        mode="rerank",
+    )
+
+    assert result.data["mode"] == "llm_rerank"
+    assert result.data["backend"] == "llm+rule_rerank"
+    assert result.data["product_ids"] == expected_order
+    assert result.data["scores"][expected_order[0]]["reason"] == "LLM 重排序第1位"
 
 
 def test_event_endpoint_updates_user_profile():

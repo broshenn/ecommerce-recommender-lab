@@ -523,6 +523,14 @@
               <span>recommendation_hint</span>
               <span class="llm-value">{{ llmProfile.recommendation_hint || "-" }}</span>
             </div>
+            <div class="llm-item">
+              <span>重排模式</span>
+              <span class="llm-value">{{ rerankMode || "-" }}</span>
+            </div>
+            <div class="llm-item">
+              <span>文案模式</span>
+              <span class="llm-value">{{ copyMode || "-" }}</span>
+            </div>
           </div>
           <div v-if="llmClient.last_error">
             最近错误：{{ llmClient.last_error }}
@@ -622,7 +630,9 @@
           loadingText: "生成中",
           llmProfile: {},
           llmClient: {},
-          llmAvailable: false
+          llmAvailable: false,
+          rerankMode: "-",
+          copyMode: "-"
         };
       },
 
@@ -718,8 +728,12 @@
             this.experimentGroup = data.experiment_group || "-";
             this.reason = data.reason;
             const userProfileAgent = data.agent_results?.user_profile?.data || {};
+            const productRerankAgent = data.agent_results?.product_rerank?.data || {};
+            const marketingCopyAgent = data.agent_results?.marketing_copy?.data || {};
             this.llmProfile = userProfileAgent.llm_profile || {};
             this.llmClient = userProfileAgent.llm_client || {};
+            this.rerankMode = productRerankAgent.mode || "-";
+            this.copyMode = marketingCopyAgent.mode || "-";
             this.llmAvailable = Boolean(
               this.llmClient.available &&
               this.llmProfile.recommendation_hint
