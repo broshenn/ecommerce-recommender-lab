@@ -126,3 +126,62 @@ D:\anaconda\envs\py3.10\python.exe -m compileall app tests
 app/orchestrator/supervisor.py
 tests/test_recommender.py
 ```
+
+## Step 10：Redis 在线画像缓存 + 实时行为窗口
+
+### 新增文件
+
+```text
+app/services/feature_store.py
+steps/step-10-redis-feature-store/README.md
+```
+
+### 修改文件
+
+```text
+app/behavior.py
+app/agents/user_profile_agent.py
+app/main.py
+app/services/__init__.py
+requirements.txt
+.env.example
+README.md
+steps/README.md
+tests/test_recommender.py
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. 新增 RedisFeatureStore，对齐原项目 Feature Store 思路。
+2. Redis Sorted Set 保存 behavior:{user_id}:{event_type}，score 为事件时间戳。
+3. Redis profile:{user_id} 缓存 SQLite 聚合后的用户画像。
+4. record_event 写入顺序变成：SQLite 成功 -> 删除 profile cache -> 写 Redis 实时行为窗口。
+5. build_user_profile 读取顺序变成：Redis profile 命中直接返回，miss 后从 SQLite 重建并写回 Redis。
+6. UserProfileAgent 的 AgentResult 增加 feature_store 字段，能看到 Redis 状态和实时窗口特征。
+7. 新增 /api/v1/feature-store/{user_id} 查看在线特征。
+8. Redis 不可用时自动降级，SQLite 和推荐流程仍然可用。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+16 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+
+本机 Redis 启动脚本：
+D:\redis\Redis-8.4.0-Windows-x64-msys2-with-Service\start.bat
+```
+
+### 你应该重点阅读
+
+```text
+app/services/feature_store.py
+app/behavior.py
+app/agents/user_profile_agent.py
+steps/step-10-redis-feature-store/README.md
+```

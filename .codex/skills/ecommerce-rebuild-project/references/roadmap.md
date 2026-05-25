@@ -12,6 +12,7 @@ Step 6: SQLite persistence for current user behavior
 Step 7: Supervisor + 4 Agent skeleton
 Step 8: A/B testing and metrics endpoints
 Step 9: Chroma vector recall with optional Qwen embeddings
+Step 10: Redis online profile cache and real-time behavior windows
 ```
 
 Step notes:
@@ -23,6 +24,7 @@ steps/step-06-sqlite-persistence/README.md
 steps/step-07-supervisor-agent-skeleton/README.md
 steps/step-08-ab-test-metrics/README.md
 steps/step-09-chroma-vector-recall/README.md
+steps/step-10-redis-feature-store/README.md
 ```
 
 ## Architecture Rule
@@ -35,24 +37,22 @@ Supervisor + 4 Agent + Feature Store + Vector Recall + Inventory + Copy + A/B + 
 
 ## Immediate Next Step
 
-Step 10 should add Redis real-time feature windows.
+Step 11 should add LLM marketing copy generation and compliance fallback.
 
 Recommended scope:
 
 ```text
-1. Keep SQLite as durable behavior storage.
-2. Add Redis as online feature/cache layer.
-3. Record recent behavior into Redis sorted sets or lists.
-4. Build 1h / 24h / 7d behavior windows for UserProfileAgent.
-5. Add graceful fallback when Redis is unavailable.
-6. Add /api/v1/feature-store or profile debug endpoint if useful.
-7. Write step note to steps/step-10-redis-feature-store/README.md.
+1. Keep template copy as fallback.
+2. Add LLM generation inside MarketingCopyAgent.
+3. Add simple compliance checks for exaggerated or unsafe claims.
+4. Add timeout/fallback behavior.
+5. Record LLM copy latency and failure metrics.
+6. Write step note to steps/step-11-llm-marketing-copy/README.md.
 ```
 
 ## After Step 10
 
 ```text
-Step 11: add MarketingCopyAgent LLM generation and compliance fallback
 Step 12: add RAG product Q&A or recommendation explanation
 Step 13: add offline evaluation and ML ranking training
 ```

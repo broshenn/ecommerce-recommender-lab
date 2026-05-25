@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from app.catalog import list_products
 from app.database import get_connection, init_db
 from app.models import RecommendRequest, UserEvent, UserEventCreate, UserProfile
+from app.services import feature_store
 
 
 def record_event(event: UserEventCreate) -> UserEvent:
@@ -26,11 +27,18 @@ def record_event(event: UserEventCreate) -> UserEvent:
         )
         event_id = int(cursor.lastrowid)
 
-    return UserEvent(
+    stored_event = UserEvent(
         **event.model_dump(),
         event_id=event_id,
         created_at=created_at,
     )
+    products_by_id = {product.product_id: product for product in list_products()}
+    feature_store.invalidate_profile(stored_event.user_id)
+    feature_store.record_behavior(
+        stored_event,
+        products_by_id.get(stored_event.product_id),
+    )
+    return stored_event
 
 
 def list_user_events(user_id: str) -> list[UserEvent]:
@@ -50,6 +58,16 @@ def list_user_events(user_id: str) -> list[UserEvent]:
 
 
 def build_user_profile(user_id: str) -> UserProfile:
+    cached_profile = feature_store.get_cached_profile(user_id)
+    if cached_profile:
+        return cached_profile
+
+    profile = _build_user_profile_from_sqlite(user_id)
+    feature_store.set_cached_profile(profile)
+    return profile
+
+
+def _build_user_profile_from_sqlite(user_id: str) -> UserProfile:
     events = list_user_events(user_id)
     products_by_id = {product.product_id: product for product in list_products()}
 
@@ -115,6 +133,7 @@ def reset_behavior_events() -> None:
             "DELETE FROM sqlite_sequence WHERE name = ?",
             ("user_events",),
         )
+    feature_store.clear_all()
 
 
 def _row_to_event(row) -> UserEvent:

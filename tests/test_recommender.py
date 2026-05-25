@@ -7,7 +7,7 @@ from app.main import app
 from app.models import RecommendRequest, UserEventCreate
 from app.personalization import score_product
 from app.recommender import recommend_products
-from app.services import ab_test_engine, metrics_collector
+from app.services import ab_test_engine, feature_store, metrics_collector
 from app.services.vector_store import get_product_vector_store
 
 
@@ -16,10 +16,12 @@ def clear_runtime_state(monkeypatch):
     monkeypatch.setenv("PRODUCT_VECTOR_EMBEDDING_PROVIDER", "local")
     get_product_vector_store.cache_clear()
     reset_behavior_events()
+    feature_store.clear_all()
     metrics_collector.reset()
     yield
     metrics_collector.reset()
     reset_behavior_events()
+    feature_store.clear_all()
     get_product_vector_store.cache_clear()
 
 
@@ -175,6 +177,13 @@ def test_event_endpoint_updates_user_profile():
     assert product.category in profile["preferred_categories"]
     assert product.brand in profile["liked_brands"]
 
+    feature_response = client.get("/api/v1/feature-store/behavior-user")
+    assert feature_response.status_code == 200
+    feature_data = feature_response.json()
+    if feature_data["status"]["available"]:
+        assert feature_data["features"]["like_count_24h"] == 1
+        assert product.brand in feature_data["features"]["recent_brands"]
+
 
 def test_events_are_loaded_from_sqlite_storage():
     product = list_products()[0]
@@ -217,6 +226,8 @@ def test_recorded_behavior_affects_recommendation_profile():
     effective_request = response.agent_results["user_profile"].data["effective_request"]
     assert product.category in effective_request["preferred_categories"]
     assert response.agent_results["product_rerank"].data["mode"] == "rerank"
+    feature_status = response.agent_results["user_profile"].data["feature_store"]["status"]
+    assert feature_status["backend"] == "redis"
 
 
 def test_dislike_event_strongly_demotes_product():
@@ -295,3 +306,28 @@ def test_vector_store_endpoint_returns_chroma_status():
     data = response.json()
     assert data["backend"].startswith("chroma:")
     assert data["collection"].startswith("products_")
+
+
+def test_feature_store_profile_cache_is_rebuilt_from_sqlite():
+    product = list_products()[0]
+    record_event(
+        UserEventCreate(
+            user_id="cache-user",
+            product_id=product.product_id,
+            event_type="add_to_cart",
+        )
+    )
+
+    profile = feature_store.get_cached_profile("cache-user")
+    assert profile is None
+
+    client = TestClient(app)
+    profile_response = client.get("/api/v1/users/cache-user/profile")
+    assert profile_response.status_code == 200
+
+    feature_response = client.get("/api/v1/feature-store/cache-user")
+    assert feature_response.status_code == 200
+    data = feature_response.json()
+    if data["status"]["available"]:
+        assert data["cached_profile"]["user_id"] == "cache-user"
+        assert data["features"]["add_to_cart_count_7d"] == 1

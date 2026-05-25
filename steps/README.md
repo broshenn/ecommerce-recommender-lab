@@ -5,7 +5,7 @@
 当前阶段：
 
 ```text
-Step 9: Chroma 向量召回
+Step 10: Redis 在线画像缓存 + 实时行为窗口
 ```
 
 已保存的阶段文档：
@@ -17,6 +17,7 @@ steps/step-06-sqlite-persistence/README.md
 steps/step-07-supervisor-agent-skeleton/README.md
 steps/step-08-ab-test-metrics/README.md
 steps/step-09-chroma-vector-recall/README.md
+steps/step-10-redis-feature-store/README.md
 ```
 
 继续开发时的约定：

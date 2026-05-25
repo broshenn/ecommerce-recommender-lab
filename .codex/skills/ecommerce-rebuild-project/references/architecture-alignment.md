@@ -74,6 +74,7 @@ SupervisorOrchestrator
 UserProfileAgent
 ProductRecAgent
 Chroma vector recall
+Redis feature store
 InventoryAgent
 MarketingCopyAgent
 ABTestEngine
@@ -83,7 +84,6 @@ MetricsCollector
 Current project does not yet have:
 
 ```text
-Redis feature store
 LLM marketing copy generation
 RAG product Q&A / recommendation explanation
 trained ranking model
@@ -96,7 +96,7 @@ Do not jump straight to ML training or RAG before the vector recall path is stab
 The next priority is:
 
 ```text
-Step 10: Redis real-time feature windows
+Step 11: LLM marketing copy generation and compliance fallback
 ```
 
-SQLite already covers durable behavior storage. Redis should now be added as the online feature/cache layer.
+Redis now serves as online profile cache and real-time behavior windows. SQLite remains the durable source of truth.

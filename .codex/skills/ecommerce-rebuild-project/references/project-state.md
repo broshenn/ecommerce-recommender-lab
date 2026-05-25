@@ -21,14 +21,14 @@ D:\anaconda\envs\py3.10\python.exe -m pytest -q
 Current step:
 
 ```text
-Step 9: Chroma vector recall
+Step 10: Redis feature store
 ```
 
 Architecture alignment:
 
 ```text
-Current project has Supervisor + AgentResult + 4 non-LLM Agents + Chroma vector recall + ABTestEngine + MetricsCollector.
-Next step should add Redis real-time feature windows.
+Current project has Supervisor + AgentResult + 4 non-LLM Agents + Chroma vector recall + Redis Feature Store + ABTestEngine + MetricsCollector.
+Next step should add LLM marketing copy generation and compliance fallback.
 ```
 
 Important files:
@@ -41,6 +41,7 @@ app/behavior.py                  current-user event store and profile builder
 app/agents/                      BaseAgent and four concrete agents
 app/orchestrator/supervisor.py   Supervisor orchestration
 app/services/vector_store.py     Chroma vector recall and Qwen/local embedding
+app/services/feature_store.py    Redis online profile cache and real-time behavior windows
 app/services/ab_test.py          stable user_id experiment bucketing
 app/services/metrics.py          in-memory agent and business metrics
 app/inventory.py                 stock status and purchase limit rules
@@ -81,6 +82,17 @@ GET /api/v1/experiments
 GET /api/v1/experiments?user_id=u001
 GET /api/v1/metrics
 GET /api/v1/vector-store
+GET /api/v1/feature-store/{user_id}
+```
+
+Redis keys:
+
+```text
+profile:{user_id}
+behavior:{user_id}:view
+behavior:{user_id}:like
+behavior:{user_id}:dislike
+behavior:{user_id}:add_to_cart
 ```
 
 Runtime database:

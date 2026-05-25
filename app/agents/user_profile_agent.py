@@ -4,6 +4,7 @@ from typing import Any
 
 from app.behavior import build_user_profile, merge_behavior_profile
 from app.models import AgentResult, RecommendRequest
+from app.services import feature_store
 
 from app.agents.base_agent import BaseAgent
 
@@ -18,6 +19,7 @@ class UserProfileAgent(BaseAgent):
         request: RecommendRequest = kwargs["request"]
         behavior_profile = build_user_profile(request.user_id)
         effective_request = merge_behavior_profile(request)
+        online_features = feature_store.get_user_features(request.user_id)
 
         return AgentResult(
             agent_name=self.name,
@@ -25,6 +27,10 @@ class UserProfileAgent(BaseAgent):
             data={
                 "profile": behavior_profile.model_dump(mode="json"),
                 "effective_request": effective_request.model_dump(mode="json"),
+                "feature_store": {
+                    "status": feature_store.status(),
+                    "online_features": online_features,
+                },
             },
             confidence=0.9,
         )
