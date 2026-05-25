@@ -11,9 +11,10 @@ description: Continue the local step-by-step ecommerce recommendation rebuild pr
 2. Keep the root project as the latest runnable version.
 3. After each feature step passes tests, write a step note under `steps/step-XX-feature-name/README.md`.
 4. Do not copy full code into `steps/`; code history belongs in Git commits.
-5. Update `README.md` with the current step, learning focus, run command, and test command.
-6. Run `D:\anaconda\envs\py3.10\python.exe -m pytest -q` before claiming a step is done.
-7. Restart the local service on port `8010` after code changes when the user wants to run it.
+5. Append a code update record to `CODE_UPDATES.md`, including new files, modified files, core changes, validation, and recommended reading order.
+6. Update `README.md` with the current step, learning focus, run command, and test command.
+7. Run `D:\anaconda\envs\py3.10\python.exe -m pytest -q` before claiming a step is done.
+8. Restart the local service on port `8010` after code changes when the user wants to run it.
 
 ## Current State
 
@@ -27,6 +28,7 @@ Important current capabilities:
 - The current dataset has 1000 Amazon Reviews 2023 product metadata rows.
 - Recommendation flow is: FastAPI -> Supervisor -> UserProfileAgent + ProductRecAgent vector recall -> ProductRecAgent rule rerank + InventoryAgent -> MarketingCopyAgent -> ABTestEngine -> MetricsCollector -> response.
 - Step notes are README-only docs under `steps/`.
+- Code change explanations are recorded in `CODE_UPDATES.md`.
 
 ## Data Rules
 

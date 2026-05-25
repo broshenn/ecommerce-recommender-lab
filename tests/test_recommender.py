@@ -214,7 +214,9 @@ def test_recorded_behavior_affects_recommendation_profile():
     )
 
     assert response.strategy.startswith("supervisor_agents")
-    assert response.products[0].category == product.category
+    effective_request = response.agent_results["user_profile"].data["effective_request"]
+    assert product.category in effective_request["preferred_categories"]
+    assert response.agent_results["product_rerank"].data["mode"] == "rerank"
 
 
 def test_dislike_event_strongly_demotes_product():

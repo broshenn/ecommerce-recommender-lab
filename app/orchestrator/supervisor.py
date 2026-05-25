@@ -57,7 +57,7 @@ class SupervisorOrchestrator:
             self.product_rec_agent.run,
             request=request,
             products=all_products,
-            limit=max(request.num_items * 20, 50),
+            limit=min(len(all_products), max(request.num_items * 50, 200)),
             mode="recall",
         )
 
@@ -72,11 +72,6 @@ class SupervisorOrchestrator:
         )
         if not recalled_products:
             recalled_products = all_products
-        recalled_products = self._expand_candidates_with_profile(
-            recalled_products,
-            all_products,
-            effective_request,
-        )
 
         # Phase 2: rerank candidates while checking inventory on the same pool.
         rerank_future = self.executor.submit(
@@ -197,31 +192,6 @@ class SupervisorOrchestrator:
             for product_id in product_ids
             if product_id in products_by_id
         ]
-
-    def _expand_candidates_with_profile(
-        self,
-        recalled_products: list[Product],
-        all_products: list[Product],
-        request: RecommendRequest,
-    ) -> list[Product]:
-        existing_ids = {product.product_id for product in recalled_products}
-        expanded = list(recalled_products)
-        for product in all_products:
-            if product.product_id in existing_ids:
-                continue
-            if self._matches_profile(product, request):
-                expanded.append(product)
-                existing_ids.add(product.product_id)
-        return expanded
-
-    def _matches_profile(self, product: Product, request: RecommendRequest) -> bool:
-        if request.preferred_categories and product.category in request.preferred_categories:
-            return True
-        if request.liked_brands and product.brand in request.liked_brands:
-            return True
-        if request.preferred_tags and set(product.tags) & set(request.preferred_tags):
-            return True
-        return False
 
     def _record_agent_metrics(self, agent_results: dict[str, AgentResult]) -> None:
         for metric_key, result in agent_results.items():

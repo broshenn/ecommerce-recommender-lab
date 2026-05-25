@@ -62,6 +62,7 @@ app/services/ab_test.py            A/B 测试稳定分桶
 app/services/metrics.py            内存指标统计
 app/static/index.html              Vue 3 前端页面
 tests/test_recommender.py          回归测试
+CODE_UPDATES.md                    每个阶段的代码改动记录
 ```
 
 ## 千问 API 配置
