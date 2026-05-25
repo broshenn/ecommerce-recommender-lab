@@ -67,6 +67,7 @@ class MarketingCopyAgent(BaseAgent):
         products: list[Product] = kwargs.get("products", [])
         profile: UserProfile | None = kwargs.get("profile")
         llm_profile: dict[str, Any] = kwargs.get("llm_profile", {})
+        experiment_group: str = kwargs.get("experiment_group", "")
 
         if not products:
             return AgentResult(
@@ -74,6 +75,27 @@ class MarketingCopyAgent(BaseAgent):
                 success=True,
                 data={"copies": [], "template": "empty", "copy_count": 0, "mode": "empty"},
                 confidence=1.0,
+            )
+
+        if experiment_group == "control":
+            copies = [
+                MarketingCopy(
+                    product_id=product.product_id,
+                    text=self._copy_for_product(product, profile),
+                )
+                for product in products
+            ]
+            return AgentResult(
+                agent_name=self.name,
+                success=True,
+                data={
+                    "copies": [copy.model_dump(mode="json") for copy in copies],
+                    "template": "control_rule",
+                    "copy_count": len(copies),
+                    "mode": "control_rule",
+                    "llm_client": llm_client.status(),
+                },
+                confidence=0.85,
             )
 
         llm_copies = self._generate_via_llm(products, profile, llm_profile)

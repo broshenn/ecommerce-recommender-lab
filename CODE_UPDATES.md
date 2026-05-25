@@ -332,6 +332,8 @@ CODE_UPDATES.md
 6. LLM 不可用、返回格式异常或 ID 无效时自动回退原 score_product 规则排序。
 7. 前端 LLM 面板新增“重排模式”和“文案模式”。
 8. /health 升级为 step=12b，版本升级到 0.12.1。
+9. LLM 重排只把前 10-12 个候选传给模型，避免 200 个候选导致请求超时；成功调用后会清空 llm_client.last_error。
+10. llm_client.chat() 在 DeepSeek v4 的 content 为空时，会读取 reasoning_content；ProductRecAgent 可从非 JSON 文本里抽取有效商品 ID。
 ```
 
 ### 运行和验证
@@ -351,4 +353,55 @@ app/agents/product_rec_agent.py
 app/personalization.py
 tests/test_recommender.py
 steps/step-12b-llm-rerank/README.md
+```
+
+## Step 13a: A/B 实验驱动策略开关
+
+### 新增文件
+
+```text
+steps/step-13a-ab-experiment-gating/README.md
+```
+
+### 修改文件
+
+```text
+app/services/ab_test.py
+app/orchestrator/supervisor.py
+app/agents/user_profile_agent.py
+app/agents/marketing_copy_agent.py
+app/main.py
+tests/test_recommender.py
+steps/README.md
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. A/B 实验配置从占位 strategy 改成真实策略：control=rule，treatment=llm。
+2. Supervisor 会把 experiment.group 传给 UserProfileAgent 和 MarketingCopyAgent。
+3. control 组 UserProfileAgent 不调用 LLM，直接返回规则画像占位结果。
+4. control 组不会写入 effective_request.context.llm_hint，因此 ProductRecAgent 自动走规则重排。
+5. treatment 组保留 LLM 画像 -> llm_hint -> LLM 重排 -> LLM 文案链路。
+6. control 组 MarketingCopyAgent 直接走规则模板文案，返回 mode=control_rule。
+7. /health 升级为 step=13a，版本升级到 0.13.0。
+8. 新增 control/treatment 回归测试，确保 control 不会偷偷调用 LLM。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+19 passed
+```
+
+### 你应该重点阅读
+
+```text
+app/services/ab_test.py
+app/orchestrator/supervisor.py
+app/agents/user_profile_agent.py
+app/agents/marketing_copy_agent.py
+steps/step-13a-ab-experiment-gating/README.md
 ```

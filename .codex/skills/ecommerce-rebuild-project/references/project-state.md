@@ -68,6 +68,16 @@ marketing_copies
 agent_results
 ```
 
+Current experiment behavior:
+
+```text
+Step 13a is the latest root version.
+control   -> rule profile + rule rerank + rule copy
+treatment -> LLM profile + LLM rerank + LLM copy, with rule fallback
+ab-user-1 -> stable control sample user
+ab-user-2 -> stable treatment sample user
+```
+
 Behavior APIs:
 
 ```text

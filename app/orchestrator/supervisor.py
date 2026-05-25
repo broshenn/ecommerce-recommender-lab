@@ -52,6 +52,7 @@ class SupervisorOrchestrator:
         profile_future = self.executor.submit(
             self.user_profile_agent.run,
             request=request,
+            experiment_group=experiment.group,
         )
         recall_future = self.executor.submit(
             self.product_rec_agent.run,
@@ -67,7 +68,7 @@ class SupervisorOrchestrator:
         effective_request = self._effective_request(profile_result, request)
         profile = self._profile(profile_result, request.user_id)
         llm_profile = profile_result.data.get("llm_profile", {})
-        if llm_profile.get("recommendation_hint"):
+        if experiment.group != "control" and llm_profile.get("recommendation_hint"):
             effective_request.context["llm_hint"] = llm_profile["recommendation_hint"]
             profile_result.data["effective_request"] = effective_request.model_dump(mode="json")
         recalled_products = self._products_from_ids(
@@ -129,6 +130,7 @@ class SupervisorOrchestrator:
             products=final_products,
             profile=profile,
             llm_profile=profile_result.data.get("llm_profile", {}),
+            experiment_group=experiment.group,
         )
         marketing_copies = [
             MarketingCopy.model_validate(copy)

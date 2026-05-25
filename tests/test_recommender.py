@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -50,7 +52,7 @@ def test_recommend_prefers_selected_categories():
     assert response.agent_results["product_recall"].data["mode"] == "recall"
     assert response.agent_results["product_recall"].data["backend"].startswith("chroma:")
     assert "product_rerank" in response.agent_results
-    assert response.agent_results["marketing_copy"].data["mode"] == "rule_fallback"
+    assert response.agent_results["marketing_copy"].data["mode"] == "control_rule"
 
 
 def test_products_endpoint_returns_catalog():
@@ -166,10 +168,10 @@ def test_product_rerank_can_use_llm_hint(monkeypatch):
     products = list_products()[:4]
     expected_order = [products[2].product_id, products[0].product_id]
 
-    def fake_chat_json(**kwargs):
-        return [products[2].product_id, "missing-product", products[0].product_id]
+    def fake_chat(**kwargs):
+        return f'["{products[2].product_id}", "missing-product", "{products[0].product_id}"]'
 
-    monkeypatch.setattr(llm_client, "chat_json", fake_chat_json)
+    monkeypatch.setattr(llm_client, "chat", fake_chat)
     monkeypatch.setattr(
         llm_client,
         "status",
@@ -305,6 +307,7 @@ def test_ab_assignment_is_stable_for_same_user():
     assert first.group == second.group
     assert first.experiment_id == "recommendation_strategy_v1"
     assert first.group in {"control", "treatment"}
+    assert first.config["strategy"] in {"rule", "llm"}
 
 
 def test_experiments_endpoint_returns_assignment():
@@ -315,6 +318,79 @@ def test_experiments_endpoint_returns_assignment():
     data = response.json()
     assert data["default_experiment_id"] == "recommendation_strategy_v1"
     assert data["assignment"]["group"] in {"control", "treatment"}
+
+
+def test_control_group_uses_rule_pipeline(monkeypatch):
+    def fail_if_llm_called(**kwargs):
+        raise AssertionError("control group must not call LLM")
+
+    monkeypatch.setattr(llm_client, "chat", fail_if_llm_called)
+    monkeypatch.setattr(llm_client, "chat_json", fail_if_llm_called)
+
+    response = recommend_products(
+        RecommendRequest(
+            user_id="ab-user-1",
+            num_items=2,
+            preferred_categories=[list_products()[0].category],
+        )
+    )
+
+    assert response.experiment_group == "control"
+    assert response.experiment.config["strategy"] == "rule"
+    assert response.agent_results["user_profile"].data["llm_profile"]["recommendation_hint"] == ""
+    assert response.agent_results["product_rerank"].data["mode"] == "rerank"
+    assert response.agent_results["marketing_copy"].data["mode"] == "control_rule"
+
+
+def test_treatment_group_can_use_llm_pipeline(monkeypatch):
+    products = list_products()
+    first_id = products[1].product_id
+    second_id = products[0].product_id
+
+    def fake_chat_json(**kwargs):
+        user_message = kwargs.get("user_message", "")
+        product_ids = re.findall(r"[A-Z0-9]{10}", user_message)
+        if product_ids:
+            return [
+                {"product_id": product_id, "copy": f"LLM copy {index + 1}"}
+                for index, product_id in enumerate(product_ids[:2])
+            ]
+        return {
+            "segments": ["active"],
+            "intent_summary": "Looking for practical accessories",
+            "recommendation_hint": "Prefer practical accessories with good ratings.",
+            "price_sensitivity": "medium",
+            "rfm_interpretation": "Active user",
+        }
+
+    def fake_chat(**kwargs):
+        return f'["{first_id}", "{second_id}"]'
+
+    monkeypatch.setattr(llm_client, "chat_json", fake_chat_json)
+    monkeypatch.setattr(llm_client, "chat", fake_chat)
+    monkeypatch.setattr(
+        llm_client,
+        "status",
+        lambda: {
+            "available": True,
+            "base_url": "mock://llm",
+            "model": "mock-model",
+            "last_error": None,
+        },
+    )
+
+    response = recommend_products(
+        RecommendRequest(
+            user_id="ab-user-2",
+            num_items=2,
+        )
+    )
+
+    assert response.experiment_group == "treatment"
+    assert response.experiment.config["strategy"] == "llm"
+    assert response.agent_results["user_profile"].data["effective_request"]["context"]["llm_hint"]
+    assert response.agent_results["product_rerank"].data["mode"] == "llm_rerank"
+    assert response.agent_results["marketing_copy"].data["mode"] == "llm"
 
 
 def test_metrics_endpoint_records_agent_calls():

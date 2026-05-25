@@ -32,20 +32,20 @@ class UserProfileAgent(BaseAgent):
 
     def _execute(self, **kwargs: Any) -> AgentResult:
         request: RecommendRequest = kwargs["request"]
+        experiment_group: str = kwargs.get("experiment_group", "")
         behavior_profile = build_user_profile(request.user_id)
         effective_request = merge_behavior_profile(request)
         online_features = feature_store.get_user_features(request.user_id)
-        llm_profile = llm_client.chat_json(
-            system_prompt=SYSTEM_PROMPT,
-            user_message=self._build_llm_message(behavior_profile, online_features),
-            default={
-                "segments": [],
+        if experiment_group == "control":
+            llm_profile: dict[str, Any] = {
+                "segments": ["active"],
                 "intent_summary": "LLM不可用，默认画像",
                 "recommendation_hint": "",
                 "price_sensitivity": "medium",
                 "rfm_interpretation": "",
-            },
-        )
+            }
+        else:
+            llm_profile = self._build_llm_profile(behavior_profile, online_features)
 
         return AgentResult(
             agent_name=self.name,
@@ -62,6 +62,32 @@ class UserProfileAgent(BaseAgent):
             },
             confidence=0.9 if llm_profile.get("recommendation_hint") else 0.7,
         )
+
+    def _build_llm_profile(
+        self,
+        behavior_profile: UserProfile,
+        online_features: dict[str, Any],
+    ) -> dict[str, Any]:
+        llm_profile = llm_client.chat_json(
+            system_prompt=SYSTEM_PROMPT,
+            user_message=self._build_llm_message(behavior_profile, online_features),
+            default={
+                "segments": [],
+                "intent_summary": "LLM不可用，默认画像",
+                "recommendation_hint": "",
+                "price_sensitivity": "medium",
+                "rfm_interpretation": "",
+            },
+        )
+        if isinstance(llm_profile, dict):
+            return llm_profile
+        return {
+            "segments": [],
+            "intent_summary": "LLM unavailable, fallback profile",
+            "recommendation_hint": "",
+            "price_sensitivity": "medium",
+            "rfm_interpretation": "",
+        }
 
     def _build_llm_message(
         self,

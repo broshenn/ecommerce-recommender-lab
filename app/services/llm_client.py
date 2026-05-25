@@ -18,7 +18,7 @@ class LLMClient:
         self.api_key, self.base_url, self.model = self._load_config()
         self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1024"))
         self.temperature = float(os.getenv("LLM_TEMPERATURE", "0.3"))
-        self.timeout_seconds = float(os.getenv("LLM_TIMEOUT_SECONDS", "8"))
+        self.timeout_seconds = float(os.getenv("LLM_TIMEOUT_SECONDS", "15"))
         self._client = None
         self._last_error: str | None = None
 
@@ -75,7 +75,9 @@ class LLMClient:
                 temperature=self.temperature if temperature is None else temperature,
                 max_tokens=max_tokens or self.max_tokens,
             )
-            content = response.choices[0].message.content
+            message = response.choices[0].message
+            content = message.content or getattr(message, "reasoning_content", None)
+            self._last_error = None
             return content.strip() if content else None
         except Exception as exc:
             self._last_error = str(exc)

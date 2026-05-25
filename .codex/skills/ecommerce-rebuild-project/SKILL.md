@@ -24,10 +24,10 @@ Read `references/architecture-alignment.md` before choosing any next feature.
 
 Important current capabilities:
 
-- Step 11 is the latest root version.
+- Step 13a is the latest root version.
 - Product data comes from `data/products_amazon_sample.csv`.
 - The current dataset has 1000 Amazon Reviews 2023 product metadata rows.
-- Recommendation flow is: FastAPI -> Supervisor -> UserProfileAgent with Redis Feature Store and LLM profile analysis + ProductRecAgent vector recall -> ProductRecAgent rule rerank + InventoryAgent -> MarketingCopyAgent -> ABTestEngine -> MetricsCollector -> response.
+- Recommendation flow is: FastAPI -> Supervisor -> ABTestEngine assignment -> UserProfileAgent with Redis Feature Store and optional LLM profile analysis + ProductRecAgent vector recall -> ProductRecAgent rule/LLM rerank + InventoryAgent -> MarketingCopyAgent rule/LLM copy -> MetricsCollector -> response.
 - Step notes are README-only docs under `steps/`.
 - Code change explanations are recorded in `CODE_UPDATES.md`.
 
@@ -45,7 +45,7 @@ Read `references/roadmap.md` before deciding the next step.
 
 Preferred next step:
 
-- Step 12: add LLM rerank and LLM marketing copy generation with rule fallback.
+- Step 13b or Step 14: add experiment metric comparison, conversion event tracking, or RAG product explanation after the A/B gating path is stable.
 
 Deferred:
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from typing import Any
 
 from app.models import AgentResult, Product, RecommendRequest
@@ -28,7 +30,7 @@ class ProductRecAgent(BaseAgent):
     """Recall products with vectors and rerank with LLM-backed rule fallback."""
 
     def __init__(self):
-        super().__init__(name="product_rec", timeout=10.0)
+        super().__init__(name="product_rec", timeout=18.0)
 
     def _execute(self, **kwargs: Any) -> AgentResult:
         request: RecommendRequest = kwargs["request"]
@@ -124,15 +126,16 @@ class ProductRecAgent(BaseAgent):
         limit: int,
         backend: str,
     ) -> AgentResult | None:
-        result = llm_client.chat_json(
+        llm_candidates = self._llm_candidate_products(products, limit)
+        text = llm_client.chat(
             system_prompt=RERANK_PROMPT,
-            user_message=self._build_llm_rerank_message(request, products, limit),
-            default=None,
+            user_message=self._build_llm_rerank_message(request, llm_candidates, limit),
+            max_tokens=512,
         )
-        if not isinstance(result, list) or not result:
+        if not text:
             return None
 
-        selected_ids = self._normalize_llm_product_ids(result, products, limit)
+        selected_ids = self._normalize_llm_product_ids(text, products, limit)
         if not selected_ids:
             return None
 
@@ -149,6 +152,7 @@ class ProductRecAgent(BaseAgent):
                     for index, product_id in enumerate(selected_ids)
                 },
                 "candidate_count": len(products),
+                "llm_candidate_count": len(llm_candidates),
                 "returned_count": len(selected_ids),
                 "mode": "llm_rerank",
                 "backend": f"llm+{backend}",
@@ -192,13 +196,17 @@ class ProductRecAgent(BaseAgent):
             ]
         )
 
+    def _llm_candidate_products(self, products: list[Product], limit: int) -> list[Product]:
+        return products[: min(len(products), max(limit * 2, 10))]
+
     def _normalize_llm_product_ids(
         self,
-        raw_ids: list[Any],
+        raw_output: str,
         products: list[Product],
         limit: int,
     ) -> list[str]:
         product_ids = {product.product_id for product in products}
+        raw_ids = self._extract_product_ids(raw_output, product_ids)
         selected: list[str] = []
         seen: set[str] = set()
 
@@ -218,3 +226,18 @@ class ProductRecAgent(BaseAgent):
                     break
 
         return selected
+
+    def _extract_product_ids(self, raw_output: str, valid_ids: set[str]) -> list[str]:
+        try:
+            parsed = json.loads(raw_output)
+        except json.JSONDecodeError:
+            parsed = None
+
+        if isinstance(parsed, list):
+            return [str(item).strip() for item in parsed]
+
+        ordered_ids: list[str] = []
+        for product_id in re.findall(r"[A-Z0-9]{10}", raw_output):
+            if product_id in valid_ids and product_id not in ordered_ids:
+                ordered_ids.append(product_id)
+        return ordered_ids

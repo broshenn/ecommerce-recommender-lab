@@ -5,7 +5,7 @@
 当前阶段：
 
 ```text
-Step 12b: LLM 商品重排 Agent
+Step 13a: A/B 实验驱动策略开关
 ```
 
 已保存的阶段文档：
@@ -21,6 +21,7 @@ steps/step-10-redis-feature-store/README.md
 steps/step-11-llm-user-profile/README.md
 steps/step-12a-llm-marketing-copy/README.md
 steps/step-12b-llm-rerank/README.md
+steps/step-13a-ab-experiment-gating/README.md
 ```
 
 继续开发时的约定：

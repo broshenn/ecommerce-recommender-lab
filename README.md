@@ -112,7 +112,7 @@ LLM_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1
 LLM_MODEL=qwen-plus
 LLM_MAX_TOKENS=1024
 LLM_TEMPERATURE=0.3
-LLM_TIMEOUT_SECONDS=8
+LLM_TIMEOUT_SECONDS=15
 ```
 
 也可以使用兼容变量：
@@ -234,3 +234,17 @@ POST /api/v1/events
 ## 下一步
 
 下一步建议做 Step 11：LLM 营销文案 Agent。把当前模板文案升级成“LLM 生成 + 合规兜底”。
+# 当前阶段：Step 13a A/B 实验驱动策略开关
+
+当前版本已经把 A/B 分桶接入真实推荐链路：
+
+```text
+control   -> 纯规则链路：规则画像 + 规则重排 + 规则文案
+treatment -> LLM 增强链路：LLM画像 + LLM重排 + LLM文案
+```
+
+对应学习文档：
+
+```text
+steps/step-13a-ab-experiment-gating/README.md
+```

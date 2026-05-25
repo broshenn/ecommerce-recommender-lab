@@ -14,20 +14,30 @@ class ABTestEngine:
     def __init__(self):
         self.experiments: dict[str, dict[str, Any]] = {
             self.DEFAULT_EXPERIMENT_ID: {
-                "name": "推荐策略实验 v1",
-                "description": "先完成稳定分桶，后续接入向量召回、LLM 重排等策略对比。",
+                "name": "Recommendation strategy experiment v1",
+                "description": "Compare a pure rule pipeline with an LLM-enhanced pipeline.",
                 "variants": [
                     {
                         "group": "control",
                         "traffic_percent": 50,
-                        "description": "当前规则排序策略",
-                        "config": {"strategy": "rule_ranking"},
+                        "description": "Rule pipeline: rule profile, rule rerank, rule copy",
+                        "config": {
+                            "strategy": "rule",
+                            "profile": "rule",
+                            "rerank": "rule",
+                            "copy": "rule",
+                        },
                     },
                     {
                         "group": "treatment",
                         "traffic_percent": 50,
-                        "description": "预留增强推荐策略入口",
-                        "config": {"strategy": "rule_ranking_plus"},
+                        "description": "LLM pipeline: LLM profile, LLM rerank, LLM copy",
+                        "config": {
+                            "strategy": "llm",
+                            "profile": "llm",
+                            "rerank": "llm",
+                            "copy": "llm",
+                        },
                     },
                 ],
             }
@@ -56,12 +66,15 @@ class ABTestEngine:
         return ExperimentAssignment(
             experiment_id=experiment_id,
             group=selected["group"],
-            reason=f"user_id 稳定哈希分桶，bucket={bucket / 100:.2f}",
+            reason=f"stable user_id hash bucket={bucket / 100:.2f}",
             config=selected.get("config", {}),
         )
 
     def list_experiments(self) -> dict[str, Any]:
-        return {"default_experiment_id": self.DEFAULT_EXPERIMENT_ID, "experiments": self.experiments}
+        return {
+            "default_experiment_id": self.DEFAULT_EXPERIMENT_ID,
+            "experiments": self.experiments,
+        }
 
     def _bucket(self, user_id: str, experiment_id: str) -> int:
         key = f"{experiment_id}:{user_id}".encode("utf-8")
