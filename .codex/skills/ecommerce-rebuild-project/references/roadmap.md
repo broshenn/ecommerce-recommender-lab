@@ -13,6 +13,7 @@ Step 7: Supervisor + 4 Agent skeleton
 Step 8: A/B testing and metrics endpoints
 Step 9: Chroma vector recall with optional Qwen embeddings
 Step 10: Redis online profile cache and real-time behavior windows
+Step 11: LLM Client and UserProfileAgent profile analysis
 ```
 
 Step notes:
@@ -25,6 +26,7 @@ steps/step-07-supervisor-agent-skeleton/README.md
 steps/step-08-ab-test-metrics/README.md
 steps/step-09-chroma-vector-recall/README.md
 steps/step-10-redis-feature-store/README.md
+steps/step-11-llm-user-profile/README.md
 ```
 
 ## Architecture Rule
@@ -37,24 +39,24 @@ Supervisor + 4 Agent + Feature Store + Vector Recall + Inventory + Copy + A/B + 
 
 ## Immediate Next Step
 
-Step 11 should add LLM marketing copy generation and compliance fallback.
+Step 12 should add LLM rerank and LLM marketing copy generation.
 
 Recommended scope:
 
 ```text
-1. Keep template copy as fallback.
-2. Add LLM generation inside MarketingCopyAgent.
-3. Add simple compliance checks for exaggerated or unsafe claims.
-4. Add timeout/fallback behavior.
+1. Let ProductRecAgent rerank consume effective_request.context.llm_hint.
+2. Keep rule scoring as fallback when LLM is unavailable.
+3. Add LLM generation inside MarketingCopyAgent.
+4. Add simple compliance checks for exaggerated or unsafe claims.
 5. Record LLM copy latency and failure metrics.
-6. Write step note to steps/step-11-llm-marketing-copy/README.md.
+6. Write step note to steps/step-12-llm-rerank-copy/README.md.
 ```
 
-## After Step 10
+## After Step 11
 
 ```text
-Step 12: add RAG product Q&A or recommendation explanation
-Step 13: add offline evaluation and ML ranking training
+Step 13: add RAG product Q&A or recommendation explanation
+Step 14: add offline evaluation and ML ranking training
 ```
 
 ## Deferred ML Ranking Training

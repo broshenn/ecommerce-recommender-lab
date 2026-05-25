@@ -185,3 +185,118 @@ app/behavior.py
 app/agents/user_profile_agent.py
 steps/step-10-redis-feature-store/README.md
 ```
+
+## Step 11: LLM 用户画像 Agent
+
+### 新增文件
+
+```text
+app/services/llm_client.py
+steps/step-11-llm-user-profile/README.md
+```
+
+### 修改文件
+
+```text
+.env.example
+README.md
+app/agents/user_profile_agent.py
+app/main.py
+app/orchestrator/supervisor.py
+app/services/__init__.py
+requirements.txt
+steps/README.md
+tests/test_recommender.py
+.codex/skills/ecommerce-rebuild-project/SKILL.md
+.codex/skills/ecommerce-rebuild-project/references/project-state.md
+.codex/skills/ecommerce-rebuild-project/references/roadmap.md
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. 新增 LLMClient，统一封装 OpenAI-compatible Chat API。
+2. LLM 配置支持 LLM_*、DEEPSEEK_*、QWEN/DASHSCOPE_* 三类变量，并会跳过占位符 key，避免 DeepSeek 占位符挡住千问配置。
+3. UserProfileAgent 在原有 profile/effective_request/feature_store 基础上新增 llm_profile。
+4. llm_profile 根据 SQLite 长期画像 + Redis 实时行为窗口生成用户分群、意图摘要、推荐提示和价格敏感度。
+5. LLM 不可用时返回默认画像，推荐流程继续走规则 fallback。
+6. Supervisor 会把 llm_profile.recommendation_hint 写入 effective_request.context["llm_hint"]，给后续重排和文案 Agent 使用。
+7. /health 升级到 step=11，版本升级到 0.11.0。
+8. LLM Client 默认超时为 8 秒，并关闭 SDK 自动重试；UserProfileAgent 超时调整为 10 秒，避免 LLM 正常响应被 Supervisor 提前 fallback。
+9. Supervisor 会把带有 llm_hint 的 effective_request 同步回 agent_results，便于前端和调试接口直接观察。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+16 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+```
+
+### 你应该重点阅读
+
+```text
+app/services/llm_client.py
+app/agents/user_profile_agent.py
+app/orchestrator/supervisor.py
+steps/step-11-llm-user-profile/README.md
+```
+
+## Step 12a: LLM 营销文案 Agent
+
+### 新增文件
+
+```text
+steps/step-12a-llm-marketing-copy/README.md
+```
+
+### 修改文件
+
+```text
+app/agents/marketing_copy_agent.py
+app/orchestrator/supervisor.py
+app/services/llm_client.py
+app/main.py
+app/static/index.html
+tests/test_recommender.py
+README.md
+steps/README.md
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. MarketingCopyAgent 从固定模板改为 LLM 优先、规则 fallback。
+2. 文案 Prompt 根据 llm_profile.segments 选择不同分群模板。
+3. LLM 输入包含用户分群、意图摘要、recommendation_hint、价格敏感度和商品属性。
+4. LLM 输出统一转换为 MarketingCopy 模型需要的 product_id + text。
+5. 增加广告法敏感词过滤，命中后替换为 ***。
+6. Supervisor 调用 MarketingCopyAgent 时传入 UserProfileAgent 产出的 llm_profile。
+7. 前端商品卡片展示 marketing_copies 文案。
+8. /health 升级为 step=12a，版本升级到 0.12.0。
+9. llm_client.chat_json 支持 JSON 数组返回，方便文案批量生成。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+16 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+```
+
+### 你应该重点阅读
+
+```text
+app/agents/marketing_copy_agent.py
+app/orchestrator/supervisor.py
+app/static/index.html
+steps/step-12a-llm-marketing-copy/README.md
+```

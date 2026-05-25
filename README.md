@@ -2,7 +2,7 @@
 
 这是一个从 0 开始、按步骤重构的电商推荐学习项目。目标不是一次性做完所有能力，而是每次只加一个核心功能，让你能看懂推荐系统如何从“规则推荐”逐步长成“多 Agent 推荐系统”。
 
-## 当前阶段：Step 10 Redis 在线画像缓存 + 实时行为窗口
+## 当前阶段：Step 12a LLM 营销文案 Agent
 
 当前已经实现：
 
@@ -19,6 +19,11 @@
 - Redis 在线画像缓存：`profile:{user_id}`
 - Redis 实时行为窗口：`behavior:{user_id}:{event_type}`
 - SQLite 写入成功后删除 Redis 画像缓存，下一次读取再重建
+- OpenAI-compatible LLM Client，支持 DeepSeek / 千问配置
+- UserProfileAgent 使用 LLM 分析 SQLite 长期画像和 Redis 实时行为，输出 `llm_profile`
+- Supervisor 会把 `llm_profile.recommendation_hint` 透传到 `effective_request.context.llm_hint`
+- MarketingCopyAgent 使用 `llm_profile.segments` 选择 Prompt 模板，生成个性化营销文案
+- LLM 文案带规则 fallback 和广告法敏感词过滤
 - 规则重排、库存过滤、低库存提示、限购提示
 - A/B 测试稳定分桶
 - Metrics 指标统计
@@ -57,7 +62,7 @@ app/agents/base_agent.py           Agent 统一计时、错误捕获、降级
 app/agents/user_profile_agent.py   用户画像 Agent
 app/agents/product_rec_agent.py    商品向量召回 / 规则重排 Agent
 app/agents/inventory_agent.py      库存决策 Agent
-app/agents/marketing_copy_agent.py 营销文案 Agent
+app/agents/marketing_copy_agent.py LLM 营销文案 Agent + 规则 fallback
 app/orchestrator/supervisor.py     Supervisor 编排器
 app/services/vector_store.py       Chroma + 千问 embedding / 本地 embedding
 app/services/feature_store.py      Redis 在线画像缓存和实时行为窗口
@@ -68,7 +73,7 @@ tests/test_recommender.py          回归测试
 CODE_UPDATES.md                    每个阶段的代码改动记录
 ```
 
-## 千问 API 配置
+## 千问和 LLM API 配置
 
 当前项目根目录已经有 `.env` 模板：
 
@@ -97,6 +102,31 @@ PRODUCT_VECTOR_EMBEDDING_PROVIDER=local
 ```
 
 `.env` 不会提交到 GitHub，提交用的是 `.env.example`。
+
+LLM 用户画像使用 OpenAI-compatible Chat API。可以使用通用配置：
+
+```env
+LLM_API_KEY=你的真实Key
+LLM_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+LLM_MAX_TOKENS=1024
+LLM_TEMPERATURE=0.3
+LLM_TIMEOUT_SECONDS=8
+```
+
+也可以使用兼容变量：
+
+```env
+DEEPSEEK_API_KEY=你的DeepSeekKey
+DEEPSEEK_API_BASE=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+
+QWEN_API_KEY=你的千问Key
+QWEN_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1
+QWEN_MODEL=qwen-plus
+```
+
+如果不配置 LLM key，推荐接口仍然正常运行，`llm_profile.intent_summary` 会返回 `LLM不可用，默认画像`。
 
 ## Redis 配置
 

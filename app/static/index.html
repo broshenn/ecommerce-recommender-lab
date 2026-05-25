@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>电商推荐 Step 5</title>
+  <title>电商推荐 Step 11</title>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -172,6 +172,57 @@
       gap: 6px;
     }
 
+    .llm-box {
+      margin-bottom: 12px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .llm-box strong {
+      color: var(--text);
+    }
+
+    .llm-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 14px;
+    }
+
+    .llm-item {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .llm-value {
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 24px;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge.ok {
+      background: #e8f7ef;
+      color: #157347;
+    }
+
+    .badge.warn {
+      background: #fff4db;
+      color: #9a640f;
+    }
+
     .products {
       display: grid;
       gap: 12px;
@@ -249,6 +300,16 @@
       color: var(--muted);
       font-size: 12px;
       overflow-wrap: anywhere;
+    }
+
+    .copy {
+      padding: 9px 10px;
+      border-left: 3px solid var(--brand);
+      border-radius: 6px;
+      background: #f1f8f6;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .tags {
@@ -343,8 +404,8 @@
   <div id="app" v-cloak>
     <header>
       <div>
-        <h1>电商推荐系统 Step 5</h1>
-        <div class="subtitle">当前用户行为采集：查看、喜欢、不喜欢、加购会自动沉淀成画像</div>
+        <h1>电商推荐系统 Step 11</h1>
+        <div class="subtitle">LLM 用户画像：SQLite 长期行为 + Redis 实时窗口 + recommendation_hint</div>
       </div>
       <div>{{ healthText }}</div>
     </header>
@@ -430,6 +491,44 @@
       </aside>
 
       <section>
+        <div class="panel llm-box">
+          <div class="row">
+            <strong>LLM 用户画像</strong>
+            <span class="badge" :class="llmAvailable ? 'ok' : 'warn'">
+              {{ llmAvailable ? "调用成功" : "降级/未调用" }}
+            </span>
+          </div>
+          <div class="llm-grid">
+            <div class="llm-item">
+              <span>模型</span>
+              <span class="llm-value">{{ llmClient.model || "-" }}</span>
+            </div>
+            <div class="llm-item">
+              <span>服务</span>
+              <span class="llm-value">{{ llmClient.base_url || "-" }}</span>
+            </div>
+            <div class="llm-item">
+              <span>用户分群</span>
+              <span class="llm-value">{{ joinOrDash(llmProfile.segments || []) }}</span>
+            </div>
+            <div class="llm-item">
+              <span>价格敏感度</span>
+              <span class="llm-value">{{ llmProfile.price_sensitivity || "-" }}</span>
+            </div>
+            <div class="llm-item">
+              <span>意图摘要</span>
+              <span class="llm-value">{{ llmProfile.intent_summary || "-" }}</span>
+            </div>
+            <div class="llm-item">
+              <span>recommendation_hint</span>
+              <span class="llm-value">{{ llmProfile.recommendation_hint || "-" }}</span>
+            </div>
+          </div>
+          <div v-if="llmClient.last_error">
+            最近错误：{{ llmClient.last_error }}
+          </div>
+        </div>
+
         <div class="panel summary">
           <span>策略：<strong>{{ strategy }}</strong></span>
           <span>实验组：<strong>{{ experimentGroup }}</strong></span>
@@ -458,6 +557,9 @@
               <div class="source">
                 来源：{{ product.source_dataset }}
                 <template v-if="product.rating"> · 评分 {{ product.rating }} / {{ product.rating_count || 0 }}</template>
+              </div>
+              <div v-if="copyMap[product.product_id]" class="copy">
+                {{ copyMap[product.product_id] }}
               </div>
               <div class="score">
                 <strong>{{ product.recommendation_score }} 分</strong>
@@ -508,6 +610,7 @@
           ],
           tagOptions: ["手机配件", "办公", "保护壳", "保护膜", "电子产品", "PlayStation", "任天堂", "摄像头"],
           products: [],
+          marketingCopies: [],
           profile: {},
           strategy: "-",
           experimentGroup: "-",
@@ -516,7 +619,10 @@
           healthText: "检查服务中",
           emptyText: "点击左侧按钮生成推荐",
           loading: false,
-          loadingText: "生成中"
+          loadingText: "生成中",
+          llmProfile: {},
+          llmClient: {},
+          llmAvailable: false
         };
       },
 
@@ -525,6 +631,12 @@
           const min = Math.min(this.budgetMin, this.budgetMax);
           const max = Math.max(this.budgetMin, this.budgetMax);
           return { min, max };
+        },
+
+        copyMap() {
+          return Object.fromEntries(
+            this.marketingCopies.map((item) => [item.product_id, item.text])
+          );
         }
       },
 
@@ -601,9 +713,17 @@
 
             const data = await res.json();
             this.products = data.products;
+            this.marketingCopies = data.marketing_copies || [];
             this.strategy = data.strategy;
             this.experimentGroup = data.experiment_group || "-";
             this.reason = data.reason;
+            const userProfileAgent = data.agent_results?.user_profile?.data || {};
+            this.llmProfile = userProfileAgent.llm_profile || {};
+            this.llmClient = userProfileAgent.llm_client || {};
+            this.llmAvailable = Boolean(
+              this.llmClient.available &&
+              this.llmProfile.recommendation_hint
+            );
             this.statusText = `已生成 ${new Date().toLocaleTimeString("zh-CN")}`;
             this.emptyText = "没有匹配到商品";
             await this.loadProfile();

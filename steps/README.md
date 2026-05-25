@@ -5,7 +5,7 @@
 当前阶段：
 
 ```text
-Step 10: Redis 在线画像缓存 + 实时行为窗口
+Step 12a: LLM 营销文案 Agent
 ```
 
 已保存的阶段文档：
@@ -18,6 +18,8 @@ steps/step-07-supervisor-agent-skeleton/README.md
 steps/step-08-ab-test-metrics/README.md
 steps/step-09-chroma-vector-recall/README.md
 steps/step-10-redis-feature-store/README.md
+steps/step-11-llm-user-profile/README.md
+steps/step-12a-llm-marketing-copy/README.md
 ```
 
 继续开发时的约定：

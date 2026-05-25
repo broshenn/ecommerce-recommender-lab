@@ -7,13 +7,16 @@ from app.main import app
 from app.models import RecommendRequest, UserEventCreate
 from app.personalization import score_product
 from app.recommender import recommend_products
-from app.services import ab_test_engine, feature_store, metrics_collector
+from app.services import ab_test_engine, feature_store, llm_client, metrics_collector
 from app.services.vector_store import get_product_vector_store
 
 
 @pytest.fixture(autouse=True)
 def clear_runtime_state(monkeypatch):
     monkeypatch.setenv("PRODUCT_VECTOR_EMBEDDING_PROVIDER", "local")
+    monkeypatch.setenv("LLM_API_KEY", "")
+    llm_client.api_key = ""
+    llm_client._client = None
     get_product_vector_store.cache_clear()
     reset_behavior_events()
     feature_store.clear_all()
@@ -41,9 +44,12 @@ def test_recommend_prefers_selected_categories():
     assert "vector_recall" in response.strategy
     assert response.experiment_group in {"control", "treatment"}
     assert "user_profile" in response.agent_results
+    llm_profile = response.agent_results["user_profile"].data["llm_profile"]
+    assert llm_profile["intent_summary"] == "LLM不可用，默认画像"
     assert response.agent_results["product_recall"].data["mode"] == "recall"
     assert response.agent_results["product_recall"].data["backend"].startswith("chroma:")
     assert "product_rerank" in response.agent_results
+    assert response.agent_results["marketing_copy"].data["mode"] == "rule_fallback"
 
 
 def test_products_endpoint_returns_catalog():
@@ -74,6 +80,7 @@ def test_recommend_endpoint_returns_products():
     assert data["user_id"] == "u001"
     assert data["experiment_group"] in {"control", "treatment"}
     assert len(data["products"]) == 3
+    assert len(data["marketing_copies"]) == 3
 
 
 def test_out_of_stock_products_are_filtered():
@@ -225,6 +232,7 @@ def test_recorded_behavior_affects_recommendation_profile():
     assert response.strategy.startswith("supervisor_agents")
     effective_request = response.agent_results["user_profile"].data["effective_request"]
     assert product.category in effective_request["preferred_categories"]
+    assert "llm_profile" in response.agent_results["user_profile"].data
     assert response.agent_results["product_rerank"].data["mode"] == "rerank"
     feature_status = response.agent_results["user_profile"].data["feature_store"]["status"]
     assert feature_status["backend"] == "redis"

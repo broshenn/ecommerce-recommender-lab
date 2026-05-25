@@ -26,7 +26,7 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.10.0",
+    version="0.12.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -45,13 +45,15 @@ def health():
     init_db()
     return {
         "status": "healthy",
-        "step": 10,
+        "step": "12a",
         "storage": "sqlite",
         "orchestrator": "supervisor",
         "experiments": "ab_test",
         "metrics": "in_memory",
         "vector_recall": "chroma",
         "feature_store": "redis",
+        "llm_profile": "openai_compatible",
+        "llm_marketing_copy": "openai_compatible",
     }
 
 

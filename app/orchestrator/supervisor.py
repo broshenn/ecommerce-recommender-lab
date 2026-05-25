@@ -66,6 +66,10 @@ class SupervisorOrchestrator:
 
         effective_request = self._effective_request(profile_result, request)
         profile = self._profile(profile_result, request.user_id)
+        llm_profile = profile_result.data.get("llm_profile", {})
+        if llm_profile.get("recommendation_hint"):
+            effective_request.context["llm_hint"] = llm_profile["recommendation_hint"]
+            profile_result.data["effective_request"] = effective_request.model_dump(mode="json")
         recalled_products = self._products_from_ids(
             recall_result.data.get("product_ids", []),
             products_by_id,
@@ -124,6 +128,7 @@ class SupervisorOrchestrator:
         copy_result = self.marketing_copy_agent.run(
             products=final_products,
             profile=profile,
+            llm_profile=profile_result.data.get("llm_profile", {}),
         )
         marketing_copies = [
             MarketingCopy.model_validate(copy)

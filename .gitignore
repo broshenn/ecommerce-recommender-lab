@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 server.log
 server.err.log
+server-*.log
 .env
 *.db
 *.sqlite
