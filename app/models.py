@@ -54,6 +54,14 @@ class ExperimentAssignment(BaseModel):
     config: dict[str, Any] = Field(default_factory=dict)
 
 
+class ExperimentOutcome(BaseModel):
+    experiment_id: str = "recommendation_strategy_v1"
+    group: str
+    user_id: str
+    success: bool
+    product_id: str | None = None
+
+
 class RecommendResponse(BaseModel):
     user_id: str
     scene: str

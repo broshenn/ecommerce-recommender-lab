@@ -146,6 +146,11 @@ class SupervisorOrchestrator:
         }
         self._record_agent_metrics(agent_results)
         self.metrics.record_business_event("recommend_success")
+        self.ab_engine.record_exposure(
+            experiment_id=experiment.experiment_id,
+            group=experiment.group,
+            user_id=request.user_id,
+        )
 
         return RecommendResponse(
             user_id=request.user_id,

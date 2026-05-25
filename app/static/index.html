@@ -622,6 +622,8 @@
           profile: {},
           strategy: "-",
           experimentGroup: "-",
+          experimentId: "recommendation_strategy_v1",
+          experimentStats: {},
           reason: "等待推荐",
           statusText: "待生成",
           healthText: "检查服务中",
@@ -726,6 +728,7 @@
             this.marketingCopies = data.marketing_copies || [];
             this.strategy = data.strategy;
             this.experimentGroup = data.experiment_group || "-";
+            this.experimentId = data.experiment?.experiment_id || "recommendation_strategy_v1";
             this.reason = data.reason;
             const userProfileAgent = data.agent_results?.user_profile?.data || {};
             const productRerankAgent = data.agent_results?.product_rerank?.data || {};
@@ -770,6 +773,17 @@
               throw new Error(`行为接口失败：${res.status} ${detail}`);
             }
 
+            await fetch(`/api/v1/experiments/${encodeURIComponent(this.experimentId)}/outcome`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                experiment_id: this.experimentId,
+                group: this.experimentGroup,
+                user_id: this.userId || "u001",
+                success: eventType !== "dislike",
+                product_id: productId
+              })
+            });
             await this.recommend();
           } catch (error) {
             this.statusText = "行为记录失败";

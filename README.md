@@ -248,3 +248,18 @@ treatment -> LLM 增强链路：LLM画像 + LLM重排 + LLM文案
 ```text
 steps/step-13a-ab-experiment-gating/README.md
 ```
+# 当前阶段：Step 13b A/B 实验数据闭环
+
+当前版本已经支持推荐实验的曝光、点击/负反馈回传、CTR 统计和 Thompson Sampling 计数器。
+
+```text
+推荐成功 -> record_exposure()
+用户点击/反馈 -> POST /api/v1/experiments/{experiment_id}/outcome
+实验统计 -> GET /api/v1/experiments
+```
+
+对应学习文档：
+
+```text
+steps/step-13b-ab-outcome-stats/README.md
+```

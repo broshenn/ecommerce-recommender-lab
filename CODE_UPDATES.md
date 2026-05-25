@@ -405,3 +405,60 @@ app/agents/user_profile_agent.py
 app/agents/marketing_copy_agent.py
 steps/step-13a-ab-experiment-gating/README.md
 ```
+
+## Step 13b: A/B 实验数据闭环
+
+### 新增文件
+
+```text
+steps/step-13b-ab-outcome-stats/README.md
+```
+
+### 修改文件
+
+```text
+app/models.py
+app/services/ab_test.py
+app/orchestrator/supervisor.py
+app/main.py
+app/static/index.html
+tests/test_recommender.py
+steps/README.md
+CODE_UPDATES.md
+README.md
+```
+
+### 核心变化
+
+```text
+1. 新增 ExperimentOutcome 请求模型，用于实验点击/负反馈回传。
+2. ABTestEngine 新增 record_exposure()，推荐成功后记录曝光。
+3. ABTestEngine 新增 record_outcome()，记录 click/skip 并更新 alpha/beta。
+4. ABTestEngine 新增 get_stats()，按 control/treatment 聚合 exposures、clicks、skips、ctr、expected_ctr。
+5. ABTestEngine 新增 assign_thompson()，为后续动态流量分配准备 Thompson Sampling 入口。
+6. Supervisor 在推荐成功后自动记录实验曝光。
+7. FastAPI 新增 POST /api/v1/experiments/{experiment_id}/outcome。
+8. 前端行为按钮会在记录用户行为后回传实验 outcome：查看/喜欢/加购为 success=true，不喜欢为 success=false。
+9. /health 升级为 step=13b，版本升级到 0.13.1。
+10. 测试新增曝光、outcome 统计、CTR、Beta 参数和 Thompson Sampling 入口验证。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+22 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+```
+
+### 你应该重点阅读
+
+```text
+app/services/ab_test.py
+app/orchestrator/supervisor.py
+app/main.py
+tests/test_recommender.py
+steps/step-13b-ab-outcome-stats/README.md
+```

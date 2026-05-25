@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import hashlib
+import random
+import threading
+import time
 from typing import Any
 
 from app.models import ExperimentAssignment
 
 
 class ABTestEngine:
-    """Stable user bucketing for recommendation experiments."""
+    """Stable bucketing plus in-memory experiment outcome statistics."""
 
     DEFAULT_EXPERIMENT_ID = "recommendation_strategy_v1"
 
@@ -42,6 +45,9 @@ class ABTestEngine:
                 ],
             }
         }
+        self._events: list[dict[str, Any]] = []
+        self._lock = threading.Lock()
+        self._init_beta_priors()
 
     def assign(
         self,
@@ -70,11 +76,180 @@ class ABTestEngine:
             config=selected.get("config", {}),
         )
 
+    def assign_thompson(
+        self,
+        user_id: str,
+        experiment_id: str | None = None,
+    ) -> ExperimentAssignment:
+        """Assign by Thompson Sampling so stronger variants can receive more traffic."""
+        experiment_id = experiment_id or self.DEFAULT_EXPERIMENT_ID
+        experiment = self.experiments.get(experiment_id)
+        if not experiment:
+            return self.assign(user_id, experiment_id)
+
+        best_variant: dict[str, Any] | None = None
+        best_sample = -1.0
+        with self._lock:
+            variants = list(experiment["variants"])
+
+        for variant in variants:
+            sample = random.betavariate(
+                variant.get("alpha", 1),
+                variant.get("beta", 1),
+            )
+            if sample > best_sample:
+                best_sample = sample
+                best_variant = variant
+
+        if best_variant is None:
+            return self.assign(user_id, experiment_id)
+
+        return ExperimentAssignment(
+            experiment_id=experiment_id,
+            group=best_variant["group"],
+            reason=(
+                "Thompson Sampling: "
+                f"alpha={best_variant.get('alpha', 1)}, "
+                f"beta={best_variant.get('beta', 1)}, "
+                f"sample={best_sample:.4f}"
+            ),
+            config=best_variant.get("config", {}),
+        )
+
+    def record_exposure(
+        self,
+        experiment_id: str,
+        group: str,
+        user_id: str,
+    ) -> None:
+        """Record that a user saw a recommendation result."""
+        self._append_event(
+            experiment_id=experiment_id,
+            group=group,
+            user_id=user_id,
+            event_type="exposure",
+            product_id=None,
+        )
+
+    def record_outcome(
+        self,
+        experiment_id: str,
+        group: str,
+        user_id: str,
+        success: bool,
+        product_id: str | None = None,
+    ) -> None:
+        """Record click-like success or negative/skip feedback."""
+        self._append_event(
+            experiment_id=experiment_id,
+            group=group,
+            user_id=user_id,
+            event_type="click" if success else "skip",
+            product_id=product_id,
+        )
+
+        experiment = self.experiments.get(experiment_id)
+        if experiment is None:
+            return
+
+        with self._lock:
+            for variant in experiment["variants"]:
+                if variant["group"] != group:
+                    continue
+                if success:
+                    variant["alpha"] = variant.get("alpha", 1) + 1
+                else:
+                    variant["beta"] = variant.get("beta", 1) + 1
+                break
+
+    def get_stats(self, experiment_id: str | None = None) -> dict[str, Any]:
+        """Return exposure, click, CTR, and Thompson Sampling counters per group."""
+        experiment_id = experiment_id or self.DEFAULT_EXPERIMENT_ID
+        experiment = self.experiments.get(experiment_id)
+        if experiment is None:
+            return {}
+
+        with self._lock:
+            events = list(self._events)
+            variants = list(experiment["variants"])
+
+        stats: dict[str, dict[str, Any]] = {}
+        for variant in variants:
+            group = variant["group"]
+            group_events = [
+                event
+                for event in events
+                if event["experiment_id"] == experiment_id and event["group"] == group
+            ]
+            exposures = sum(1 for event in group_events if event["type"] == "exposure")
+            clicks = sum(1 for event in group_events if event["type"] == "click")
+            skips = sum(1 for event in group_events if event["type"] == "skip")
+            alpha = variant.get("alpha", 1)
+            beta = variant.get("beta", 1)
+            stats[group] = {
+                "exposures": exposures,
+                "clicks": clicks,
+                "skips": skips,
+                "ctr": round(clicks / exposures, 4) if exposures else 0.0,
+                "alpha": alpha,
+                "beta": beta,
+                "expected_ctr": round(alpha / (alpha + beta), 4),
+            }
+        return stats
+
     def list_experiments(self) -> dict[str, Any]:
+        experiments_info: dict[str, Any] = {}
+        for experiment_id, experiment in self.experiments.items():
+            experiments_info[experiment_id] = {
+                "name": experiment["name"],
+                "description": experiment.get("description", ""),
+                "variants": [
+                    {
+                        "group": variant["group"],
+                        "traffic_percent": variant.get("traffic_percent", 0),
+                        "description": variant.get("description", ""),
+                        "config": variant.get("config", {}),
+                    }
+                    for variant in experiment["variants"]
+                ],
+                "stats": self.get_stats(experiment_id),
+            }
         return {
             "default_experiment_id": self.DEFAULT_EXPERIMENT_ID,
-            "experiments": self.experiments,
+            "experiments": experiments_info,
         }
+
+    def reset_outcomes(self) -> None:
+        """Clear in-memory experiment events and reset Beta priors for tests."""
+        with self._lock:
+            self._events.clear()
+            self._init_beta_priors()
+
+    def _append_event(
+        self,
+        experiment_id: str,
+        group: str,
+        user_id: str,
+        event_type: str,
+        product_id: str | None,
+    ) -> None:
+        with self._lock:
+            self._events.append(
+                {
+                    "experiment_id": experiment_id,
+                    "group": group,
+                    "user_id": user_id,
+                    "type": event_type,
+                    "product_id": product_id,
+                    "timestamp": time.time(),
+                }
+            )
+
+    def _init_beta_priors(self) -> None:
+        for experiment in self.experiments.values():
+            for variant in experiment["variants"]:
+                variant["alpha"] = 1
+                variant["beta"] = 1
 
     def _bucket(self, user_id: str, experiment_id: str) -> int:
         key = f"{experiment_id}:{user_id}".encode("utf-8")

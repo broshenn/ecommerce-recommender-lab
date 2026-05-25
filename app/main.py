@@ -10,6 +10,7 @@ from app.behavior import build_user_profile, list_user_events, record_event
 from app.catalog import list_products
 from app.database import init_db
 from app.models import (
+    ExperimentOutcome,
     Product,
     RecommendRequest,
     RecommendResponse,
@@ -26,7 +27,7 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.13.0",
+    version="0.13.1",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -45,7 +46,7 @@ def health():
     init_db()
     return {
         "status": "healthy",
-        "step": "13a",
+        "step": "13b",
         "storage": "sqlite",
         "orchestrator": "supervisor",
         "experiments": "ab_test",
@@ -56,6 +57,7 @@ def health():
         "llm_marketing_copy": "openai_compatible",
         "llm_rerank": "openai_compatible",
         "ab_experiment_gating": "control_rule_vs_treatment_llm",
+        "ab_outcome_stats": "exposure_click_ctr_thompson",
     }
 
 
@@ -75,6 +77,23 @@ def experiments(user_id: str | None = None):
     if user_id:
         payload["assignment"] = ab_test_engine.assign(user_id).model_dump()
     return payload
+
+
+@app.post("/api/v1/experiments/{experiment_id}/outcome")
+def record_experiment_outcome(experiment_id: str, outcome: ExperimentOutcome):
+    ab_test_engine.record_outcome(
+        experiment_id=experiment_id,
+        group=outcome.group,
+        user_id=outcome.user_id,
+        success=outcome.success,
+        product_id=outcome.product_id,
+    )
+    return {
+        "status": "recorded",
+        "experiment_id": experiment_id,
+        "group": outcome.group,
+        "stats": ab_test_engine.get_stats(experiment_id),
+    }
 
 
 @app.get("/api/v1/metrics")

@@ -23,9 +23,11 @@ def clear_runtime_state(monkeypatch):
     get_product_vector_store.cache_clear()
     reset_behavior_events()
     feature_store.clear_all()
+    ab_test_engine.reset_outcomes()
     metrics_collector.reset()
     yield
     metrics_collector.reset()
+    ab_test_engine.reset_outcomes()
     reset_behavior_events()
     feature_store.clear_all()
     get_product_vector_store.cache_clear()
@@ -318,6 +320,83 @@ def test_experiments_endpoint_returns_assignment():
     data = response.json()
     assert data["default_experiment_id"] == "recommendation_strategy_v1"
     assert data["assignment"]["group"] in {"control", "treatment"}
+    stats = data["experiments"]["recommendation_strategy_v1"]["stats"]
+    assert set(stats) == {"control", "treatment"}
+
+
+def test_recommendation_records_ab_exposure():
+    response = recommend_products(
+        RecommendRequest(
+            user_id="ab-user-1",
+            num_items=2,
+        )
+    )
+
+    stats = ab_test_engine.get_stats(response.experiment.experiment_id)
+    assert stats[response.experiment_group]["exposures"] == 1
+    assert stats[response.experiment_group]["clicks"] == 0
+    assert stats[response.experiment_group]["ctr"] == 0.0
+
+
+def test_experiment_outcome_endpoint_updates_ctr_and_beta():
+    client = TestClient(app)
+
+    recommend_response = client.post(
+        "/api/v1/recommend",
+        json={"user_id": "ab-user-1", "num_items": 2},
+    )
+    assert recommend_response.status_code == 200
+    recommend_data = recommend_response.json()
+    experiment_id = recommend_data["experiment"]["experiment_id"]
+    group = recommend_data["experiment_group"]
+    product_id = recommend_data["products"][0]["product_id"]
+
+    outcome_response = client.post(
+        f"/api/v1/experiments/{experiment_id}/outcome",
+        json={
+            "experiment_id": experiment_id,
+            "group": group,
+            "user_id": "ab-user-1",
+            "success": True,
+            "product_id": product_id,
+        },
+    )
+
+    assert outcome_response.status_code == 200
+    data = outcome_response.json()
+    group_stats = data["stats"][group]
+    assert group_stats["exposures"] == 1
+    assert group_stats["clicks"] == 1
+    assert group_stats["ctr"] == 1.0
+    assert group_stats["alpha"] == 2
+    assert group_stats["beta"] == 1
+
+
+def test_thompson_assignment_uses_outcome_counters():
+    for _ in range(10):
+        ab_test_engine.record_outcome(
+            "recommendation_strategy_v1",
+            "treatment",
+            "winner",
+            True,
+        )
+    for _ in range(3):
+        ab_test_engine.record_outcome(
+            "recommendation_strategy_v1",
+            "control",
+            "baseline",
+            False,
+        )
+
+    seen = {
+        ab_test_engine.assign_thompson(f"sample-user-{index}").group
+        for index in range(30)
+    }
+    stats = ab_test_engine.get_stats("recommendation_strategy_v1")
+
+    assert stats["treatment"]["alpha"] == 11
+    assert stats["control"]["beta"] == 4
+    assert seen <= {"control", "treatment"}
 
 
 def test_control_group_uses_rule_pipeline(monkeypatch):
