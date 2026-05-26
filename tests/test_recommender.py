@@ -88,6 +88,40 @@ def test_recommend_endpoint_returns_products():
     assert len(data["marketing_copies"]) == 3
 
 
+def test_graph_recommend_endpoint_returns_products():
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/recommend/graph",
+        json={
+            "user_id": "graph-user",
+            "num_items": 3,
+            "preferred_categories": [list_products()[0].category],
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["user_id"] == "graph-user"
+    assert data["strategy"].startswith("langgraph_agents")
+    assert data["experiment_group"] in {"control", "treatment"}
+    assert len(data["products"]) == 3
+    assert len(data["marketing_copies"]) == 3
+    assert "product_rerank" in data["agent_results"]
+
+
+def test_graph_recommendation_records_ab_exposure():
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/recommend/graph",
+        json={"user_id": "graph-exposure-user", "num_items": 2},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    stats = ab_test_engine.get_stats(data["experiment"]["experiment_id"])
+    assert stats[data["experiment_group"]]["exposures"] == 1
+
+
 def test_out_of_stock_products_are_filtered():
     out_of_stock = next(product for product in list_products() if product.stock == 0)
     response = recommend_products(

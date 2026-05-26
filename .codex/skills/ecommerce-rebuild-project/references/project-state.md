@@ -71,7 +71,7 @@ agent_results
 Current experiment behavior:
 
 ```text
-Step 13b is the latest root version.
+Step 14 is the latest root version.
 control   -> rule profile + rule rerank + rule copy
 treatment -> LLM profile + LLM rerank + LLM copy, with rule fallback
 ab-user-1 -> stable control sample user
@@ -79,6 +79,8 @@ ab-user-2 -> stable treatment sample user
 recommend success records exposure
 POST /api/v1/experiments/{experiment_id}/outcome records click/skip outcome
 GET /api/v1/experiments returns stats: exposures, clicks, skips, ctr, alpha, beta, expected_ctr
+POST /api/v1/recommend keeps the original Supervisor orchestration
+POST /api/v1/recommend/graph uses LangGraph orchestration with merge2 -> expand conditional routing
 ```
 
 Behavior APIs:
@@ -94,6 +96,7 @@ Experiment and metrics APIs:
 ```text
 GET /api/v1/experiments
 GET /api/v1/experiments?user_id=u001
+POST /api/v1/recommend/graph
 GET /api/v1/metrics
 GET /api/v1/vector-store
 GET /api/v1/feature-store/{user_id}

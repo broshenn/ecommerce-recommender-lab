@@ -462,3 +462,59 @@ app/main.py
 tests/test_recommender.py
 steps/step-13b-ab-outcome-stats/README.md
 ```
+
+## Step 14: LangGraph 状态图编排
+
+### 新增文件
+
+```text
+app/orchestrator/graph.py
+steps/step-14-langgraph-orchestration/README.md
+```
+
+### 修改文件
+
+```text
+app/main.py
+requirements.txt
+tests/test_recommender.py
+steps/README.md
+CODE_UPDATES.md
+README.md
+.codex/skills/ecommerce-rebuild-project/SKILL.md
+.codex/skills/ecommerce-rebuild-project/references/project-state.md
+```
+
+### 核心变化
+
+```text
+1. 新增 LangGraph 编排器，保留原 Supervisor 不动。
+2. 新增 PipelineState，用 TypedDict 表示节点之间传递的推荐流程状态。
+3. 新增 init、phase1、merge1、phase2、merge2、expand、phase3、aggregate 节点。
+4. phase1 继续并行执行 UserProfileAgent 和 ProductRecAgent recall。
+5. phase2 继续并行执行 ProductRecAgent rerank 和 InventoryAgent。
+6. merge2 后新增条件边：最终商品不足且未扩召回时，进入 expand。
+7. expand 节点会扩大召回范围并重新执行 phase2，再回到 merge2。
+8. 新增 POST /api/v1/recommend/graph，返回 RecommendResponse。
+9. /health 升级为 step=14，版本升级到 0.14.0。
+10. requirements.txt 新增 langgraph>=0.2.0。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest -q
+24 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+```
+
+### 你应该重点阅读
+
+```text
+app/orchestrator/graph.py
+app/main.py
+tests/test_recommender.py
+steps/step-14-langgraph-orchestration/README.md
+```

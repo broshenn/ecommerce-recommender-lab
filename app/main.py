@@ -27,7 +27,7 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
     title="E-Commerce Recommendation Rebuild",
-    version="0.13.1",
+    version="0.14.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -46,7 +46,7 @@ def health():
     init_db()
     return {
         "status": "healthy",
-        "step": "13b",
+        "step": "14",
         "storage": "sqlite",
         "orchestrator": "supervisor",
         "experiments": "ab_test",
@@ -58,6 +58,7 @@ def health():
         "llm_rerank": "openai_compatible",
         "ab_experiment_gating": "control_rule_vs_treatment_llm",
         "ab_outcome_stats": "exposure_click_ctr_thompson",
+        "langgraph_orchestration": "available",
     }
 
 
@@ -69,6 +70,13 @@ def products():
 @app.post("/api/v1/recommend", response_model=RecommendResponse)
 def recommend(request: RecommendRequest):
     return recommend_products(request)
+
+
+@app.post("/api/v1/recommend/graph", response_model=RecommendResponse)
+def recommend_via_graph(request: RecommendRequest):
+    from app.orchestrator.graph import recommend_with_graph
+
+    return recommend_with_graph(request)
 
 
 @app.get("/api/v1/experiments")

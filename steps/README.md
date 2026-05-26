@@ -5,7 +5,7 @@
 当前阶段：
 
 ```text
-Step 13b: A/B 实验数据闭环
+Step 14: LangGraph 状态图编排
 ```
 
 已保存的阶段文档：
@@ -23,6 +23,7 @@ steps/step-12a-llm-marketing-copy/README.md
 steps/step-12b-llm-rerank/README.md
 steps/step-13a-ab-experiment-gating/README.md
 steps/step-13b-ab-outcome-stats/README.md
+steps/step-14-langgraph-orchestration/README.md
 ```
 
 继续开发时的约定：

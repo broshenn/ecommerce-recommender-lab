@@ -24,10 +24,10 @@ Read `references/architecture-alignment.md` before choosing any next feature.
 
 Important current capabilities:
 
-- Step 13b is the latest root version.
+- Step 14 is the latest root version.
 - Product data comes from `data/products_amazon_sample.csv`.
 - The current dataset has 1000 Amazon Reviews 2023 product metadata rows.
-- Recommendation flow is: FastAPI -> Supervisor -> ABTestEngine assignment -> UserProfileAgent with Redis Feature Store and optional LLM profile analysis + ProductRecAgent vector recall -> ProductRecAgent rule/LLM rerank + InventoryAgent -> MarketingCopyAgent rule/LLM copy -> AB exposure/outcome stats -> MetricsCollector -> response.
+- Recommendation flow has two orchestration paths: `/api/v1/recommend` uses the original Supervisor, and `/api/v1/recommend/graph` uses LangGraph with a conditional expand branch after inventory filtering.
 - Step notes are README-only docs under `steps/`.
 - Code change explanations are recorded in `CODE_UPDATES.md`.
 
@@ -45,7 +45,7 @@ Read `references/roadmap.md` before deciding the next step.
 
 Preferred next step:
 
-- Step 14: add RAG product explanation or persist A/B outcome stats after the in-memory experiment loop is stable.
+- Step 15: add RAG product explanation, persist A/B outcome stats, or move frontend switching between Supervisor and LangGraph after the graph endpoint is stable.
 
 Deferred:
 

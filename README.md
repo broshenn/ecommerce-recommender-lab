@@ -263,3 +263,19 @@ steps/step-13a-ab-experiment-gating/README.md
 ```text
 steps/step-13b-ab-outcome-stats/README.md
 ```
+# 当前阶段：Step 14 LangGraph 状态图编排
+
+当前版本在原 `SupervisorOrchestrator` 之外，新增了一套 LangGraph 编排路径：
+
+```text
+POST /api/v1/recommend        -> 原 Supervisor 编排
+POST /api/v1/recommend/graph  -> LangGraph 状态图编排
+```
+
+LangGraph 路径包含 `init -> phase1 -> merge1 -> phase2 -> merge2 -> phase3 -> aggregate`，并在 `merge2` 后加入条件分支：库存过滤后商品不足时自动进入 `expand` 扩大召回。
+
+对应学习文档：
+
+```text
+steps/step-14-langgraph-orchestration/README.md
+```
