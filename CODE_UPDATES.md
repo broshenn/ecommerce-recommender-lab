@@ -498,6 +498,7 @@ README.md
 8. 新增 POST /api/v1/recommend/graph，返回 RecommendResponse。
 9. /health 升级为 step=14，版本升级到 0.14.0。
 10. requirements.txt 新增 langgraph>=0.2.0。
+11. 前端默认推荐请求从 /api/v1/recommend 切换到 /api/v1/recommend/graph。
 ```
 
 ### 运行和验证
