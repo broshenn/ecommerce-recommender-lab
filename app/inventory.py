@@ -7,7 +7,7 @@ HOT_ITEM_LIMIT_THRESHOLD = 300
 
 
 def is_available(product: Product) -> bool:
-    """Return whether a product can be recommended."""
+    """判断商品是否可推荐。"""
     return product.stock > 0
 
 
@@ -17,7 +17,7 @@ def enrich_inventory(
     recommendation_score: float = 0,
     recommendation_reason: str = "基础推荐",
 ) -> RecommendedProduct:
-    """Attach stock status and purchase-limit information to a product."""
+    """为商品补充库存状态和限购信息。"""
     stock_status = "normal"
     stock_message = "库存充足"
     purchase_limit: int | None = None

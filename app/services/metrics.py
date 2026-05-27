@@ -8,7 +8,7 @@ from app.models import AgentResult
 
 
 class MetricsCollector:
-    """In-memory metrics for the learning version of the recommender."""
+    """学习版内存指标收集器。"""
 
     def __init__(self):
         self._lock = Lock()

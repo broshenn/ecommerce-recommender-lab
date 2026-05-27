@@ -12,7 +12,7 @@ class ProductScore:
 
 
 def score_product(product: Product, request: RecommendRequest) -> ProductScore:
-    """Score a product against the current user's lightweight profile."""
+    """根据当前用户的轻量画像给商品打规则分。"""
     score = 0.0
     reasons: list[str] = []
 

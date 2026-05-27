@@ -1,1 +1,1 @@
-"""Step-by-step e-commerce recommendation demo."""
+"""电商推荐系统渐进式重构示例。"""

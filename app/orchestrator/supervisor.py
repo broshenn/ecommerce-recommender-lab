@@ -24,9 +24,12 @@ from app.services import ab_test_engine, metrics_collector
 from app.services.ab_test import ABTestEngine
 from app.services.metrics import MetricsCollector
 
+RECALL_MULTIPLIER = 50
+RECALL_FLOOR = 200
+
 
 class SupervisorOrchestrator:
-    """Coordinate the four-agent recommendation skeleton."""
+    """传统 Supervisor 编排器：串起画像、推荐、库存和文案 Agent。"""
 
     def __init__(
         self,
@@ -48,7 +51,7 @@ class SupervisorOrchestrator:
         all_products = list_products()
         products_by_id = {product.product_id: product for product in all_products}
 
-        # Phase 1: profile and first-pass recall can run independently.
+        # 阶段 1：画像和首轮召回互不依赖，可以并行。
         profile_future = self.executor.submit(
             self.user_profile_agent.run,
             request=request,
@@ -58,7 +61,10 @@ class SupervisorOrchestrator:
             self.product_rec_agent.run,
             request=request,
             products=all_products,
-            limit=min(len(all_products), max(request.num_items * 50, 200)),
+            limit=min(
+                len(all_products),
+                max(request.num_items * RECALL_MULTIPLIER, RECALL_FLOOR),
+            ),
             mode="recall",
         )
 
@@ -78,7 +84,7 @@ class SupervisorOrchestrator:
         if not recalled_products:
             recalled_products = all_products
 
-        # Phase 2: rerank candidates while checking inventory on the same pool.
+        # 阶段 2：对同一批候选商品同时做重排和库存检查。
         rerank_future = self.executor.submit(
             self.product_rec_agent.run,
             request=effective_request,
@@ -125,7 +131,7 @@ class SupervisorOrchestrator:
             for product in final_products
         ]
 
-        # Phase 3: copy generation depends on the final product list.
+        # 阶段 3：文案生成依赖最终商品列表，需要放在最后。
         copy_result = self.marketing_copy_agent.run(
             products=final_products,
             profile=profile,

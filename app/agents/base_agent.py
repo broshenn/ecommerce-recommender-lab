@@ -8,7 +8,7 @@ from app.models import AgentResult
 
 
 class BaseAgent(ABC):
-    """Common agent wrapper with timing, error capture, and fallback."""
+    """Agent 基类：统一计时、异常捕获和降级返回。"""
 
     def __init__(self, name: str, timeout: float = 5.0):
         self.name = name
@@ -31,7 +31,7 @@ class BaseAgent(ABC):
 
     @abstractmethod
     def _execute(self, **kwargs: Any) -> AgentResult:
-        """Run the agent's core work."""
+        """执行具体 Agent 的核心逻辑。"""
 
     def _fallback(self, latency_ms: float, exc: Exception, **kwargs: Any) -> AgentResult:
         return AgentResult(

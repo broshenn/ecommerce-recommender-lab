@@ -25,7 +25,7 @@ SYSTEM_PROMPT = """你是一个电商用户画像分析专家。根据用户的�
 
 
 class UserProfileAgent(BaseAgent):
-    """Build the current user's profile from behavior data and LLM analysis."""
+    """用户画像 Agent：合并长期行为、实时特征和 LLM 画像分析。"""
 
     def __init__(self):
         super().__init__(name="user_profile", timeout=10.0)

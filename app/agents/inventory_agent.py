@@ -9,7 +9,7 @@ from app.agents.base_agent import BaseAgent
 
 
 class InventoryAgent(BaseAgent):
-    """Check availability and surface inventory alerts."""
+    """库存 Agent：过滤缺货商品，并输出低库存提醒。"""
 
     def __init__(self):
         super().__init__(name="inventory", timeout=3.0)

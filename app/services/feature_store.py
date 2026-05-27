@@ -11,10 +11,13 @@ from dotenv import load_dotenv
 from app.models import Product, UserEvent, UserProfile
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ONE_HOUR_SECONDS = 3600
+ONE_DAY_SECONDS = 86400
+SEVEN_DAYS_SECONDS = 604800
 
 
 class RedisFeatureStore:
-    """Redis-backed online profile cache and real-time behavior windows."""
+    """Redis 特征服务：在线画像缓存 + 实时行为时间窗。"""
 
     def __init__(self):
         load_dotenv(BASE_DIR / ".env")
@@ -105,11 +108,11 @@ class RedisFeatureStore:
         return behaviors
 
     def get_user_features(self, user_id: str) -> dict[str, Any]:
-        views_1h = self.get_recent_behaviors(user_id, "view", 3600)
-        views_24h = self.get_recent_behaviors(user_id, "view", 86400)
-        likes_24h = self.get_recent_behaviors(user_id, "like", 86400)
-        dislikes_24h = self.get_recent_behaviors(user_id, "dislike", 86400)
-        carts_7d = self.get_recent_behaviors(user_id, "add_to_cart", 604800)
+        views_1h = self.get_recent_behaviors(user_id, "view", ONE_HOUR_SECONDS)
+        views_24h = self.get_recent_behaviors(user_id, "view", ONE_DAY_SECONDS)
+        likes_24h = self.get_recent_behaviors(user_id, "like", ONE_DAY_SECONDS)
+        dislikes_24h = self.get_recent_behaviors(user_id, "dislike", ONE_DAY_SECONDS)
+        carts_7d = self.get_recent_behaviors(user_id, "add_to_cart", SEVEN_DAYS_SECONDS)
 
         return {
             "user_id": user_id,
@@ -232,6 +235,7 @@ class RedisFeatureStore:
         return self._unique(item.get("product_id", "") for item in reversed(behaviors))[:limit]
 
     def _compute_rfm(self, cart_behaviors: list[dict[str, Any]]) -> dict[str, float]:
+        """学习版用加购行为近似计算 RFM。"""
         if not cart_behaviors:
             return {"recency": 0.0, "frequency": 0.0, "monetary": 0.0}
 

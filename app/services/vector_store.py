@@ -20,11 +20,11 @@ QWEN_EMBEDDING_MODEL = "text-embedding-v4"
 
 
 class VectorRecallUnavailable(RuntimeError):
-    """Raised when vector recall cannot be used and rule fallback should run."""
+    """向量召回不可用时抛出，调用方应回退到规则推荐。"""
 
 
 class HashEmbeddingClient:
-    """Small deterministic local embedding fallback for offline development."""
+    """本地确定性 embedding，方便离线开发和无 Key 演示。"""
 
     provider = "local_hash"
     model = "hashing-64"
@@ -49,7 +49,7 @@ class HashEmbeddingClient:
 
 
 class QwenEmbeddingClient:
-    """Qwen/DashScope OpenAI-compatible embedding client."""
+    """千问/DashScope OpenAI-compatible embedding 客户端。"""
 
     provider = "qwen"
     model = QWEN_EMBEDDING_MODEL
@@ -104,7 +104,7 @@ class QwenEmbeddingClient:
 
 
 class ProductVectorStore:
-    """Chroma-backed product recall with rule-based fallback outside this class."""
+    """基于 Chroma 的商品向量召回，规则 fallback 由上层 Agent 处理。"""
 
     def __init__(self):
         self.embedding_client = _build_embedding_client()

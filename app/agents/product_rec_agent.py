@@ -27,7 +27,7 @@ RERANK_PROMPT = """你是电商推荐排序专家。根据用户偏好和商品�
 
 
 class ProductRecAgent(BaseAgent):
-    """Recall products with vectors and rerank with LLM-backed rule fallback."""
+    """商品推荐 Agent：先向量召回，再用 LLM 或规则重排。"""
 
     def __init__(self):
         super().__init__(name="product_rec", timeout=18.0)
@@ -218,6 +218,7 @@ class ProductRecAgent(BaseAgent):
                 if len(selected) >= limit:
                     return selected
 
+        # LLM 可能漏掉部分商品；按原候选顺序补齐，保证下游数量稳定。
         for product in products:
             if product.product_id not in seen:
                 selected.append(product.product_id)

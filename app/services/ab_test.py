@@ -10,7 +10,7 @@ from app.models import ExperimentAssignment
 
 
 class ABTestEngine:
-    """Stable bucketing plus in-memory experiment outcome statistics."""
+    """A/B 实验引擎：稳定分桶 + 内存实验统计。"""
 
     DEFAULT_EXPERIMENT_ID = "recommendation_strategy_v1"
 
@@ -81,7 +81,7 @@ class ABTestEngine:
         user_id: str,
         experiment_id: str | None = None,
     ) -> ExperimentAssignment:
-        """Assign by Thompson Sampling so stronger variants can receive more traffic."""
+        """使用 Thompson Sampling 动态选择实验组。"""
         experiment_id = experiment_id or self.DEFAULT_EXPERIMENT_ID
         experiment = self.experiments.get(experiment_id)
         if not experiment:
@@ -122,7 +122,7 @@ class ABTestEngine:
         group: str,
         user_id: str,
     ) -> None:
-        """Record that a user saw a recommendation result."""
+        """记录一次推荐结果曝光。"""
         self._append_event(
             experiment_id=experiment_id,
             group=group,
@@ -139,7 +139,7 @@ class ABTestEngine:
         success: bool,
         product_id: str | None = None,
     ) -> None:
-        """Record click-like success or negative/skip feedback."""
+        """记录点击/加购等正反馈，或跳过/点踩等负反馈。"""
         self._append_event(
             experiment_id=experiment_id,
             group=group,
@@ -163,7 +163,7 @@ class ABTestEngine:
                 break
 
     def get_stats(self, experiment_id: str | None = None) -> dict[str, Any]:
-        """Return exposure, click, CTR, and Thompson Sampling counters per group."""
+        """返回每个实验组的曝光、点击、CTR 和 Thompson 计数。"""
         experiment_id = experiment_id or self.DEFAULT_EXPERIMENT_ID
         experiment = self.experiments.get(experiment_id)
         if experiment is None:
@@ -220,7 +220,7 @@ class ABTestEngine:
         }
 
     def reset_outcomes(self) -> None:
-        """Clear in-memory experiment events and reset Beta priors for tests."""
+        """清空内存事件并重置 Beta 先验，主要用于测试。"""
         with self._lock:
             self._events.clear()
             self._init_beta_priors()

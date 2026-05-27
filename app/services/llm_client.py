@@ -12,7 +12,7 @@ JSON_OUTPUT_INSTRUCTION = "Return valid JSON only. Do not include markdown, comm
 
 
 class LLMClient:
-    """Thin wrapper around OpenAI-compatible chat APIs."""
+    """OpenAI-compatible Chat API 的轻量封装。"""
 
     def __init__(self):
         load_dotenv(BASE_DIR / ".env")
@@ -64,6 +64,7 @@ class LLMClient:
         temperature: float | None = None,
         max_tokens: int | None = None,
     ) -> str | None:
+        """返回模型原始文本；LLM 不可用时返回 None。"""
         client = self._openai
         if client is None:
             return None
@@ -102,6 +103,7 @@ class LLMClient:
         *,
         default: Any = None,
     ) -> Any:
+        """调用 LLM 并宽松解析 JSON，兼容本地小模型的多余文本。"""
         text = self.chat(
             system_prompt=system_prompt,
             user_message=f"{user_message}\n\n{JSON_OUTPUT_INSTRUCTION}",
@@ -131,6 +133,7 @@ class LLMClient:
     def _json_candidates(self, text: str) -> list[str]:
         cleaned = self._strip_json_fence(text)
         candidates = [cleaned]
+        # 本地小模型常把解释文字包在 JSON 外面，这里再尝试截取括号内的 JSON。
         extracted = self._extract_json_candidate(cleaned)
         if extracted and extracted not in candidates:
             candidates.append(extracted)

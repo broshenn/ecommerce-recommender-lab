@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""LangGraph 版本推荐编排。
+
+整体仍是画像、召回/重排、库存、文案三阶段；相比普通 Supervisor，
+这里额外在库存过滤后商品不足时走 expand 分支扩大召回。
+"""
+
 import concurrent.futures
 import time
 import uuid
@@ -26,6 +32,12 @@ from app.models import (
     UserProfile,
 )
 from app.services import ab_test_engine, metrics_collector
+
+GRAPH_WORKERS = 4
+RECALL_MULTIPLIER = 50
+RECALL_FLOOR = 200
+EXPANDED_RECALL_MULTIPLIER = 100
+EXPANDED_RECALL_FLOOR = 400
 
 
 class PipelineState(TypedDict, total=False):
@@ -67,10 +79,11 @@ _user_profile_agent = UserProfileAgent()
 _product_rec_agent = ProductRecAgent()
 _inventory_agent = InventoryAgent()
 _marketing_copy_agent = MarketingCopyAgent()
-_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
+_executor = concurrent.futures.ThreadPoolExecutor(max_workers=GRAPH_WORKERS)
 
 
 def recommend_with_graph(request: RecommendRequest) -> RecommendResponse:
+    """运行状态图，并把图里的 dict 状态转换回 API 响应模型。"""
     state = _state_from_request(request)
     result = rec_graph.invoke(state)
 
@@ -94,8 +107,8 @@ def recommend_with_graph(request: RecommendRequest) -> RecommendResponse:
         products=final_products,
         strategy="langgraph_agents+vector_recall+inventory_filter+ab_test",
         reason=(
-            "LangGraph state graph orchestrated profile, recall, rerank, "
-            "inventory, copy, A/B exposure, and conditional recall expansion."
+            "LangGraph 状态图编排用户画像、召回、重排、库存、文案、A/B 曝光，"
+            "并在商品不足时自动扩大召回。"
         ),
         experiment_group=experiment.group,
         experiment=experiment,
@@ -148,6 +161,7 @@ def _phase1_node(state: PipelineState) -> PipelineState:
     products = _products_from_state(state)
     request = _request_from_state(state)
 
+    # 用户画像和向量召回互不依赖，可以并行执行。
     profile_future = _executor.submit(
         _user_profile_agent.run,
         request=request,
@@ -199,6 +213,7 @@ def _phase2_node(state: PipelineState) -> PipelineState:
     recalled_products = _products_from_ids(state, state.get("recalled_product_ids", []))
     request = RecommendRequest.model_validate(state["effective_request"])
 
+    # 重排和库存检查都只依赖候选集，可以并行执行。
     rerank_future = _executor.submit(
         _product_rec_agent.run,
         request=request,
@@ -232,7 +247,7 @@ def _merge2_node(state: PipelineState) -> PipelineState:
         if product_id in available_ids
     ]
 
-    # Keep the graph branch meaningful: expand before falling back to unavailable items.
+    # 先触发 expand 扩召回，仍不足时再退回到原排序里的不可用商品兜底。
     if state.get("_expanded") and len(selected_ids) < state["num_items"]:
         for product_id in ranked_ids:
             if product_id not in selected_ids:
@@ -358,8 +373,8 @@ def _enriched_product_dump(state: PipelineState, product_id: str) -> dict[str, A
 
 def _recall_limit(state: PipelineState) -> int:
     product_count = len(state.get("all_products", []))
-    multiplier = 100 if state.get("_expanded") else 50
-    floor = 400 if state.get("_expanded") else 200
+    multiplier = EXPANDED_RECALL_MULTIPLIER if state.get("_expanded") else RECALL_MULTIPLIER
+    floor = EXPANDED_RECALL_FLOOR if state.get("_expanded") else RECALL_FLOOR
     return min(product_count, max(state.get("num_items", 3) * multiplier, floor))
 
 
@@ -374,6 +389,7 @@ def _result_or_fallback(
 
 
 def build_graph():
+    """启动时编译一次推荐状态图。"""
     graph = StateGraph(PipelineState)
     graph.add_node("init", _init_node)
     graph.add_node("phase1", _phase1_node)

@@ -7,5 +7,5 @@ supervisor = SupervisorOrchestrator()
 
 
 def recommend_products(request: RecommendRequest) -> RecommendResponse:
-    """Run the Supervisor + Agent recommendation pipeline."""
+    """运行传统 Supervisor + Agent 推荐链路。"""
     return supervisor.recommend(request)

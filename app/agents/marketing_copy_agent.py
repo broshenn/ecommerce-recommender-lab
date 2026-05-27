@@ -58,7 +58,7 @@ OUTPUT_INSTRUCTION = """
 
 
 class MarketingCopyAgent(BaseAgent):
-    """Generate personalized marketing copy via LLM, with rule fallback."""
+    """营销文案 Agent：优先 LLM 个性化生成，失败时使用规则文案兜底。"""
 
     def __init__(self):
         super().__init__(name="marketing_copy", timeout=10.0)
