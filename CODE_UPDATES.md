@@ -519,3 +519,50 @@ app/main.py
 tests/test_recommender.py
 steps/step-14-langgraph-orchestration/README.md
 ```
+
+## Step 14.1: Qwen3.5 LLM 适配
+
+### 新增文件
+
+```text
+无
+```
+
+### 修改文件
+
+```text
+app/services/llm_client.py
+.env.example
+tests/test_recommender.py
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. 撤回 qwen2.5:3b 的本地小模型专项兼容改动，不再保留文案嵌套数组容错和额外营销禁词补丁。
+2. LLMClient 新增 LLM_ENABLE_THINKING 配置。
+3. 模型名匹配 qwen3/qwen3.5 时，默认关闭 thinking，避免 JSON Agent 拿到空 content 或 reasoning 内容。
+4. 请求 OpenAI-compatible Chat API 时，会通过 extra_body 传入 enable_thinking 和 think 两个字段，兼容 DashScope 与 Ollama 风格接口。
+5. LLMClient.status() 增加 enable_thinking，前端/调试接口可以看到当前 thinking 开关。
+6. chat_json 的附加指令改成 ASCII 的 JSON-only 约束，避免中文编码显示异常影响本地模型。
+7. 新增测试覆盖 qwen3.5 默认关闭 thinking，以及环境变量显式开启 thinking 的情况。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest tests\test_recommender.py -q
+26 passed
+
+D:\anaconda\envs\py3.10\python.exe -m compileall app tests
+通过
+```
+
+### 你应该重点阅读
+
+```text
+app/services/llm_client.py
+.env.example
+tests/test_recommender.py
+```

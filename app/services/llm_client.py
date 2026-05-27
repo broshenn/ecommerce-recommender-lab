@@ -8,6 +8,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+JSON_OUTPUT_INSTRUCTION = "Return valid JSON only. Do not include markdown, comments, or extra text."
 
 
 class LLMClient:
@@ -19,6 +20,7 @@ class LLMClient:
         self.max_tokens = int(os.getenv("LLM_MAX_TOKENS", "1024"))
         self.temperature = float(os.getenv("LLM_TEMPERATURE", "0.3"))
         self.timeout_seconds = float(os.getenv("LLM_TIMEOUT_SECONDS", "15"))
+        self.enable_thinking = self._load_enable_thinking()
         self._client = None
         self._last_error: str | None = None
 
@@ -27,6 +29,7 @@ class LLMClient:
             "available": self._openai is not None,
             "base_url": self._masked_base_url(),
             "model": self.model,
+            "enable_thinking": self.enable_thinking,
             "last_error": self._last_error,
         }
 
@@ -66,17 +69,26 @@ class LLMClient:
             return None
 
         try:
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=[
+            request_kwargs: dict[str, Any] = {
+                "model": self.model,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
                 ],
-                temperature=self.temperature if temperature is None else temperature,
-                max_tokens=max_tokens or self.max_tokens,
-            )
+                "temperature": self.temperature if temperature is None else temperature,
+                "max_tokens": max_tokens or self.max_tokens,
+            }
+            extra_body = self._extra_body()
+            if extra_body:
+                request_kwargs["extra_body"] = extra_body
+
+            response = client.chat.completions.create(**request_kwargs)
             message = response.choices[0].message
-            content = message.content or getattr(message, "reasoning_content", None)
+            content = (
+                message.content
+                or getattr(message, "reasoning_content", None)
+                or getattr(message, "reasoning", None)
+            )
             self._last_error = None
             return content.strip() if content else None
         except Exception as exc:
@@ -92,7 +104,7 @@ class LLMClient:
     ) -> Any:
         text = self.chat(
             system_prompt=system_prompt,
-            user_message=f"{user_message}\n\n只输出JSON，不要其他内容。",
+            user_message=f"{user_message}\n\n{JSON_OUTPUT_INSTRUCTION}",
         )
         if text is None:
             return default
@@ -110,6 +122,14 @@ class LLMClient:
         if len(lines) >= 3:
             return "\n".join(lines[1:-1]).strip()
         return cleaned.strip("`").strip()
+
+    def _extra_body(self) -> dict[str, Any]:
+        if self.enable_thinking is None:
+            return {}
+        return {
+            "enable_thinking": self.enable_thinking,
+            "think": self.enable_thinking,
+        }
 
     def _load_config(self) -> tuple[str, str, str]:
         llm_api_key = self._env_api_key("LLM_API_KEY")
@@ -151,6 +171,25 @@ class LLMClient:
         if model.endswith("]") and "[" in model:
             return model.rsplit("[", 1)[0]
         return model
+
+    def _load_enable_thinking(self) -> bool | None:
+        raw = os.getenv("LLM_ENABLE_THINKING", "").strip().lower()
+        if raw in {"1", "true", "yes", "on"}:
+            return True
+        if raw in {"0", "false", "no", "off"}:
+            return False
+        if self._is_qwen_thinking_model(self.model):
+            return False
+        return None
+
+    def _is_qwen_thinking_model(self, model: str) -> bool:
+        normalized = model.strip().lower()
+        return (
+            normalized.startswith("qwen3")
+            or "qwen3." in normalized
+            or "qwen3-" in normalized
+            or "qwen3:" in normalized
+        )
 
     def _is_placeholder_key(self, api_key: str) -> bool:
         lowered = api_key.strip().lower()

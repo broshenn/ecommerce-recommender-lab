@@ -11,6 +11,7 @@ from app.models import RecommendRequest, UserEventCreate
 from app.personalization import score_product
 from app.recommender import recommend_products
 from app.services import ab_test_engine, feature_store, llm_client, metrics_collector
+from app.services.llm_client import LLMClient
 from app.services.vector_store import get_product_vector_store
 
 
@@ -234,6 +235,30 @@ def test_product_rerank_can_use_llm_hint(monkeypatch):
     assert result.data["backend"] == "llm+rule_rerank"
     assert result.data["product_ids"] == expected_order
     assert result.data["scores"][expected_order[0]]["reason"] == "LLM 重排序第1位"
+
+
+def test_qwen3_models_disable_thinking_by_default(monkeypatch):
+    monkeypatch.setenv("LLM_API_KEY", "ollama")
+    monkeypatch.setenv("LLM_API_BASE", "http://127.0.0.1:11434/v1")
+    monkeypatch.setenv("LLM_MODEL", "qwen3.5:4b")
+    monkeypatch.delenv("LLM_ENABLE_THINKING", raising=False)
+
+    client = LLMClient()
+
+    assert client.enable_thinking is False
+    assert client._extra_body() == {"enable_thinking": False, "think": False}
+
+
+def test_llm_enable_thinking_env_can_override_qwen3(monkeypatch):
+    monkeypatch.setenv("LLM_API_KEY", "ollama")
+    monkeypatch.setenv("LLM_API_BASE", "http://127.0.0.1:11434/v1")
+    monkeypatch.setenv("LLM_MODEL", "qwen3.5:4b")
+    monkeypatch.setenv("LLM_ENABLE_THINKING", "true")
+
+    client = LLMClient()
+
+    assert client.enable_thinking is True
+    assert client._extra_body() == {"enable_thinking": True, "think": True}
 
 
 def test_event_endpoint_updates_user_profile():
