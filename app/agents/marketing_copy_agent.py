@@ -186,7 +186,7 @@ class MarketingCopyAgent(BaseAgent):
         valid_product_ids = {product.product_id for product in products}
         copies_by_id: dict[str, str] = {}
 
-        for item in raw_items:
+        for item in self._iter_copy_items(raw_items):
             if not isinstance(item, dict):
                 continue
             product_id = str(item.get("product_id", "")).strip()
@@ -202,6 +202,15 @@ class MarketingCopyAgent(BaseAgent):
             for product in products
             if product.product_id in copies_by_id
         ]
+
+    def _iter_copy_items(self, raw_items: list[Any]) -> list[Any]:
+        flattened: list[Any] = []
+        for item in raw_items:
+            if isinstance(item, list):
+                flattened.extend(self._iter_copy_items(item))
+            else:
+                flattened.append(item)
+        return flattened
 
     def _pick_segment(self, llm_profile: dict[str, Any]) -> str:
         segments = llm_profile.get("segments", [])

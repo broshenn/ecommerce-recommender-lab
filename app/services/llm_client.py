@@ -109,10 +109,15 @@ class LLMClient:
         if text is None:
             return default
 
-        try:
-            return json.loads(self._strip_json_fence(text))
-        except json.JSONDecodeError:
-            return default
+        return self._parse_json_text(text, default=default)
+
+    def _parse_json_text(self, text: str, *, default: Any = None) -> Any:
+        for candidate in self._json_candidates(text):
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+        return default
 
     def _strip_json_fence(self, text: str) -> str:
         cleaned = text.strip()
@@ -122,6 +127,55 @@ class LLMClient:
         if len(lines) >= 3:
             return "\n".join(lines[1:-1]).strip()
         return cleaned.strip("`").strip()
+
+    def _json_candidates(self, text: str) -> list[str]:
+        cleaned = self._strip_json_fence(text)
+        candidates = [cleaned]
+        extracted = self._extract_json_candidate(cleaned)
+        if extracted and extracted not in candidates:
+            candidates.append(extracted)
+        balanced_candidates: list[str] = []
+        for candidate in candidates:
+            balanced = self._balance_json_brackets(candidate)
+            if balanced != candidate:
+                balanced_candidates.append(balanced)
+        return candidates + balanced_candidates
+
+    def _extract_json_candidate(self, text: str) -> str | None:
+        starts = [index for index in (text.find("["), text.find("{")) if index >= 0]
+        if not starts:
+            return None
+        start = min(starts)
+        ends = [index for index in (text.rfind("]"), text.rfind("}")) if index >= start]
+        end = max(ends) if ends else len(text) - 1
+        return text[start : end + 1].strip()
+
+    def _balance_json_brackets(self, text: str) -> str:
+        stack: list[str] = []
+        in_string = False
+        escaped = False
+        for char in text:
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == '"':
+                    in_string = False
+                continue
+            if char == '"':
+                in_string = True
+            elif char == "[":
+                stack.append("]")
+            elif char == "{":
+                stack.append("}")
+            elif char in "]}":
+                if not stack or stack[-1] != char:
+                    return text
+                stack.pop()
+        if in_string:
+            return text
+        return text + "".join(reversed(stack))
 
     def _extra_body(self) -> dict[str, Any]:
         if self.enable_thinking is None:

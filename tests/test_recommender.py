@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.behavior import record_event, reset_behavior_events
 from app.catalog import list_products
+from app.agents.marketing_copy_agent import MarketingCopyAgent
 from app.agents.product_rec_agent import ProductRecAgent
 from app.main import app
 from app.models import RecommendRequest, UserEventCreate
@@ -259,6 +260,38 @@ def test_llm_enable_thinking_env_can_override_qwen3(monkeypatch):
 
     assert client.enable_thinking is True
     assert client._extra_body() == {"enable_thinking": True, "think": True}
+
+
+def test_llm_json_parser_repairs_missing_closing_bracket(monkeypatch):
+    monkeypatch.setenv("LLM_API_KEY", "ollama")
+    monkeypatch.setenv("LLM_API_BASE", "http://127.0.0.1:11434/v1")
+    monkeypatch.setenv("LLM_MODEL", "qwen2.5:3b")
+
+    client = LLMClient()
+    result = client._parse_json_text('[[{"product_id": "p1", "copy": "ok"}]')
+
+    assert result == [[{"product_id": "p1", "copy": "ok"}]]
+
+
+def test_marketing_copy_normalizes_nested_llm_items():
+    products = list_products()[:2]
+    agent = MarketingCopyAgent()
+
+    copies = agent._normalize_llm_copies(
+        [
+            [
+                {"product_id": products[0].product_id, "copy": "copy one"},
+                {"product_id": products[1].product_id, "copy": "copy two"},
+            ]
+        ],
+        products,
+    )
+
+    assert [copy["product_id"] for copy in copies] == [
+        products[0].product_id,
+        products[1].product_id,
+    ]
+    assert [copy["text"] for copy in copies] == ["copy one", "copy two"]
 
 
 def test_event_endpoint_updates_user_profile():

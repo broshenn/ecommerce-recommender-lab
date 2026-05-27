@@ -566,3 +566,48 @@ app/services/llm_client.py
 .env.example
 tests/test_recommender.py
 ```
+
+## Step 14.2: Qwen2.5 Local LLM Compatibility
+
+### 新增文件
+
+```text
+无
+```
+
+### 修改文件
+
+```text
+app/services/llm_client.py
+app/agents/marketing_copy_agent.py
+tests/test_recommender.py
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. LLMClient.chat_json 增加 JSON 候选解析逻辑。
+2. 当本地小模型少输出一个右括号时，尝试补齐 JSON 的 [] / {} 结构。
+3. MarketingCopyAgent 支持把 LLM 返回的嵌套数组压平，兼容 qwen2.5:3b 偶发输出 [[{...}]] 的情况。
+4. 新增测试覆盖 qwen2.5 风格的缺失右括号 JSON，以及嵌套文案数组归一化。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe -m pytest tests\test_recommender.py -q
+28 passed
+
+本地 Ollama qwen2.5:3b 临时验证：
+UserProfileAgent latency_sec: 4.04，成功生成 segments / recommendation_hint
+MarketingCopyAgent latency_sec: 0.96，mode=llm，成功生成 LLM 文案
+```
+
+### 你应该重点阅读
+
+```text
+app/services/llm_client.py
+app/agents/marketing_copy_agent.py
+tests/test_recommender.py
+```
