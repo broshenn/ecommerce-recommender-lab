@@ -1,0 +1,547 @@
+{
+  "generated_at": "2026-05-27T14:37:06.240074+00:00",
+  "llm_client": {
+    "available": true,
+    "base_url": "http://127.0.0.1:11434/v1",
+    "model": "qwen2.5:3b",
+    "enable_thinking": null,
+    "last_error": null
+  },
+  "environment": {
+    "LLM_API_BASE": "http://127.0.0.1:11434/v1",
+    "LLM_MODEL": "qwen2.5:3b",
+    "LLM_TEMPERATURE": "default"
+  },
+  "sample_products": [
+    {
+      "product_id": "B07ZPSG8P5",
+      "name": "Bastmei 保护壳",
+      "category": "手机",
+      "price": 86.0,
+      "brand": "Bastmei",
+      "stock": 276,
+      "tags": [
+        "手机",
+        "手机配件",
+        "保护壳"
+      ],
+      "source_name": "Bastmei for OnePlus 7T Case Extremely Light Ultra Thin, Super Slim Hard PC Cover Case for OnePlus 7T (Gravel Green)",
+      "source_category": "Cell Phones & Accessories",
+      "source_dataset": "Amazon Reviews 2023",
+      "image_url": "https://m.media-amazon.com/images/I/41Mo5IIOw6L._AC_.jpg",
+      "rating": 4.4,
+      "rating_count": 177
+    },
+    {
+      "product_id": "B07SM135LS",
+      "name": "Digi-Tatoo 电子数码商品",
+      "category": "电子数码",
+      "price": 144.0,
+      "brand": "Digi-Tatoo",
+      "stock": 951,
+      "tags": [
+        "电子数码",
+        "电子产品",
+        "电脑配件"
+      ],
+      "source_name": "Digi-Tatoo Decal Skin Compatible With MacBook Pro 13 inch (Model A2338/ A2289/ A2251) - Protective and Decorative Full Body Laptop Skin Decal Sticker, Anti-Scratch Vinly Skin Sticker Wrap [Fresh Marble]",
+      "source_category": "Computers",
+      "source_dataset": "Amazon Reviews 2023",
+      "image_url": "https://m.media-amazon.com/images/I/31t4bj9t88L._AC_.jpg",
+      "rating": 4.5,
+      "rating_count": 246
+    },
+    {
+      "product_id": "B00Z9TLVK0",
+      "name": "2K PlayStation 游戏",
+      "category": "游戏",
+      "price": 418.0,
+      "brand": "2K",
+      "stock": 137,
+      "tags": [
+        "游戏",
+        "PlayStation"
+      ],
+      "source_name": "NBA 2K17 - Early Tip Off Edition - PlayStation 4",
+      "source_category": "Video Games",
+      "source_dataset": "Amazon Reviews 2023",
+      "image_url": "https://m.media-amazon.com/images/I/51wlIPcf0gL.jpg",
+      "rating": 4.3,
+      "rating_count": 223
+    }
+  ],
+  "marketing_copy": {
+    "segments": [
+      {
+        "segment": "new_user",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 2008.69,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "欢迎新用户，首次购买享受专属优惠！保护你的手机，从Bastmei开始。",
+            "char_count": 35,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [
+              "优惠券?"
+            ],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "电子数码爱好者必备，Digi-Tatoo让你的电子产品更酷炫！新用户专享优惠等你来拿。",
+            "char_count": 43,
+            "length_ok": false,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [
+              "优惠券?"
+            ],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "2K游戏体验升级，让PlayStation的游戏乐趣更加精彩。欢迎新用户，首次购买额外折扣！",
+            "char_count": 46,
+            "length_ok": false,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [
+              "折扣"
+            ],
+            "money_values": [],
+            "price_mismatches": []
+          }
+        ],
+        "error": null
+      },
+      {
+        "segment": "active",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 1322.73,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "让手机更安全，Bastmei保护壳为你的爱机加冕！",
+            "char_count": 25,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "Digi-Tatoo电子数码配件，让你的电子产品更加耐用和美观。",
+            "char_count": 32,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "2K游戏体验，让PlayStation的游戏世界触手可及！",
+            "char_count": 29,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          }
+        ],
+        "error": null
+      },
+      {
+        "segment": "high_value",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 1305.13,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "尊享 Bastmei 保护壳，为您的手机增添高端防护。",
+            "char_count": 25,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "Digi-Tatoo 电子数码商品，彰显您对科技的热爱与品味。",
+            "char_count": 30,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "体验2K 游戏带来的沉浸式娱乐享受，尽享游戏盛宴。",
+            "char_count": 24,
+            "length_ok": false,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          }
+        ],
+        "error": null
+      },
+      {
+        "segment": "price_sensitive",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 1913.74,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "Bastmei 保护壳，价格仅¥86.0，比市场价低30%，限时优惠！",
+            "char_count": 34,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [
+              "优惠券?",
+              "限时"
+            ],
+            "money_values": [
+              86.0
+            ],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "Digi-Tatoo 电子数码商品，价格仅¥144.0，比市面同类产品便宜20%！",
+            "char_count": 40,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [],
+            "money_values": [
+              144.0
+            ],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "2K PlayStation 游戏，限时特惠，原价¥418.0现只需¥334.4，省下83.6%！",
+            "char_count": 47,
+            "length_ok": false,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [
+              "省下?\\s*\\d+",
+              "限时"
+            ],
+            "money_values": [
+              418.0,
+              334.4
+            ],
+            "price_mismatches": [
+              334.4
+            ]
+          }
+        ],
+        "error": null
+      },
+      {
+        "segment": "churn_risk",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 1667.66,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "挽回友情，专属折扣等你来抢！Bastmei保护壳限时特惠，仅需¥86.0",
+            "char_count": 36,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [
+              "折扣",
+              "限时"
+            ],
+            "money_values": [
+              86.0
+            ],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "告别高价，Digi-Tatoo电子数码商品限时回馈，仅¥144.0起！",
+            "char_count": 35,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [
+              "限时"
+            ],
+            "money_values": [
+              144.0
+            ],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "最后机会，2K PlayStation游戏专属折扣等你来抢！仅需¥418.0起！",
+            "char_count": 39,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [
+              "折扣"
+            ],
+            "money_values": [
+              418.0
+            ],
+            "price_mismatches": []
+          }
+        ],
+        "error": null
+      },
+      {
+        "segment": "category_explorer",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 1351.0,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "探索未来，Bastmei 保护壳让你的手机更加坚不可摧！",
+            "char_count": 27,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "Digi-Tatoo 电子数码商品，让科技与艺术碰撞出新火花！",
+            "char_count": 30,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "2K 游戏带你进入一个全新的游戏世界，探索无限可能！",
+            "char_count": 25,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          }
+        ],
+        "error": null
+      },
+      {
+        "segment": "brand_loyal",
+        "success": true,
+        "mode": "llm",
+        "latency_ms": 1258.08,
+        "copy_count": 3,
+        "expected_count": 3,
+        "copies": [
+          {
+            "product_id": "B07ZPSG8P5",
+            "text": "让您的手机更安全，Bastmei保护壳，品牌信赖之选！",
+            "char_count": 27,
+            "length_ok": true,
+            "style_marker_hit": true,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B07SM135LS",
+            "text": "Digi-Tatoo电子数码配件，为您的电子产品保驾护航。",
+            "char_count": 29,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          },
+          {
+            "product_id": "B00Z9TLVK0",
+            "text": "2K游戏体验，让PlayStation带您进入无限可能的世界。",
+            "char_count": 31,
+            "length_ok": true,
+            "style_marker_hit": false,
+            "unsupported_promo_hits": [],
+            "money_values": [],
+            "price_mismatches": []
+          }
+        ],
+        "error": null
+      }
+    ]
+  },
+  "user_profile": {
+    "cases": [
+      {
+        "case": "new_user_low_history",
+        "expected": "new_user",
+        "segments": [
+          "new_user"
+        ],
+        "hit": true,
+        "schema_ok": true,
+        "latency_ms": 943.56,
+        "output": {
+          "segments": [
+            "new_user"
+          ],
+          "intent_summary": "新用户对电商内容感兴趣，但尚未明确购物意图",
+          "recommendation_hint": "推荐个性化内容和促销活动以吸引关注并引导其产生购买行为",
+          "price_sensitivity": "low",
+          "rfm_interpretation": "最近活跃度较高，但行为频次低且消费能力弱"
+        }
+      },
+      {
+        "case": "churn_risk_inactive",
+        "expected": "churn_risk",
+        "segments": [
+          "category_explorer",
+          "brand_loyal"
+        ],
+        "hit": false,
+        "schema_ok": true,
+        "latency_ms": 925.38,
+        "output": {
+          "segments": [
+            "category_explorer",
+            "brand_loyal"
+          ],
+          "intent_summary": "探索Electronics类目并忠诚于Sony品牌",
+          "recommendation_hint": "推荐相关电子产品和Sony品牌的促销活动",
+          "price_sensitivity": "low",
+          "rfm_interpretation": "用户对价格敏感度较低，主要关注高频次购买和品牌忠诚度"
+        }
+      },
+      {
+        "case": "high_value_active",
+        "expected": "high_value",
+        "segments": [
+          "category_explorer",
+          "brand_loyal"
+        ],
+        "hit": false,
+        "schema_ok": true,
+        "latency_ms": 977.2,
+        "output": {
+          "segments": [
+            "category_explorer",
+            "brand_loyal"
+          ],
+          "intent_summary": "探索Electronics类目并偏好Apple品牌",
+          "recommendation_hint": "推荐相关电子产品和Apple品牌的商品以满足用户兴趣",
+          "price_sensitivity": "medium",
+          "rfm_interpretation": "用户具有中等的消费能力和较高的行为频次，但最近活跃度一般"
+        }
+      },
+      {
+        "case": "category_explorer_multi_category",
+        "expected": "category_explorer",
+        "segments": [
+          "active"
+        ],
+        "hit": false,
+        "schema_ok": true,
+        "latency_ms": 905.97,
+        "output": {
+          "segments": [
+            "active"
+          ],
+          "intent_summary": "浏览兴趣类目，寻找新的购买机会",
+          "recommendation_hint": "推荐热门或新品类商品，结合用户历史偏好进行个性化推荐",
+          "price_sensitivity": "medium",
+          "rfm_interpretation": "用户具有中等的消费能力和活跃度"
+        }
+      },
+      {
+        "case": "brand_loyal_repeat_brand",
+        "expected": "brand_loyal",
+        "segments": [
+          "category_explorer",
+          "brand_loyal"
+        ],
+        "hit": true,
+        "schema_ok": true,
+        "latency_ms": 979.24,
+        "output": {
+          "segments": [
+            "category_explorer",
+            "brand_loyal"
+          ],
+          "intent_summary": "探索Electronics类目，偏好Apple品牌",
+          "recommendation_hint": "推荐相关Apple品牌的电子产品进行重点推送",
+          "price_sensitivity": "medium",
+          "rfm_interpretation": "近期活跃度一般，但过去7天内有较高消费能力"
+        }
+      }
+    ]
+  },
+  "consistency": {
+    "copy": {
+      "runs": [
+        "Bastmei 保护壳，原价¥86.0，现仅需￥43.0，省你一半价钱！",
+        "Bastmei 保护壳，性价比高！现仅¥86.0，限时优惠，省你更多！",
+        "Bastmei 保护壳，性价比高！现仅¥86，限时优惠，省你更多！"
+      ],
+      "unique_outputs": 3,
+      "stable": false
+    },
+    "profile": {
+      "runs": [
+        [
+          "category_explorer",
+          "brand_loyal"
+        ],
+        [
+          "category_explorer",
+          "brand_loyal"
+        ],
+        [
+          "category_explorer",
+          "brand_loyal"
+        ]
+      ],
+      "unique_outputs": 1,
+      "stable": true
+    }
+  },
+  "summary": {
+    "copy_json_success_rate": 1.0,
+    "copy_completion_rate": 1.0,
+    "copy_length_pass_rate": 0.8095,
+    "copy_style_marker_pass_rate": 0.5238,
+    "copy_unsupported_promo_rate": 0.381,
+    "copy_price_mismatch_rate": 0.0476,
+    "copy_avg_latency_ms": 1546.72,
+    "profile_schema_pass_rate": 1.0,
+    "profile_expected_label_accuracy": 0.4,
+    "copy_consistency_unique_outputs": 3,
+    "profile_consistency_unique_outputs": 1,
+    "overall_verdict": "not_ready_price_hallucination"
+  },
+  "elapsed_seconds": 20.99
+}
