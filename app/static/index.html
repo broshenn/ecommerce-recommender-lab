@@ -417,8 +417,11 @@
 
         <label for="numItems">推荐数量</label>
         <select id="numItems" v-model.number="numItems">
+          <option :value="1">1 个</option>
           <option :value="3">3 个</option>
           <option :value="5">5 个</option>
+          <option :value="8">8 个</option>
+          <option :value="12">12 个</option>
         </select>
 
         <label>偏好类目</label>
@@ -601,7 +604,7 @@
       data() {
         return {
           userId: "u001",
-          numItems: 3,
+          numItems: 5,
           selectedCategories: ["手机", "电子数码"],
           selectedBrands: ["Bastmei", "Sharp"],
           selectedTags: ["手机配件", "办公", "保护壳"],

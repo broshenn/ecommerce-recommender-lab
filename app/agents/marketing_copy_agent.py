@@ -3,10 +3,17 @@ from __future__ import annotations
 import re
 from typing import Any
 
+import os
+
 from app.models import AgentResult, MarketingCopy, Product, UserProfile
 from app.services import llm_client
+from app.services.local_hf_copy_client import local_hf_copy_client
 
 from app.agents.base_agent import BaseAgent
+
+# Ollama LoRA 文案模型配置
+_OLLAMA_COPY_MODEL = os.getenv("OLLAMA_COPY_MODEL", "ecom-copy-lora:qwen25-3b-gguf")
+_OLLAMA_COPY_BASE_URL = os.getenv("OLLAMA_COPY_BASE_URL", "http://127.0.0.1:11434/v1")
 
 
 SEGMENT_TEMPLATES = {
@@ -17,11 +24,26 @@ SEGMENT_TEMPLATES = {
 风格要求：品质感、尊享感、突出商品高端属性和品牌价值。
 每个商品生成一条文案（25-40字）。""",
     "price_sensitive": """你是电商营销文案专家。为价格敏感用户撰写推荐文案。
-风格要求：突出性价比、促销价格、限时优惠、省钱金额。
-每个商品生成一条文案（25-40字）。""",
+风格要求：突出性价比、价格亲民、实用耐用、高评分口碑。
+每个商品生成一条文案（25-40字）。
+
+严格规则：
+- 只能使用商品名称、真实价格、品牌、标签、评分、库存等真实信息
+- 禁止编造具体的折扣金额、满减活动、限时秒杀、买一送一
+- 禁止出现"促销价""近期活动""限时优惠""直降""打折""原价"等词汇
+- 可写"性价比""价格实惠""预算友好""物有所值""高评分""口碑好"
+- 如果商品价格低于同品类平均，可写"亲民价"；如果商品评分高，可写"高好评率""用户推荐"
+- 实在没有卖点就描述商品本身功能和使用场景""",
     "churn_risk": """你是电商营销文案专家。为即将流失的用户撰写召回文案。
-风格要求：情感唤回、专属折扣、限时活动、制造紧迫感。
-每个商品生成一条文案（25-40字）。""",
+风格要求：情感唤回、品质保障、服务承诺、温和提醒。
+每个商品生成一条文案（25-40字）。
+
+严格规则：
+- 只能使用商品名称、品牌、评分、库存、标签等真实信息
+- 禁止编造具体折扣金额、专属优惠券、限时活动、最后机会
+- 禁止出现"专属折扣""限时优惠""错过不再""最后机会"等制造假紧迫感的话术
+- 可写"为你保留""品质之选""售后无忧""值得拥有""欢迎回来""我们一直在"
+- 强调商品品质和用户口碑，用情感连接替代虚假促销""",
     "active": """你是电商营销文案专家。为活跃用户撰写推荐文案。
 风格要求：突出商品亮点和使用场景，引发共鸣。
 每个商品生成一条文案（25-40字）。""",
@@ -55,6 +77,44 @@ OUTPUT_INSTRUCTION = """
 请以JSON数组格式输出,每个元素格式:
 [{"product_id": "xxx", "copy": "文案内容（25-40字）"}]
 只输出JSON,不要其他内容。"""
+
+OUTPUT_SAFETY_RULES = """
+通用安全规则（所有分群都必须遵守）:
+- 只能使用商品信息中真实存在的字段作为卖点
+- 禁止编造任何具体数字（折扣金额、降价幅度、优惠券面额等）
+- 禁止编造活动类型（秒杀、满减、买赠、限时等）
+- 如果实在没有卖点，直接描述商品功能和使用场景，不要硬凑
+- 不要在每个商品的文案中都重复相同的句式"""
+
+
+def _chat_ollama_copy(system_prompt: str, user_message: str) -> list[dict] | None:
+    """调 Ollama 本地 LoRA 模型生成文案。不可用时返回 None。"""
+    try:
+        import json as _json
+        from openai import OpenAI as _OpenAI
+
+        client = _OpenAI(api_key="ollama", base_url=_OLLAMA_COPY_BASE_URL)
+        response = client.chat.completions.create(
+            model=_OLLAMA_COPY_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message},
+            ],
+            temperature=0.3,
+            max_tokens=768,
+        )
+        content = response.choices[0].message.content
+        if not content:
+            return None
+        content = content.strip()
+        if content.startswith("```"):
+            lines = content.split("\n")
+            content = "\n".join(lines[1:-1]) if len(lines) >= 3 else content.strip("`")
+        return _json.loads(content)
+    except Exception as exc:
+        import sys as _sys
+        print(f"[_chat_ollama_copy] ERROR: {exc}", file=_sys.stderr)
+        return None
 
 
 class MarketingCopyAgent(BaseAgent):
@@ -94,6 +154,7 @@ class MarketingCopyAgent(BaseAgent):
                     "copy_count": len(copies),
                     "mode": "control_rule",
                     "llm_client": llm_client.status(),
+                    "local_hf_copy_client": local_hf_copy_client.status(),
                 },
                 confidence=0.85,
             )
@@ -109,6 +170,8 @@ class MarketingCopyAgent(BaseAgent):
                     "copy_count": len(llm_copies),
                     "mode": "llm",
                     "llm_client": llm_client.status(),
+                    "local_hf_copy_client": local_hf_copy_client.status(),
+                    "ollama_copy_model": _OLLAMA_COPY_MODEL,
                 },
                 confidence=0.9,
             )
@@ -129,6 +192,7 @@ class MarketingCopyAgent(BaseAgent):
                 "copy_count": len(copies),
                 "mode": "rule_fallback",
                 "llm_client": llm_client.status(),
+                "local_hf_copy_client": local_hf_copy_client.status(),
             },
             confidence=0.6,
         )
@@ -141,11 +205,17 @@ class MarketingCopyAgent(BaseAgent):
     ) -> list[dict[str, str]] | None:
         segment = self._pick_segment(llm_profile)
         system_prompt = SEGMENT_TEMPLATES.get(segment, SEGMENT_TEMPLATES["_default"])
-        result = llm_client.chat_json(
-            system_prompt=f"{system_prompt}\n\n{OUTPUT_INSTRUCTION}",
-            user_message=self._build_llm_message(products, profile, llm_profile),
-            default=None,
-        )
+        prompt = f"{system_prompt}\n\n{OUTPUT_SAFETY_RULES}\n\n{OUTPUT_INSTRUCTION}"
+        message = self._build_llm_message(products, profile, llm_profile)
+        # ① Ollama LoRA GGUF 模型（本地最快）
+        result = _chat_ollama_copy(prompt, message)
+        if result is None:
+            # ② DeepSeek API 兜底
+            result = llm_client.chat_json(
+                system_prompt=prompt,
+                user_message=message,
+                default=None,
+            )
         if not isinstance(result, list):
             return None
 
