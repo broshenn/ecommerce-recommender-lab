@@ -48,6 +48,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=3)
     parser.add_argument("--sleep", type=float, default=0.2)
     parser.add_argument("--max-tokens", type=int, default=1024)
+    parser.add_argument("--max-attempts", type=int, default=8)
     parser.add_argument("--model", default=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"))
     args = parser.parse_args()
 
@@ -81,6 +82,7 @@ def main() -> None:
                     segment=segment,
                     products=batch,
                     max_tokens=args.max_tokens,
+                    max_attempts=args.max_attempts,
                 )
                 file.write(json.dumps(record, ensure_ascii=False) + "\n")
                 file.flush()
@@ -98,10 +100,11 @@ def build_training_record(
     segment: str,
     products: list[Any],
     max_tokens: int,
+    max_attempts: int,
 ) -> dict[str, Any]:
     system_prompt = f"{SEGMENT_TEMPLATES[segment]}\n\n{OUTPUT_RULES}"
     user_message = build_user_message(segment, products)
-    answer = call_teacher(client, model, system_prompt, user_message, products, max_tokens)
+    answer = call_teacher(client, model, system_prompt, user_message, products, max_tokens, max_attempts)
     return {
         "task": "marketing_copy",
         "segment": segment,
@@ -125,9 +128,10 @@ def call_teacher(
     user_message: str,
     products: list[Any],
     max_tokens: int,
+    max_attempts: int,
 ) -> list[dict[str, str]]:
     valid_ids = {product.product_id for product in products}
-    for attempt in range(5):
+    for attempt in range(max_attempts):
         try:
             response = client.chat.completions.create(
                 model=model,
