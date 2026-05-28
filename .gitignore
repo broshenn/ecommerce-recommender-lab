@@ -10,3 +10,6 @@ server-*.log
 *.sqlite
 *.sqlite3
 chroma_db/
+training/data/
+training/logs/
+training/outputs/
