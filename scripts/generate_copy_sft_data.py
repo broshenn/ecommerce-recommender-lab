@@ -47,6 +47,7 @@ def main() -> None:
     parser.add_argument("--limit-products", type=int, default=0)
     parser.add_argument("--batch-size", type=int, default=3)
     parser.add_argument("--sleep", type=float, default=0.2)
+    parser.add_argument("--max-tokens", type=int, default=1024)
     parser.add_argument("--model", default=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"))
     args = parser.parse_args()
 
@@ -79,6 +80,7 @@ def main() -> None:
                     model=normalize_model(args.model),
                     segment=segment,
                     products=batch,
+                    max_tokens=args.max_tokens,
                 )
                 file.write(json.dumps(record, ensure_ascii=False) + "\n")
                 file.flush()
@@ -95,10 +97,11 @@ def build_training_record(
     model: str,
     segment: str,
     products: list[Any],
+    max_tokens: int,
 ) -> dict[str, Any]:
     system_prompt = f"{SEGMENT_TEMPLATES[segment]}\n\n{OUTPUT_RULES}"
     user_message = build_user_message(segment, products)
-    answer = call_teacher(client, model, system_prompt, user_message, products)
+    answer = call_teacher(client, model, system_prompt, user_message, products, max_tokens)
     return {
         "task": "marketing_copy",
         "segment": segment,
@@ -121,6 +124,7 @@ def call_teacher(
     system_prompt: str,
     user_message: str,
     products: list[Any],
+    max_tokens: int,
 ) -> list[dict[str, str]]:
     valid_ids = {product.product_id for product in products}
     for attempt in range(5):
@@ -132,7 +136,7 @@ def call_teacher(
                     {"role": "user", "content": user_message},
                 ],
                 temperature=0.2,
-                max_tokens=1024,
+                max_tokens=max_tokens,
             )
             content = response.choices[0].message.content or ""
             parsed = _parse_json_array(content)
