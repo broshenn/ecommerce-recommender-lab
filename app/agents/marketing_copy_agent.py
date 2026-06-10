@@ -12,6 +12,7 @@ from app.services.local_hf_copy_client import local_hf_copy_client
 from app.agents.base_agent import BaseAgent
 
 # Ollama LoRA 文案模型配置
+_COPY_BACKEND = os.getenv("COPY_LLM_BACKEND", "").strip().lower()
 _OLLAMA_COPY_MODEL = os.getenv("OLLAMA_COPY_MODEL", "ecom-copy-lora:qwen25-3b-gguf")
 _OLLAMA_COPY_BASE_URL = os.getenv("OLLAMA_COPY_BASE_URL", "http://127.0.0.1:11434/v1")
 
@@ -89,6 +90,8 @@ OUTPUT_SAFETY_RULES = """
 
 def _chat_ollama_copy(system_prompt: str, user_message: str) -> list[dict] | None:
     """调 Ollama 本地 LoRA 模型生成文案。不可用时返回 None。"""
+    if _COPY_BACKEND not in {"ollama", "local_ollama"}:
+        return None
     try:
         import json as _json
         from openai import OpenAI as _OpenAI

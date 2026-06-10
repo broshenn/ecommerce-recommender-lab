@@ -112,7 +112,7 @@ POST /api/v1/recommend
 | Supervisor 编排 | `app/orchestrator/supervisor.py` | 早期编排链路，保留用于对比 |
 | 数据模型 | `app/models.py` | 请求、响应、商品、画像、实验模型 |
 | 商品目录 | `app/catalog.py` | 读取 Amazon 商品样本 CSV |
-| 行为系统 | `app/behavior.py` | view/like/dislike/add_to_cart 记录与画像聚合 |
+| 行为系统 | `app/behavior.py` | view/like/dislike/purchase 记录与画像聚合 |
 | 规则打分 | `app/personalization.py` | 类目、品牌、标签、预算等规则评分 |
 | 库存逻辑 | `app/inventory.py` | 库存状态、低库存、限购提示 |
 | 用户画像 Agent | `app/agents/user_profile_agent.py` | SQLite + Redis + LLM 生成用户画像 |
@@ -166,7 +166,7 @@ data/products_amazon_sample.csv
 | `view` | 浏览商品 |
 | `like` | 喜欢商品 |
 | `dislike` | 不喜欢商品 |
-| `add_to_cart` | 加入购物车 |
+| `purchase` | 购买 |
 
 行为写入 SQLite，作为长期画像的事实来源。
 
@@ -201,7 +201,7 @@ profile:{user_id}
 behavior:{user_id}:view
 behavior:{user_id}:like
 behavior:{user_id}:dislike
-behavior:{user_id}:add_to_cart
+behavior:{user_id}:purchase
 ```
 
 在线特征包括：
@@ -211,7 +211,7 @@ behavior:{user_id}:add_to_cart
 最近 24 小时浏览次数
 最近 24 小时点赞次数
 最近 24 小时不喜欢次数
-最近 7 天加购次数
+最近 7 天购买次数
 最近兴趣类目
 最近兴趣品牌
 最近兴趣标签
@@ -442,7 +442,7 @@ treatment -> LLM 画像 + LLM 重排 + LLM 文案
 record_exposure()
 ```
 
-用户点击、喜欢、加购、不喜欢后回传 outcome：
+用户点击、喜欢、购买、不喜欢后回传 outcome：
 
 ```http
 POST /api/v1/experiments/{experiment_id}/outcome
@@ -488,7 +488,7 @@ app/static/index.html
 发起 LangGraph 推荐
 展示商品图片、价格、库存、评分、推荐理由
 展示营销文案
-记录 view / like / dislike / add_to_cart
+记录 view / like / dislike / purchase
 回传 A/B outcome
 展示 Agent 调试信息
 ```
@@ -734,7 +734,36 @@ D:\anaconda\envs\py3.10\python.exe -m compileall app tests
 
 ---
 
-## 13. 如何判断 LLM 链路是否生效
+## 13. 离线推荐评测
+
+没有真实线上流量时，项目先用 Amazon 商品数据生成 weak-label 用户行为样本，用来验证推荐链路是否命中用户未来兴趣意图。
+
+生成行为样本：
+
+```powershell
+D:\anaconda\envs\py3.10\python.exe scripts\import_amazon_user_events.py --generate-sample --max-events 500 --output data\amazon_user_events_sample.csv
+```
+
+运行端到端离线评测：
+
+```powershell
+D:\anaconda\envs\py3.10\python.exe scripts\evaluate_recommendation_offline.py --events data\amazon_user_events_sample.csv --orchestrator graph --k 5 --max-users 50
+```
+
+核心指标：
+
+```text
+Exact Hit@K: 是否命中未来同一个商品 ASIN，最严格。
+Intent Hit@K: 是否命中未来正反馈商品的类目、品牌、标签意图。
+Budget Compliance: 推荐商品是否满足预算约束。
+Inventory Compliance: 推荐商品是否有库存。
+Avg Latency: 端到端推荐耗时。
+Fallback Rate: 文案 Agent 是否降级到规则兜底。
+```
+
+---
+
+## 14. 如何判断 LLM 链路是否生效
 
 前端或 API 响应里重点看：
 
@@ -761,7 +790,7 @@ agent_results.marketing_copy.data.template
 
 ---
 
-## 14. 学习路线
+## 15. 学习路线
 
 建议按下面顺序读源码：
 
@@ -787,7 +816,7 @@ steps/
 
 ---
 
-## 15. 项目亮点
+## 16. 项目亮点
 
 ### 15.1 工程亮点
 
@@ -815,7 +844,7 @@ Agent latency 可观测
 库存约束
 结果展示
 曝光记录
-点击/加购回传
+点击/购买回传
 实验统计
 ```
 
@@ -833,7 +862,7 @@ Agent latency 可观测
 
 ---
 
-## 16. 简历描述参考
+## 17. 简历描述参考
 
 ```text
 IntelliCommerce Agent：智能电商推荐与营销生成系统
@@ -848,25 +877,25 @@ IntelliCommerce Agent：智能电商推荐与营销生成系统
 - 使用 SQLite 持久化用户行为，结合 Redis 构建实时画像、行为窗口和 RFM 特征，支持 LLM 生成用户分群、购买意图和推荐提示。
 - 基于 Amazon Reviews 2023 构建约 1000 条商品目录，接入 Chroma 向量召回，并融合规则评分与 LLM recommendation hint 完成个性化重排。
 - 构造 940 条高质量文案样本，使用 LLaMA-Factory 对 Qwen2.5-3B 进行 LoRA 微调，缓解价格幻觉、文案过短和分群风格不明显问题。
-- 实现 control/treatment 分流、曝光记录、点击/加购 outcome 回传和实验统计，为评估 LLM 重排与 LLM 文案效果提供数据闭环。
+- 实现 control/treatment 分流、曝光记录、点击/购买 outcome 回传和实验统计，为评估 LLM 重排与 LLM 文案效果提供数据闭环。
 ```
 
 ---
 
-## 17. 后续规划
+## 18. 后续规划
 
 | 优先级 | 方向 | 目标 |
 | --- | --- | --- |
 | P0 | 前端调试面板完善 | 更清楚展示每个 Agent 的耗时、模式和 fallback 原因 |
-| P0 | 推荐日志沉淀 | 保存曝光、点击、加购、分组、商品 ID、画像快照 |
-| P1 | 实验报告接口 | 输出 control/treatment 的曝光、点击、CTR、加购率 |
+| P0 | 推荐日志沉淀 | 保存曝光、点击、购买、分组、商品 ID、画像快照 |
+| P1 | 实验报告接口 | 输出 control/treatment 的曝光、点击、CTR、购买率 |
 | P1 | 文案模型评测集 | 固定 case 评估 JSON、幻觉、长度、风格分化 |
 | P2 | 画像模型蒸馏 | 当 prompt 修复不足时，再考虑蒸馏 UserProfileAgent |
 | P2 | 排序模型训练 | 基于真实 outcome 训练轻量排序模型 |
 
 ---
 
-## 18. 参考资料
+## 19. 参考资料
 
 - FastAPI: https://fastapi.tiangolo.com/
 - LangGraph: https://langchain-ai.github.io/langgraph/
@@ -875,4 +904,3 @@ IntelliCommerce Agent：智能电商推荐与营销生成系统
 - LLaMA-Factory: https://github.com/hiyouga/LLaMA-Factory
 - Qwen: https://github.com/QwenLM/Qwen
 - Amazon Reviews 2023: https://amazon-reviews-2023.github.io/
-

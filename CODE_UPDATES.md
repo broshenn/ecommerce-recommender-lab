@@ -611,3 +611,64 @@ app/services/llm_client.py
 app/agents/marketing_copy_agent.py
 tests/test_recommender.py
 ```
+
+## Step 15: Offline Recommendation Evaluation
+
+### 新增文件
+
+```text
+scripts/import_amazon_user_events.py
+scripts/evaluate_recommendation_offline.py
+data/amazon_user_events_sample.csv
+reports/recommendation_offline_eval_latest.json
+```
+
+### 修改文件
+
+```text
+app/agents/marketing_copy_agent.py
+tests/test_recommender.py
+CODE_UPDATES.md
+```
+
+### 核心变化
+
+```text
+1. 新增 Amazon 用户行为导入脚本，支持 jsonl/jsonl.gz/csv 原始 review 数据转成项目事件格式。
+2. 当前没有下载完整 Amazon Reviews 2023 原始行为时，脚本可基于现有商品元数据生成 weak-label 行为样本。
+3. 生成 data/amazon_user_events_sample.csv，字段为 user_id/product_id/event_type/rating/timestamp/source。
+4. 新增离线推荐评测脚本，按用户时间序列切分 history/target，再调用当前推荐链路计算指标。
+5. 指标分为 exact 与 intent 两类：
+   - exact: 是否命中未来同一个商品 ASIN。
+   - intent: 是否命中未来正反馈商品的类目/品牌/标签意图。
+6. 离线评测默认关闭外部 LLM 和本地 Ollama 文案模型，避免模型服务状态影响推荐链路评估。
+7. MarketingCopyAgent 的本地 Ollama LoRA 文案模型改成显式开关：COPY_LLM_BACKEND=ollama 才启用。
+8. 新增测试覆盖 rating -> event_type 映射、timestamp 归一化和 NDCG 计算。
+```
+
+### 运行和验证
+
+```text
+D:\anaconda\envs\py3.10\python.exe scripts\import_amazon_user_events.py --generate-sample --max-events 500 --output data\amazon_user_events_sample.csv
+Wrote 500 events to data\amazon_user_events_sample.csv
+
+D:\anaconda\envs\py3.10\python.exe scripts\evaluate_recommendation_offline.py --events data\amazon_user_events_sample.csv --orchestrator graph --k 5 --max-users 50
+case_count: 44
+exact_hit_rate_at_k: 0.0
+intent_hit_rate_at_k: 0.9773
+intent_recall_at_k: 0.9682
+intent_ndcg_at_k: 0.9761
+budget_compliance_rate: 1.0
+inventory_compliance_rate: 1.0
+avg_latency_ms: 137.2568
+fallback_rate: 0.5455
+```
+
+### 你应该重点阅读
+
+```text
+scripts/import_amazon_user_events.py
+scripts/evaluate_recommendation_offline.py
+data/amazon_user_events_sample.csv
+reports/recommendation_offline_eval_latest.json
+```

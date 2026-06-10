@@ -14,6 +14,8 @@ from app.recommender import recommend_products
 from app.services import ab_test_engine, feature_store, llm_client, metrics_collector
 from app.services.llm_client import LLMClient
 from app.services.vector_store import get_product_vector_store
+from scripts.evaluate_recommendation_offline import ndcg_at_k
+from scripts.import_amazon_user_events import normalize_timestamp, rating_to_event_type
 
 
 @pytest.fixture(autouse=True)
@@ -294,6 +296,21 @@ def test_marketing_copy_normalizes_nested_llm_items():
     assert [copy["text"] for copy in copies] == ["copy one", "copy two"]
 
 
+def test_amazon_rating_to_user_event_mapping():
+    assert rating_to_event_type(5.0) == "purchase"
+    assert rating_to_event_type(4.0) == "like"
+    assert rating_to_event_type(3.0) == "view"
+    assert rating_to_event_type(1.0) == "dislike"
+    assert normalize_timestamp(1_700_000_000_000) == 1_700_000_000
+
+
+def test_offline_ndcg_scores_exact_target_order():
+    relevance = {"p1": 3.0, "p2": 2.0}
+
+    assert ndcg_at_k(["p1", "p2"], relevance, 2) == pytest.approx(1.0)
+    assert ndcg_at_k(["p3", "p2"], relevance, 2) < 1.0
+
+
 def test_event_endpoint_updates_user_profile():
     client = TestClient(app)
     product = list_products()[0]
@@ -351,7 +368,7 @@ def test_recorded_behavior_affects_recommendation_profile():
         UserEventCreate(
             user_id="auto-profile-user",
             product_id=product.product_id,
-            event_type="add_to_cart",
+            event_type="purchase",
         )
     )
 
@@ -606,7 +623,7 @@ def test_feature_store_profile_cache_is_rebuilt_from_sqlite():
         UserEventCreate(
             user_id="cache-user",
             product_id=product.product_id,
-            event_type="add_to_cart",
+            event_type="purchase",
         )
     )
 
@@ -622,4 +639,4 @@ def test_feature_store_profile_cache_is_rebuilt_from_sqlite():
     data = feature_response.json()
     if data["status"]["available"]:
         assert data["cached_profile"]["user_id"] == "cache-user"
-        assert data["features"]["add_to_cart_count_7d"] == 1
+        assert data["features"]["purchase_count_7d"] == 1

@@ -1,0 +1,1322 @@
+{
+  "generated_at": "2026-06-10T12:14:56.593131+00:00",
+  "events_path": "data\\amazon_user_events_sample.csv",
+  "orchestrator": "graph",
+  "k": 5,
+  "case_count": 44,
+  "summary": {
+    "case_count": 44,
+    "exact_hit_rate_at_k": 0.0,
+    "exact_recall_at_k": 0.0,
+    "exact_ndcg_at_k": 0.0,
+    "intent_hit_rate_at_k": 0.9773,
+    "intent_recall_at_k": 0.9682,
+    "intent_ndcg_at_k": 0.9761,
+    "budget_compliance_rate": 1.0,
+    "inventory_compliance_rate": 1.0,
+    "avg_diversity_at_k": 0.55,
+    "avg_latency_ms": 137.2568,
+    "fallback_rate": 0.5455,
+    "elapsed_seconds": 6.72
+  },
+  "cases": [
+    {
+      "user_id": "amazon-u001",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B09VXDNTJZ"
+      ],
+      "recommended_product_ids": [
+        "B0B4R7QLP9",
+        "B0BN3WZX63",
+        "B08V545TKL",
+        "B0B8YNDK45",
+        "B07HFHVRCN"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 2448.63,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u002",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B081PKBK23"
+      ],
+      "recommended_product_ids": [
+        "B0BFXX2V21",
+        "B09X1B56ST",
+        "B07Z49ZVMJ",
+        "B07RPQVH21",
+        "B075VNFGBH"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 141.98,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u004",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B07596JRNN"
+      ],
+      "recommended_product_ids": [
+        "B08FTB1SJD",
+        "B09M38NCNK",
+        "B08K79RMGT",
+        "B07FWNKL9S",
+        "B08CZF8SXL"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 57.53,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u005",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B07CRQDTKM"
+      ],
+      "recommended_product_ids": [
+        "B01HME9RX2",
+        "B093GWXVC4",
+        "B0BKFX6FWW",
+        "B07XFQGPCG",
+        "B0BXKWKH5Z"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 54.21,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u007",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B003YVP55W"
+      ],
+      "recommended_product_ids": [
+        "B0BB28524R",
+        "B08WZKW17G",
+        "B001DZWCDO",
+        "B0024KLGA2",
+        "B075VNFGBH"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 62.09,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u008",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B08NTSTMMS",
+        "B00YQAP7BW"
+      ],
+      "recommended_product_ids": [
+        "B0BY2KTRS9",
+        "B0BLRLXVP1",
+        "B07ZPSG8P5",
+        "B0B8ZBCCY6",
+        "B07KTYQVP9"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 66.14,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u009",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B09Q89F8CG"
+      ],
+      "recommended_product_ids": [
+        "B0971F6QYN",
+        "B07NWTB6P1",
+        "B07MY92X3G",
+        "B08FTB1SJD",
+        "B09MH8ZCGR"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 58.87,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u010",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B00KQO0DWU",
+        "B07KYSXTXX"
+      ],
+      "recommended_product_ids": [
+        "B0B5GMPW5Z",
+        "B00T3MIULW",
+        "B08NLFQPWF",
+        "B003YVP55W",
+        "B081YJM2J7"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 70.15,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u013",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B07CQWFCTW",
+        "B0B9JTJK7W"
+      ],
+      "recommended_product_ids": [
+        "B07W2X3G92",
+        "B0C6BLGHXV",
+        "B08V545TKL",
+        "B0B8YNDK45",
+        "B0B4R7QLP9"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 186.27,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u014",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B094H9PSC7",
+        "B0BZ52ZTSD"
+      ],
+      "recommended_product_ids": [
+        "B0B8ZBCCY6",
+        "B08NTSTMMS",
+        "B07SFZCYNS",
+        "B07Q9M384N",
+        "B09BKWDSZX"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 57.79,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u016",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B08HCXS2L5",
+        "B09SJ465G2"
+      ],
+      "recommended_product_ids": [
+        "B07LBPWW3D",
+        "B086W46TYP",
+        "B00KAEVW26",
+        "B07ZZ595TG",
+        "B09X1NC7P1"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 55.81,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u017",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B0034JKYU0"
+      ],
+      "recommended_product_ids": [
+        "B00ICQ8FNS",
+        "B07SJFD972",
+        "B07D482RJ8",
+        "B099WTQ8PN",
+        "B089LYVJC9"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 66.14,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u018",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B09JY72CNG",
+        "B0012GOECQ"
+      ],
+      "recommended_product_ids": [
+        "B07FPRWGM4",
+        "B07JKM5FVP",
+        "B07HLQNJ5F",
+        "B00006JN5L",
+        "B09G6L51WP"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.3,
+      "latency_ms": 66.96,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u019",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B07TWY63G1",
+        "B09SRXBT8Y"
+      ],
+      "recommended_product_ids": [
+        "B01LYVCPWQ",
+        "B0B8YNDK45",
+        "B00QXODI0G",
+        "B08MBW59D8",
+        "B01AL11CPE"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.4,
+      "latency_ms": 67.53,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u020",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B0C48TKVX7"
+      ],
+      "recommended_product_ids": [
+        "B09H2JQD48",
+        "B09TSWFJ8N",
+        "B08R5VXZBB",
+        "B0B6S3PLNR",
+        "B0B7WT4RZK"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 192.03,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u021",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B000TB6PEK"
+      ],
+      "recommended_product_ids": [
+        "B00AOBL7H0",
+        "B07848ZT9T",
+        "B0B2P1FPLF",
+        "B0993H9FLR",
+        "B016XL20UM"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": false,
+      "intent_hit_count": 0,
+      "intent_recall_at_k": 0.0,
+      "intent_ndcg_at_k": 0.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 69.65,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u022",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B07848ZT9T"
+      ],
+      "recommended_product_ids": [
+        "B0BF9YKR59",
+        "B0BPDXN8MK",
+        "B09H2JQD48",
+        "B07Y8T5GTV",
+        "B0C48TKVX7"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 65.53,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u023",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B07QN1KG7D",
+        "B08MBHYVXW"
+      ],
+      "recommended_product_ids": [
+        "B001Q4HLFQ",
+        "B0034JKYU0",
+        "B013OW09WY",
+        "B0012GOECQ",
+        "B00SGO8TNC"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.3,
+      "latency_ms": 60.59,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u024",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B00KO8RLZ0"
+      ],
+      "recommended_product_ids": [
+        "B0BGGCQ7QC",
+        "B07N1WJXTY",
+        "B0BG5NKDL7",
+        "B071JDPKJ8",
+        "B0BXKWKH5Z"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 77.95,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u025",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B000TB6PEK"
+      ],
+      "recommended_product_ids": [
+        "B00SGO8TNC",
+        "B0777DRH1Y",
+        "B006YVI79A",
+        "B08YHH5QDG",
+        "B07T4WP6TD"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.4,
+      "latency_ms": 67.25,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u026",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B09V1TG17Z"
+      ],
+      "recommended_product_ids": [
+        "B09QXCZ6CX",
+        "B0B3MF7BTH",
+        "B09SHMXFRM",
+        "B00004SVXD",
+        "B0B5KDWCVZ"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 64.95,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u027",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B01AQ34GQY",
+        "B0BXNTPT82"
+      ],
+      "recommended_product_ids": [
+        "B0C3J5DHG3",
+        "B0BT72BGMW",
+        "B07P6P9JXR",
+        "B08ZDKNP1J",
+        "B0BQMW6FM9"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 145.78,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u028",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B00BZEU7VM",
+        "B0C4TN4PMX"
+      ],
+      "recommended_product_ids": [
+        "B0B2HXK3V5",
+        "B0BFXX2V21",
+        "B09199HL91",
+        "B0000APTGM",
+        "B0BY8SK3F1"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 55.27,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u033",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B0BG2RX476"
+      ],
+      "recommended_product_ids": [
+        "B09S3HCMYR",
+        "B09FDXV5VN",
+        "B08C82CVM2",
+        "B083F225NQ",
+        "B08FTB1SJD"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 56.37,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u034",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B07MKWC2XN"
+      ],
+      "recommended_product_ids": [
+        "B07848ZT9T",
+        "B003Y2PK92",
+        "B0B6SQMZ4P",
+        "B07Y6K1PRB",
+        "B00KO8RLZ0"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 69.97,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u035",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B07V44C18F",
+        "B0B4PK94PV"
+      ],
+      "recommended_product_ids": [
+        "B09STSZTDV",
+        "B07X9H3WC4",
+        "B0BKVH96NL",
+        "B08V545TKL",
+        "B0B8YNDK45"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 69.19,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u036",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B09X1B56ST"
+      ],
+      "recommended_product_ids": [
+        "B0994RTBCW",
+        "B0BTP5332V",
+        "B08MWWR2SX",
+        "B0BTHXFXP8",
+        "B0BGX6F7JW"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 68.94,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u037",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B07Q2X6J98",
+        "B0C559BCG4"
+      ],
+      "recommended_product_ids": [
+        "B01IX22LFI",
+        "B08CCQZLT5",
+        "B07D8D6B8C",
+        "B09PK4J3DG",
+        "B071YWSHFM"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 59.64,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u038",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B096ZYVJ6R"
+      ],
+      "recommended_product_ids": [
+        "B09FDXV5VN",
+        "B091Q1D519",
+        "B08FTB1SJD",
+        "B09MH8ZCGR",
+        "B08CZF8SXL"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 182.62,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u039",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B00H9N1PHI",
+        "B07W9955Z4"
+      ],
+      "recommended_product_ids": [
+        "B07NBGCLCX",
+        "B01MD26RTO",
+        "B00005V9O0",
+        "B002XUKTT2",
+        "B005OBY876"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 68.62,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u040",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B00GUNLZ00"
+      ],
+      "recommended_product_ids": [
+        "B01N2NBZRR",
+        "B00YM7AKLG",
+        "B00XY0IVK4",
+        "B00EU61DL0",
+        "B07JKM5FVP"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.4,
+      "latency_ms": 71.58,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u042",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B09H2JQD48"
+      ],
+      "recommended_product_ids": [
+        "B09X1NC7P1",
+        "B0B7WT4RZK",
+        "B09QSNNBBV",
+        "B0000XMWT4",
+        "B0BKSML7WW"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 70.27,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u043",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B00BZEU7VM",
+        "B001JI2GAE",
+        "B003SBZUJE"
+      ],
+      "recommended_product_ids": [
+        "B009SPV4Q2",
+        "B002AYY5AA",
+        "B01AQ34GQY",
+        "B000FU0XLQ",
+        "B0B5GMPW5Z"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 62.66,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u044",
+      "history_event_count": 5,
+      "target_product_ids": [
+        "B08ZCV54Z4"
+      ],
+      "recommended_product_ids": [
+        "B0BHJKM1Y6",
+        "B01HM6HIJ0",
+        "B0B6TQGTK3",
+        "B0C1HHH8SV",
+        "B08V545TKL"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 65.62,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u045",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B0BH3TL5QN",
+        "B00BZEU7VM"
+      ],
+      "recommended_product_ids": [
+        "B00KQO0DWU",
+        "B07C4PD613",
+        "B01N457MGD",
+        "B07HFK7X75",
+        "B001DZWCDO"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 62.73,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u046",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B09H2Z9MFL",
+        "B07BS9H579"
+      ],
+      "recommended_product_ids": [
+        "B08QJQBLRZ",
+        "B081PKBK23",
+        "B09GJNRCYL",
+        "B09KQBK7JY",
+        "B008UPEECM"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 155.34,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u047",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B08RS8PVVV"
+      ],
+      "recommended_product_ids": [
+        "B0971F6QYN",
+        "B09CYMQQC7",
+        "B08ZDKNP1J",
+        "B083F225NQ",
+        "B08FTB1SJD"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 78.83,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u048",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B08GFTPQ5B",
+        "B07C9W6G2Y"
+      ],
+      "recommended_product_ids": [
+        "B0BF9YKR59",
+        "B09X52MNQY",
+        "B07QF5117Q",
+        "B07H8QWTPH",
+        "B07T9GCD14"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.4,
+      "latency_ms": 86.38,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u050",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B08S44K872",
+        "B0BB28524R"
+      ],
+      "recommended_product_ids": [
+        "B081PKBK23",
+        "B00R8K91BY",
+        "B075R9ML5Y",
+        "B0001AVSH8",
+        "B08X2YM19M"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 3,
+      "intent_recall_at_k": 0.6,
+      "intent_ndcg_at_k": 0.9469,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 79.64,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u051",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B0BYKB1VHL",
+        "B0178F72E6",
+        "B09DSJVYGF"
+      ],
+      "recommended_product_ids": [
+        "B096RWT9BS",
+        "B09ZQPV8ZL",
+        "B098BK2SJ5",
+        "B01NBPHBJO",
+        "B08FTB1SJD"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.5,
+      "latency_ms": 77.2,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u052",
+      "history_event_count": 7,
+      "target_product_ids": [
+        "B014FT655U"
+      ],
+      "recommended_product_ids": [
+        "B09YG6FC71",
+        "B08NLFQPWF",
+        "B07BKSJ39T",
+        "B08HLXD8HF",
+        "B078XJ3TJM"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 80.7,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u054",
+      "history_event_count": 6,
+      "target_product_ids": [
+        "B0BKVH96NL"
+      ],
+      "recommended_product_ids": [
+        "B0BY2KTRS9",
+        "B0BN3WZX63",
+        "B00ARDJSBM",
+        "B09DGCN5G9",
+        "B0B8ZBCCY6"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 74.78,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u055",
+      "history_event_count": 4,
+      "target_product_ids": [
+        "B0753DF9TC",
+        "B0001ZNU56"
+      ],
+      "recommended_product_ids": [
+        "B08GPJJS8R",
+        "B07SXMV8LY",
+        "B00GUNLZ00",
+        "B002JTX8A4",
+        "B0B6HPDH51"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 173.21,
+      "experiment_group": "treatment",
+      "marketing_mode": "rule_fallback",
+      "rerank_mode": "rerank"
+    },
+    {
+      "user_id": "amazon-u056",
+      "history_event_count": 3,
+      "target_product_ids": [
+        "B071JDPKJ8"
+      ],
+      "recommended_product_ids": [
+        "B093GWXVC4",
+        "B0BF9YKR59",
+        "B07DYJR44S",
+        "B06XSVW6GN",
+        "B09TS8MB1T"
+      ],
+      "exact_hit": false,
+      "exact_hit_count": 0,
+      "exact_recall_at_k": 0.0,
+      "exact_ndcg_at_k": 0.0,
+      "intent_hit": true,
+      "intent_hit_count": 5,
+      "intent_recall_at_k": 1.0,
+      "intent_ndcg_at_k": 1.0,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "diversity_at_k": 0.6,
+      "latency_ms": 65.91,
+      "experiment_group": "control",
+      "marketing_mode": "control_rule",
+      "rerank_mode": "rerank"
+    }
+  ]
+}
