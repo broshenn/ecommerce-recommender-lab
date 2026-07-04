@@ -672,6 +672,9 @@ def test_chat_endpoint_returns_conversational_recommendation():
     assert data["products"]
     assert all(product["stock"] > 0 for product in data["products"])
     assert "intent" in data["agent_results"]
+    tool_names = [item.get("tool_name") for item in data["trace"] if item.get("step") == "tool"]
+    assert "PreferenceUpdateTool" in tool_names
+    assert "RecommendGraphTool" in tool_names
 
 
 def test_chat_stream_endpoint_emits_sse_events():
@@ -691,6 +694,7 @@ def test_chat_stream_endpoint_emits_sse_events():
     assert "event: state" in body
     assert "event: token" in body
     assert "event: products" in body
+    assert "event: trace" in body
     assert "event: done" in body
 
 
@@ -818,6 +822,69 @@ def test_chat_memory_resolves_product_reference_and_feedback():
     assert data["intent"] == "record_feedback"
     assert "too_expensive" in data["state"]["rejected_reasons"]
     assert data["state"]["active_product_refs"]
+    tool_names = [item.get("tool_name") for item in data["trace"] if item.get("step") == "tool"]
+    assert "FeedbackTool" in tool_names
+    assert "RecommendGraphTool" in tool_names
+
+
+def test_chat_business_tools_handle_compare_explain_and_product_info():
+    client = TestClient(app)
+    session_id = "chat-business-tools-session"
+    first = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-business-tools-user",
+            "session_id": session_id,
+            "message": "推荐几款手机保护壳",
+        },
+    )
+    assert first.status_code == 200
+
+    compare = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-business-tools-user",
+            "session_id": session_id,
+            "message": "第一个和第二个有什么区别",
+        },
+    )
+    compare_data = compare.json()
+    compare_tools = [
+        item.get("tool_name") for item in compare_data["trace"] if item.get("step") == "tool"
+    ]
+    assert compare_data["intent"] == "compare_products"
+    assert "CompareProductTool" in compare_tools
+    assert compare_data["products"] == []
+
+    explain = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-business-tools-user",
+            "session_id": session_id,
+            "message": "为什么推荐第一款",
+        },
+    )
+    explain_data = explain.json()
+    explain_tools = [
+        item.get("tool_name") for item in explain_data["trace"] if item.get("step") == "tool"
+    ]
+    assert explain_data["intent"] == "explain_recommendation"
+    assert "ExplainRecommendationTool" in explain_tools
+
+    ask = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-business-tools-user",
+            "session_id": session_id,
+            "message": "第一款价格和库存多少",
+        },
+    )
+    ask_data = ask.json()
+    ask_tools = [
+        item.get("tool_name") for item in ask_data["trace"] if item.get("step") == "tool"
+    ]
+    assert ask_data["intent"] == "ask_product"
+    assert "ProductInfoTool" in ask_tools
 
 
 def test_chat_meta_questions_do_not_trigger_recommendations():
@@ -836,6 +903,10 @@ def test_chat_meta_questions_do_not_trigger_recommendations():
         data = response.json()
         assert data["intent"] == "smalltalk"
         assert data["products"] == []
+        tool_names = [
+            item.get("tool_name") for item in data["trace"] if item.get("step") == "tool"
+        ]
+        assert tool_names == ["SmalltalkTool"]
 
     assert "星期" in data["reply"]
 

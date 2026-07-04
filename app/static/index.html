@@ -821,7 +821,11 @@
           if (!this.trace.length) return "暂无";
           return this.trace
             .slice(-4)
-            .map((item) => `${item.step}${item.intent ? ':' + item.intent : ''}`)
+            .map((item) => {
+              if (item.step === "tool") return item.tool_name || "tool";
+              if (item.step === "intent") return `intent:${item.intent || "-"}`;
+              return item.step;
+            })
             .join(" -> ");
         }
       },

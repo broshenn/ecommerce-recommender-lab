@@ -5,21 +5,17 @@ import time
 from typing import Any, Iterable
 
 from app.agents import DialogueAgent, IntentAgent
-from app.behavior import record_event
-from app.catalog import list_products
 from app.models import (
     AgentResult,
     ChatRequest,
     ChatResponse,
     ConversationState,
     IntentResult,
-    Product,
     RecommendRequest,
     RecommendedProduct,
-    UserEventCreate,
 )
-from app.orchestrator.graph import recommend_with_graph
 from app.services.memory import MemoryService
+from app.tools import BusinessToolContext, ToolRouter
 
 
 class ChatOrchestrator:
@@ -29,6 +25,7 @@ class ChatOrchestrator:
         self.memory = MemoryService()
         self.intent_agent = IntentAgent()
         self.dialogue_agent = DialogueAgent()
+        self.tool_router = ToolRouter()
 
     def chat(self, request: ChatRequest) -> ChatResponse:
         started = time.perf_counter()
@@ -63,35 +60,26 @@ class ChatOrchestrator:
 
         self._apply_intent_to_state(state, intent_result)
         resolved_product_ids = self._resolve_product_refs(state, intent_result.product_refs)
-
-        if intent_result.intent == "record_feedback":
-            extra["feedback"] = self._record_feedback(
-                user_id=request.user_id,
-                product_ids=resolved_product_ids,
-                event_type=intent_result.slots.get("event_type"),
-            )
-
-        if self._should_recommend(intent_result):
-            recommend_response = recommend_with_graph(self._recommend_request_from_state(state))
-            products = recommend_response.products
-            marketing_copies = recommend_response.marketing_copies
-            agent_results.update(recommend_response.agent_results)
-            state.last_recommended_product_ids = [product.product_id for product in products]
-            state.active_product_refs = self._build_product_refs(products)
-            trace.append(
-                {
-                    "step": "recommend_graph",
-                    "strategy": recommend_response.strategy,
-                    "product_count": len(products),
-                    "experiment_group": recommend_response.experiment_group,
-                }
-            )
-        elif intent_result.intent == "compare_products":
-            extra["comparison"] = self._compare_products(state, resolved_product_ids)
-        elif intent_result.intent == "explain_recommendation":
-            extra["explanation"] = self._explain_product(state, resolved_product_ids)
-        elif intent_result.intent == "ask_product":
-            extra["answer"] = self._answer_product_question(state, resolved_product_ids)
+        should_recommend = self._should_recommend(intent_result)
+        tool_context = BusinessToolContext(
+            user_id=request.user_id,
+            state=state,
+            intent_result=intent_result,
+            resolved_product_ids=resolved_product_ids,
+            recommend_request=self._recommend_request_from_state(state),
+        )
+        for tool in self.tool_router.route(intent_result, should_recommend=should_recommend):
+            tool_result = tool.run(tool_context)
+            trace.append(tool_result.observation.to_trace())
+            extra.update(tool_result.extra)
+            agent_results.update(tool_result.agent_results)
+            if tool_result.products:
+                products = tool_result.products
+                marketing_copies = tool_result.marketing_copies
+                state.last_recommended_product_ids = [
+                    product.product_id for product in products
+                ]
+                state.active_product_refs = self._build_product_refs(products)
 
         dialogue_result = self.dialogue_agent.run(
             intent=intent_result.intent,
@@ -229,86 +217,6 @@ class ChatOrchestrator:
             "recommend_products",
             "refine_preferences",
         }
-
-    def _record_feedback(
-        self,
-        *,
-        user_id: str,
-        product_ids: list[str],
-        event_type: str | None,
-    ) -> dict[str, Any]:
-        if event_type not in {"like", "dislike", "purchase", "view"}:
-            event_type = "dislike" if product_ids else None
-        recorded = []
-        if event_type:
-            for product_id in product_ids[:3]:
-                record_event(
-                    UserEventCreate(
-                        user_id=user_id,
-                        product_id=product_id,
-                        event_type=event_type,
-                    )
-                )
-                recorded.append({"product_id": product_id, "event_type": event_type})
-        return {"recorded": recorded}
-
-    def _compare_products(
-        self,
-        state: ConversationState,
-        product_ids: list[str],
-    ) -> str:
-        products = self._products_by_refs(state, product_ids, fallback_count=2)
-        if len(products) < 2:
-            return "我还没有足够的商品可比较，可以先让我推荐几款。"
-        lines = []
-        for product in products[:3]:
-            lines.append(
-                f"{product.name}：价格 {product.price:g} 元，评分 {product.rating or '-'}，库存 {product.stock}。"
-            )
-        return " ".join(lines)
-
-    def _explain_product(
-        self,
-        state: ConversationState,
-        product_ids: list[str],
-    ) -> str:
-        product = next(iter(self._products_by_refs(state, product_ids, fallback_count=1)), None)
-        if not product:
-            return "我还没有可解释的商品，可以先发起一次推荐。"
-        matched = []
-        if product.category in state.preferred_categories:
-            matched.append("品类匹配")
-        if product.brand in state.liked_brands:
-            matched.append("品牌匹配")
-        if set(product.tags) & set(state.preferred_tags):
-            matched.append("标签匹配")
-        if state.budget_max is None or product.price <= state.budget_max:
-            matched.append("预算友好")
-        return f"{product.name} 的推荐依据是：{', '.join(matched) or '综合评分较好'}。"
-
-    def _answer_product_question(
-        self,
-        state: ConversationState,
-        product_ids: list[str],
-    ) -> str:
-        product = next(iter(self._products_by_refs(state, product_ids, fallback_count=1)), None)
-        if not product:
-            return "我还没有定位到具体商品，可以先说“第一款”或让我推荐几款。"
-        return (
-            f"{product.name}，品牌 {product.brand}，价格 {product.price:g} 元，"
-            f"库存 {product.stock}，评分 {product.rating or '-'}。"
-        )
-
-    def _products_by_refs(
-        self,
-        state: ConversationState,
-        product_ids: list[str],
-        *,
-        fallback_count: int,
-    ) -> list[Product]:
-        ids = product_ids or state.last_recommended_product_ids[:fallback_count]
-        products_by_id = {product.product_id: product for product in list_products()}
-        return [products_by_id[product_id] for product_id in ids if product_id in products_by_id]
 
     def _resolve_product_refs(self, state: ConversationState, refs: list[str]) -> list[str]:
         resolved = []
