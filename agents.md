@@ -1,156 +1,284 @@
 ---
-name: Agent LLM 改造计划
-description: 从 Step 11 开始，逐步将规则 Agent 改造为 LLM 驱动的智能 Agent
-updated: 2026-05-25
+name: 业务型 Conversational Commerce Agent 路线图
+description: 保留原电商推荐系统和 LangGraph 推荐链路，在前面增加对话入口、意图识别、上下文记忆、业务工具调用和闲聊兜底。
+updated: 2026-07-04
 ---
 
-# Agent LLM 改造路线
+# 业务型 Conversational Commerce Agent 路线图
 
-## 前提
+## Summary
 
-- 保持同步代码（不引入 async/await）
-- LLM 调用直接用 `openai.OpenAI`（不引入 LangChain）
-- 每次改动只聚焦一个 Agent，改完验证后再推进
-- 改动前跑 `pytest -q` 保证现有测试通过
+项目定位统一为 **业务型 Conversational Commerce Agent**：保留原电商推荐系统和 LangGraph 推荐链路，在前面增加对话入口、意图识别、上下文记忆、业务工具调用和闲聊兜底。
 
----
+这里的 “coding agent 风格” 只借鉴 **tool calling、router、trace、observation、step-by-step 执行**，不做通用代码编辑、不做文件系统操作、不做完整 Claude Code 复刻。
 
-## Step 11: LLM Client + UserProfileAgent
+核心目标：
 
-**目标**：创建统一的 LLM 调用模块，改造用户画像 Agent 为 LLM 驱动。
+- 用户可以用结构化字段推荐，也可以用自然语言推荐。
+- 自然语言会被解析成业务字段：品类、预算、品牌、用途、反馈、指代。
+- Agent 根据业务意图调用对应工具。
+- 核心推荐仍走原 LangGraph。
+- 前端能展示业务工具调用轨迹，便于面试说明。
 
-### 文件变更
+## Roadmap
 
-| 动作 | 文件 | 说明 |
-|------|------|------|
-| 新增 | `app/services/llm_client.py` | 封装 `openai.OpenAI`，读 env 配置，提供 `chat()` 方法 |
-| 改造 | `app/agents/user_profile_agent.py` | `_execute` 从拼 dict 改为调 LLM 分析 Redis+SQLite 数据 |
-| 改造 | `app/orchestrator/supervisor.py` | 消费 LLM 生成的画像摘要，传给下游 Agent |
-| 修改 | `requirements.txt` | 加 `openai` |
+### Step 18：稳定混合前端
 
-### LLM Client 设计
+保留原项目结构化推荐页面：
 
-```python
-# app/services/llm_client.py — 核心接口
-class LLMClient:
-    def chat(self, system_prompt: str, user_message: str, **kwargs) -> str: ...
-    def chat_json(self, system_prompt: str, user_message: str, **kwargs) -> dict: ...
+- 用户 ID
+- 推荐数量
+- 类目
+- 品牌
+- 标签
+- 预算
+- 商品卡片
+- 行为按钮
+
+新增对话框：
+
+- 对话输入识别出的 slots 回填结构化字段。
+- 下方商品列表用对话返回结果刷新。
+- 目标切换要正确：
+  - 手机 -> 手机商品
+  - 电脑 -> 电子数码/电脑配件
+  - 耳机 -> 电子数码/耳机
+
+这一阶段目标是 demo 稳定，不扩展复杂 RAG。
+
+### Step 19：业务意图识别
+
+固定业务意图集合：
+
+- `recommend_products`：推荐商品
+- `refine_preferences`：补充预算、品牌、用途
+- `compare_products`：比较商品
+- `explain_recommendation`：解释推荐原因
+- `record_feedback`：喜欢、不喜欢、购买、太贵
+- `ask_product`：问商品价格、库存、评分
+- `smalltalk`：闲聊、元问题
+
+第一版以规则为主，可选 LLM。
+
+重点覆盖：
+
+- 品类：手机、电脑、耳机、办公、游戏、保护壳、键盘、摄像头
+- 预算：200 以内、100-300、至少 500
+- 品牌：Sony、Sharp、Microsoft、Samsung 等
+- 用途：通勤、办公、游戏、防水、轻便
+- 反馈：太贵、不喜欢、换便宜点、喜欢、购买
+- 指代：第一个、第二个、这款、刚才那个
+
+输出结构：
+
+- `intent`
+- `slots`
+- `product_refs`
+- `needs_recommendation`
+- `confidence`
+- `source`
+
+### Step 20：业务 Tool Layer
+
+做轻量业务工具层，不做通用 coding agent。
+
+工具只围绕电商业务：
+
+```text
+RecommendGraphTool
+PreferenceUpdateTool
+FeedbackTool
+CompareProductTool
+ExplainRecommendationTool
+ProductInfoTool
+SmalltalkTool
 ```
 
-- 读 `DEEPSEEK_API_KEY`、`DEEPSEEK_API_BASE`、`DEEPSEEK_MODEL`
-- `chat_json` 在 `chat` 基础上自动解析 JSON 响应
+`ToolRouter` 负责根据 intent 选择工具。
 
-### UserProfileAgent Prompt 设计
+每个工具返回统一 observation：
 
-输入：Redis 实时特征（`get_user_features`）+ SQLite 画像（`build_user_profile`）
+- `tool_name`
+- `success`
+- `input_summary`
+- `output_summary`
+- `latency_ms`
+- `error`
 
-输出：
-```json
-{
-  "segments": ["active", "audio_enthusiast"],
-  "intent_summary": "正在从手机品类向音频扩展，Sony偏好明显",
-  "recommendation_hint": "优先推荐Sony耳机+Apple生态互补配件",
-  "price_sensitivity": "medium",
-  "rfm_interpretation": "近期高频活跃，加购频繁但消费力中等"
-}
+对话流程：
+
+```text
+用户输入
+-> IntentAgent
+-> MemoryService 读取状态
+-> ToolRouter 选择业务工具
+-> 执行业务工具
+-> DialogueAgent 汇总回复
+-> MemoryService 写回状态
+-> 前端展示结果和 trace
 ```
 
-### 验证方式
+推荐相关工具必须继续调用原 LangGraph，不重写推荐链路。
 
-- `POST /api/v1/recommend` 返回的 `agent_results.user_profile.data` 里出现 LLM 生成的画像
-- `GET /api/v1/users/{user_id}/profile` 能看到分群和意图摘要
-- 现有测试保持通过
+### Step 21：业务上下文和记忆
 
----
+短期会话状态：
 
-## Step 12: LLM 重排 + LLM 文案
+- `shopping_goal`
+- `budget_min / budget_max`
+- `preferred_categories`
+- `liked_brands`
+- `preferred_tags`
+- `disliked_products`
+- `rejected_reasons`
+- `last_recommended_product_ids`
+- `active_product_refs`
+- `recent_intents`
 
-**目标**：将 ProductRecAgent 的重排和 MarketingCopyAgent 改造为 LLM 驱动。
+状态规则：
 
-### ProductRecAgent 改造
+- 新商品目标覆盖旧目标。
+- 补充预算、品牌、用途继承当前目标。
+- 负反馈继承当前推荐列表。
+- 闲聊不污染购物状态。
 
-| 改动 | 说明 |
-|------|------|
-| `_rerank()` 增加 LLM 路径 | 用户画像 + 候选商品列表 → LLM 排序输出 product_id 列表 |
-| 保留规则 fallback | LLM 不可用时降级为 `score_product` 规则排序 |
+长期行为：
 
-Prompt 结构参考原项目 `RERANK_PROMPT`：传入用户画像摘要 + 候选商品（id/名称/类目/价格/标签），让 LLM 按相关性排序。
+- 喜欢、不喜欢、购买继续写 `/api/v1/events`。
+- SQLite 构建长期用户画像。
+- Redis 做实时特征缓存。
 
-### MarketingCopyAgent 改造
+目标：多轮对话像真实导购，不像一次性搜索框。
 
-| 改动 | 说明 |
-|------|------|
-| 5 套 Prompt 模板 | 根据用户分群选择：新客/高价值/价格敏感/活跃/流失 |
-| LLM 生成文案 | 商品信息 + 用户画像 → LLM → 个性化文案 |
-| 广告法合规 | 过滤敏感词：最好/第一/国家级/绝对/100% 等 |
+### Step 22：业务测评体系
 
-### 验证方式
+继续维护 chat eval。
 
-- 推荐结果排序与规则版有差异（LLM 会考虑语义相关性）
-- 文案不再是固定模板，不同分群看到不同风格
-- A/B 测试 control（规则）vs treatment（LLM）对比效果
+场景覆盖：
 
----
+- 单轮推荐
+- 多轮补槽
+- 目标切换
+- 指代理解
+- 负反馈
+- 比较商品
+- 解释推荐
+- 商品信息问答
+- 闲聊兜底
+- LLM 不可用 fallback
 
-## Step 13: A/B 升级 + 会话记忆
+指标：
 
-**目标**：A/B 测试引擎接入 Thompson Sampling，加入会话级短期记忆。
+- `intent_macro_f1`
+- `slot_f1`
+- `memory_consistency_rate`
+- `product_ref_resolution_rate`
+- `task_success_rate`
+- `budget_compliance_rate`
+- `inventory_compliance_rate`
+- `avg_latency_ms`
+- `fallback_rate`
 
-### A/B 测试升级
+初始目标：
 
-| 改动 | 说明 |
-|------|------|
-| `ABTestEngine` 增加 Thompson Sampling | 记录每次推荐曝光/点击结果，Beta 分布动态分配流量 |
-| `GET /api/v1/experiments/outcome` | 前端上报点击事件，反馈给 A/B 引擎 |
+- `intent_macro_f1 >= 0.85`
+- `slot_f1 >= 0.80`
+- `memory_consistency_rate >= 0.90`
+- `budget_compliance_rate >= 0.95`
+- `inventory_compliance_rate = 1.00`
 
-参考原项目 `ab_test.py` 的 `assign_thompson` + `record_outcome`。
+### Step 23：Query Understanding 模型对比
 
-### 会话记忆
+这一步再做模型实验，不影响主功能。
 
-| 改动 | 说明 |
-|------|------|
-| 新增 `app/services/memory.py` | 短期记忆：当前 session 内的交互历史摘要 |
-| 在 `RecommendRequest` 中传递 `session_id` | 同一会话多次推荐共享上下文 |
+数据来源：
 
-用于场景：用户第一次推荐点了 dislike → 第二次推荐自动避开该类目 → 记忆随 session 结束清空。
+- DeepSeek 合成业务对话样本
+- 模板增强
+- 人工校验 eval set
 
----
+对比：
 
-## Step 14: LangGraph 编排
+- 规则 baseline
+- LLM classifier
+- BERT/DistilBERT classifier
 
-**目标**：将 Supervisor 的硬编码执行流程改为 LangGraph 状态图。
+目标不是为了炫模型，而是回答业务问题：
 
-### 改造内容
+- 成本
+- 延迟
+- 准确率
+- 泛化能力
+- 是否适合线上高频入口
 
-| 动作 | 文件 | 说明 |
-|------|------|------|
-| 新增 | `app/orchestrator/graph.py` | LangGraph 状态图，节点=Agent，边=执行顺序 |
-| 新增 | `GET /api/v1/recommend/graph` | 走 LangGraph 管线的推荐端点 |
-| 保留 | `app/orchestrator/supervisor.py` | 原 Supervisor 不动，两套编排并存 |
+结论预期：
 
-### 图结构
+- 规则适合兜底和 demo。
+- LLM 适合理解复杂自然语言。
+- BERT 适合高频意图分类，但 slot 抽取仍需要规则或额外模型。
 
-```
-[start] → init(A/B分桶)
-        → fan_out → {user_profile, product_recall}  (并行)
-        → merge  → {rerank, inventory}              (并行)
-        → filter → marketing_copy
-        → aggregate → [end]
-```
+## Deferred
 
-### LangGraph 的优势（相对硬编码）
+- Product RAG 暂时不做主线。
+- 不做通用 coding agent。
+- 不做文件系统工具。
+- 不做复杂 planner、多 Agent 自主循环。
+- 不做自动购买或真实支付动作。
+- 后续如果要增强商品事实问答，再单独做 Product RAG。
 
-- 状态自动在节点间传递，不需要手动管理变量
-- 方便后续增加条件分支（如：库存不足 → 自动补召回）
-- 可视化状态流转，方便面试讲解
-- 内置 Checkpoint，支持断点续跑
+## Test Plan
 
----
+后端：
 
-## 全局约定
+- chat API
+- chat stream
+- 意图识别
+- 目标切换
+- 指代理解
+- 负反馈
+- 闲聊不触发推荐
 
-1. **LLM 调用统一走 `app/services/llm_client.py`**，不允许各 Agent 自己创建 client
-2. **所有 LLM 调用必须有 rule fallback**，LLM 挂了降级走规则逻辑
-3. **每次改造一个 Agent**，改完跑 `pytest -q`，确认通过再推进下一步
-4. **不改动前端**，只通过 API 返回的 JSON 验证效果
-5. **不做 async 改造**，Agent 保持同步 `_execute()`，并行继续用 `ThreadPoolExecutor`
+前端：
+
+- 结构化字段推荐可用
+- 对话输入回填字段
+- 商品列表刷新
+- 行为按钮继续可用
+- trace 显示业务工具调用
+
+评测：
+
+- `scripts/evaluate_chat_agent.py`
+- 后续新增 query understanding 对比报告
+
+## GitHub Workflow
+
+每完成一个 Step，都必须同步写入 GitHub，保证代码、文档和路线图一致。
+
+推荐流程：
+
+1. 完成当前 Step 的代码、文档和测试。
+2. 运行对应测试或评测脚本。
+3. 更新相关 step 文档、`AGENTS.md` 或 README。
+4. 检查 `git status`，确认只包含当前 Step 相关改动。
+5. 提交 commit，commit message 使用清晰的 Step 编号，例如：
+   - `Step 18: stabilize hybrid commerce UI`
+   - `Step 19: add business intent routing`
+   - `Step 20: add business tool layer`
+6. 推送到 GitHub：
+   - `git push`
+
+约定：
+
+- 每个 Step 至少一个 commit。
+- 一个 Step 不混入无关重构。
+- 如果 Step 较大，可以拆成多个 commit，但 commit message 必须能看出属于哪个 Step。
+- 推送前必须说明测试结果；如果测试未跑或失败，必须在提交说明或交付说明里写清楚。
+
+## Assumptions
+
+- 项目目标是业务型电商 Agent，而不是通用 coding agent。
+- “coding agent 思路”只借鉴工具调用和可观测执行过程。
+- 原推荐链路继续是核心能力。
+- 第一优先级是业务闭环和面试可讲性。
+- LLM 可选，规则 fallback 必须稳定。

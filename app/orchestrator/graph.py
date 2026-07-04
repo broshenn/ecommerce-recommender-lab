@@ -140,7 +140,7 @@ def _init_node(state: PipelineState) -> PipelineState:
     state["agent_results"] = {}
     state["route_trace"] = ["init"]
 
-    experiment = ab_test_engine.assign(state["user_id"])
+    experiment = _assign_experiment(state)
     state["experiment"] = experiment.model_dump(mode="json")
     state["experiment_group"] = experiment.group
 
@@ -154,6 +154,21 @@ def _init_node(state: PipelineState) -> PipelineState:
 
     metrics_collector.record_business_event("recommend_request")
     return state
+
+
+def _assign_experiment(state: PipelineState) -> ExperimentAssignment:
+    force_group = str(state.get("context", {}).get("force_experiment_group", "")).strip()
+    if force_group:
+        experiment = ab_test_engine.experiments.get(ab_test_engine.DEFAULT_EXPERIMENT_ID, {})
+        for variant in experiment.get("variants", []):
+            if variant.get("group") == force_group:
+                return ExperimentAssignment(
+                    experiment_id=ab_test_engine.DEFAULT_EXPERIMENT_ID,
+                    group=force_group,
+                    reason="forced by request context",
+                    config=variant.get("config", {}),
+                )
+    return ab_test_engine.assign(state["user_id"])
 
 
 def _phase1_node(state: PipelineState) -> PipelineState:

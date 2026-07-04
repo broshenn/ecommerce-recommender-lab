@@ -112,7 +112,7 @@ class RedisFeatureStore:
         views_24h = self.get_recent_behaviors(user_id, "view", ONE_DAY_SECONDS)
         likes_24h = self.get_recent_behaviors(user_id, "like", ONE_DAY_SECONDS)
         dislikes_24h = self.get_recent_behaviors(user_id, "dislike", ONE_DAY_SECONDS)
-        carts_7d = self.get_recent_behaviors(user_id, "add_to_cart", SEVEN_DAYS_SECONDS)
+        carts_7d = self.get_recent_behaviors(user_id, "purchase", SEVEN_DAYS_SECONDS)
 
         return {
             "user_id": user_id,
@@ -120,7 +120,7 @@ class RedisFeatureStore:
             "view_count_24h": len(views_24h),
             "like_count_24h": len(likes_24h),
             "dislike_count_24h": len(dislikes_24h),
-            "add_to_cart_count_7d": len(carts_7d),
+            "purchase_count_7d": len(carts_7d),
             "recent_views": self._recent_product_ids(views_24h, 20),
             "recent_likes": self._recent_product_ids(likes_24h, 20),
             "recent_dislikes": self._recent_product_ids(dislikes_24h, 20),
@@ -235,7 +235,7 @@ class RedisFeatureStore:
         return self._unique(item.get("product_id", "") for item in reversed(behaviors))[:limit]
 
     def _compute_rfm(self, cart_behaviors: list[dict[str, Any]]) -> dict[str, float]:
-        """学习版用加购行为近似计算 RFM。"""
+        """学习版用购买行为近似计算 RFM。"""
         if not cart_behaviors:
             return {"recency": 0.0, "frequency": 0.0, "monetary": 0.0}
 

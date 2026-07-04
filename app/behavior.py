@@ -88,10 +88,10 @@ def _build_user_profile_from_sqlite(user_id: str) -> UserProfile:
             disliked_products.append(event.product_id)
             continue
 
-        if event.event_type == "add_to_cart":
+        if event.event_type == "purchase":
             cart_items.append(event.product_id)
 
-        if event.event_type in {"like", "add_to_cart"} and product:
+        if event.event_type in {"like", "purchase"} and product:
             preferred_categories.append(product.category)
             liked_brands.append(product.brand)
             preferred_tags.extend(product.tags)

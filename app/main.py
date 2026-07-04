@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.behavior import build_user_profile, list_user_events, record_event
@@ -11,6 +11,8 @@ from app.catalog import list_products
 from app.database import init_db
 from app.models import (
     ExperimentOutcome,
+    ChatRequest,
+    ChatResponse,
     Product,
     RecommendRequest,
     RecommendResponse,
@@ -19,6 +21,7 @@ from app.models import (
     UserProfile,
 )
 from app.recommender import recommend_products
+from app.orchestrator.chat import chat_orchestrator
 from app.services import ab_test_engine, feature_store, metrics_collector
 from app.services.vector_store import get_product_vector_store
 
@@ -37,6 +40,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 def index():
     return FileResponse(
         STATIC_DIR / "index.html",
+        media_type="text/html; charset=utf-8",
         headers={"Cache-Control": "no-store"},
     )
 
@@ -46,7 +50,7 @@ def health():
     init_db()
     return {
         "status": "healthy",
-        "step": "14",
+        "step": "17",
         "storage": "sqlite",
         "orchestrator": "supervisor",
         "experiments": "ab_test",
@@ -59,6 +63,8 @@ def health():
         "ab_experiment_gating": "control_rule_vs_treatment_llm",
         "ab_outcome_stats": "exposure_click_ctr_thompson",
         "langgraph_orchestration": "available",
+        "chat_agent": "conversational_commerce",
+        "chat_stream": "sse",
     }
 
 
@@ -77,6 +83,20 @@ def recommend_via_graph(request: RecommendRequest):
     from app.orchestrator.graph import recommend_with_graph
 
     return recommend_with_graph(request)
+
+
+@app.post("/api/v1/chat", response_model=ChatResponse)
+def chat(request: ChatRequest):
+    return chat_orchestrator.chat(request)
+
+
+@app.post("/api/v1/chat/stream")
+def chat_stream(request: ChatRequest):
+    return StreamingResponse(
+        chat_orchestrator.stream_chat(request),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/api/v1/experiments")

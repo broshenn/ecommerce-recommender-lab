@@ -139,7 +139,7 @@ class ABTestEngine:
         success: bool,
         product_id: str | None = None,
     ) -> None:
-        """记录点击/加购等正反馈，或跳过/点踩等负反馈。"""
+        """记录点击/购买等正反馈，或跳过/点踩等负反馈。"""
         self._append_event(
             experiment_id=experiment_id,
             group=group,

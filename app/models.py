@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
 from typing import Any
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
-EventType = Literal["view", "like", "dislike", "add_to_cart"]
+EventType = Literal["view", "like", "dislike", "purchase"]
+ChatIntent = Literal[
+    "recommend_products",
+    "refine_preferences",
+    "compare_products",
+    "explain_recommendation",
+    "record_feedback",
+    "ask_product",
+    "smalltalk",
+]
 
 
 class Product(BaseModel):
@@ -108,3 +117,52 @@ class AgentResult(BaseModel):
     error: str | None = None
     data: dict[str, Any] = Field(default_factory=dict)
     confidence: float = 1.0
+
+
+class ConversationState(BaseModel):
+    session_id: str
+    user_id: str
+    shopping_goal: str = ""
+    budget_min: float | None = None
+    budget_max: float | None = None
+    preferred_categories: list[str] = Field(default_factory=list)
+    liked_brands: list[str] = Field(default_factory=list)
+    preferred_tags: list[str] = Field(default_factory=list)
+    disliked_products: list[str] = Field(default_factory=list)
+    rejected_reasons: list[str] = Field(default_factory=list)
+    last_recommended_product_ids: list[str] = Field(default_factory=list)
+    active_product_refs: dict[str, str] = Field(default_factory=dict)
+    recent_intents: list[str] = Field(default_factory=list)
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant", "system"]
+    content: str
+    created_at: datetime | None = None
+
+
+class IntentResult(BaseModel):
+    intent: ChatIntent
+    slots: dict[str, Any] = Field(default_factory=dict)
+    product_refs: list[str] = Field(default_factory=list)
+    needs_recommendation: bool = False
+    confidence: float = 0.0
+    source: str = "rule"
+
+
+class ChatRequest(BaseModel):
+    user_id: str
+    session_id: str | None = None
+    message: str
+    stream: bool = False
+
+
+class ChatResponse(BaseModel):
+    session_id: str
+    intent: ChatIntent
+    reply: str
+    state: ConversationState
+    products: list[RecommendedProduct] = Field(default_factory=list)
+    marketing_copies: list[MarketingCopy] = Field(default_factory=list)
+    agent_results: dict[str, AgentResult] = Field(default_factory=dict)
+    trace: list[dict[str, Any]] = Field(default_factory=list)

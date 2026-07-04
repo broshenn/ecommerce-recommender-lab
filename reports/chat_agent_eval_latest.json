@@ -1,0 +1,682 @@
+{
+  "generated_at": "2026-07-04T06:03:12.172418+00:00",
+  "cases_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\chat_eval_cases.jsonl",
+  "case_count": 9,
+  "thresholds": {
+    "intent_macro_f1": 0.85,
+    "slot_f1": 0.8,
+    "memory_consistency_rate": 0.9,
+    "product_ref_resolution_rate": 0.85,
+    "task_success_rate": 0.8,
+    "budget_compliance_rate": 0.95,
+    "inventory_compliance_rate": 1.0,
+    "avg_latency_ms": 1500.0,
+    "unsupported_claim_rate": 0.02
+  },
+  "summary": {
+    "case_count": 9,
+    "intent_macro_f1": 1.0,
+    "slot_f1": 0.9167,
+    "memory_consistency_rate": 1.0,
+    "product_ref_resolution_rate": 1.0,
+    "task_success_rate": 1.0,
+    "budget_compliance_rate": 1.0,
+    "inventory_compliance_rate": 1.0,
+    "recommendation_ndcg_at_k": 1.0,
+    "fallback_rate": 0.0,
+    "avg_latency_ms": 225.3344,
+    "unsupported_claim_rate": 0.0,
+    "passed_thresholds": {
+      "intent_macro_f1": true,
+      "slot_f1": true,
+      "memory_consistency_rate": true,
+      "product_ref_resolution_rate": true,
+      "task_success_rate": true,
+      "budget_compliance_rate": true,
+      "inventory_compliance_rate": true,
+      "avg_latency_ms": true,
+      "unsupported_claim_rate": true
+    }
+  },
+  "cases": [
+    {
+      "case_id": "single_recommend_phone_case",
+      "predicted_intents": [
+        "recommend_products"
+      ],
+      "expected_intents": [
+        "recommend_products"
+      ],
+      "final_intent": "recommend_products",
+      "expected_final_intent": "recommend_products",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 0.75,
+      "slot_recall": 0.75,
+      "slot_f1": 0.75,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 120.72,
+      "final_state": {
+        "session_id": "eval-single_recommend_phone_case",
+        "user_id": "chat-eval-single_recommend_phone_case",
+        "shopping_goal": "手机 保护壳 手机配件",
+        "budget_min": null,
+        "budget_max": 200.0,
+        "preferred_categories": [
+          "手机"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [
+          "保护壳",
+          "手机配件"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B08V545TKL",
+          "B0B4R7QLP9",
+          "B0BNNXH8Q4"
+        ],
+        "active_product_refs": {
+          "第一个": "B08V545TKL",
+          "第一款": "B08V545TKL",
+          "1号": "B08V545TKL",
+          "first": "B08V545TKL",
+          "第二个": "B0B4R7QLP9",
+          "第二款": "B0B4R7QLP9",
+          "2号": "B0B4R7QLP9",
+          "second": "B0B4R7QLP9",
+          "第三个": "B0BNNXH8Q4",
+          "第三款": "B0BNNXH8Q4",
+          "3号": "B0BNNXH8Q4",
+          "third": "B0BNNXH8Q4",
+          "这款": "B08V545TKL",
+          "这个": "B08V545TKL",
+          "刚才那个": "B08V545TKL"
+        },
+        "recent_intents": [
+          "recommend_products"
+        ]
+      },
+      "product_ids": [
+        "B08V545TKL",
+        "B0B4R7QLP9",
+        "B0BNNXH8Q4"
+      ]
+    },
+    {
+      "case_id": "multi_turn_budget_refine",
+      "predicted_intents": [
+        "recommend_products",
+        "refine_preferences",
+        "refine_preferences"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "refine_preferences",
+        "refine_preferences"
+      ],
+      "final_intent": "refine_preferences",
+      "expected_final_intent": "refine_preferences",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 0.75,
+      "slot_recall": 0.75,
+      "slot_f1": 0.75,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 349.32,
+      "final_state": {
+        "session_id": "eval-multi_turn_budget_refine",
+        "user_id": "chat-eval-multi_turn_budget_refine",
+        "shopping_goal": "保护膜",
+        "budget_min": null,
+        "budget_max": 100.0,
+        "preferred_categories": [
+          "手机"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [
+          "手机配件",
+          "保护膜"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B012BVTWVS",
+          "B08FTB1SJD",
+          "B00QXODI0G"
+        ],
+        "active_product_refs": {
+          "第一个": "B012BVTWVS",
+          "第一款": "B012BVTWVS",
+          "1号": "B012BVTWVS",
+          "first": "B012BVTWVS",
+          "第二个": "B08FTB1SJD",
+          "第二款": "B08FTB1SJD",
+          "2号": "B08FTB1SJD",
+          "second": "B08FTB1SJD",
+          "第三个": "B00QXODI0G",
+          "第三款": "B00QXODI0G",
+          "3号": "B00QXODI0G",
+          "third": "B00QXODI0G",
+          "这款": "B012BVTWVS",
+          "这个": "B012BVTWVS",
+          "刚才那个": "B012BVTWVS"
+        },
+        "recent_intents": [
+          "recommend_products",
+          "refine_preferences"
+        ]
+      },
+      "product_ids": [
+        "B012BVTWVS",
+        "B08FTB1SJD",
+        "B00QXODI0G"
+      ]
+    },
+    {
+      "case_id": "goal_switch_phone_to_computer_to_earphones",
+      "predicted_intents": [
+        "recommend_products",
+        "recommend_products",
+        "recommend_products"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "recommend_products",
+        "recommend_products"
+      ],
+      "final_intent": "recommend_products",
+      "expected_final_intent": "recommend_products",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 0.75,
+      "slot_recall": 0.75,
+      "slot_f1": 0.75,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 307.18,
+      "final_state": {
+        "session_id": "eval-goal_switch_phone_to_computer_to_earphones",
+        "user_id": "chat-eval-goal_switch_phone_to_computer_to_earphones",
+        "shopping_goal": "电子数码 耳机 通勤",
+        "budget_min": null,
+        "budget_max": 200.0,
+        "preferred_categories": [
+          "电子数码"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [
+          "耳机",
+          "通勤"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B08254WPLJ",
+          "B0915C35CH",
+          "B0C48TKVX7"
+        ],
+        "active_product_refs": {
+          "第一个": "B08254WPLJ",
+          "第一款": "B08254WPLJ",
+          "1号": "B08254WPLJ",
+          "first": "B08254WPLJ",
+          "第二个": "B0915C35CH",
+          "第二款": "B0915C35CH",
+          "2号": "B0915C35CH",
+          "second": "B0915C35CH",
+          "第三个": "B0C48TKVX7",
+          "第三款": "B0C48TKVX7",
+          "3号": "B0C48TKVX7",
+          "third": "B0C48TKVX7",
+          "这款": "B08254WPLJ",
+          "这个": "B08254WPLJ",
+          "刚才那个": "B08254WPLJ"
+        },
+        "recent_intents": [
+          "recommend_products"
+        ]
+      },
+      "product_ids": [
+        "B08254WPLJ",
+        "B0915C35CH",
+        "B0C48TKVX7"
+      ]
+    },
+    {
+      "case_id": "product_ref_feedback",
+      "predicted_intents": [
+        "recommend_products",
+        "record_feedback"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "record_feedback"
+      ],
+      "final_intent": "record_feedback",
+      "expected_final_intent": "record_feedback",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 204.95,
+      "final_state": {
+        "session_id": "eval-product_ref_feedback",
+        "user_id": "chat-eval-product_ref_feedback",
+        "shopping_goal": "手机 保护壳 手机配件",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [
+          "手机"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [
+          "保护壳",
+          "手机配件"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [
+          "too_expensive"
+        ],
+        "last_recommended_product_ids": [
+          "B08V545TKL",
+          "B0BNNXH8Q4",
+          "B0B8YNDK45"
+        ],
+        "active_product_refs": {
+          "第一个": "B08V545TKL",
+          "第一款": "B08V545TKL",
+          "1号": "B08V545TKL",
+          "first": "B08V545TKL",
+          "第二个": "B0BNNXH8Q4",
+          "第二款": "B0BNNXH8Q4",
+          "2号": "B0BNNXH8Q4",
+          "second": "B0BNNXH8Q4",
+          "第三个": "B0B8YNDK45",
+          "第三款": "B0B8YNDK45",
+          "3号": "B0B8YNDK45",
+          "third": "B0B8YNDK45",
+          "这款": "B08V545TKL",
+          "这个": "B08V545TKL",
+          "刚才那个": "B08V545TKL"
+        },
+        "recent_intents": [
+          "recommend_products",
+          "record_feedback"
+        ]
+      },
+      "product_ids": [
+        "B08V545TKL",
+        "B0BNNXH8Q4",
+        "B0B8YNDK45"
+      ]
+    },
+    {
+      "case_id": "compare_products",
+      "predicted_intents": [
+        "recommend_products",
+        "compare_products"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "compare_products"
+      ],
+      "final_intent": "compare_products",
+      "expected_final_intent": "compare_products",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 240.48,
+      "final_state": {
+        "session_id": "eval-compare_products",
+        "user_id": "chat-eval-compare_products",
+        "shopping_goal": "游戏",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [
+          "游戏"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B01DJWX23C",
+          "B0BDDGXZY5",
+          "B00BBO75M0"
+        ],
+        "active_product_refs": {
+          "第一个": "B01DJWX23C",
+          "第一款": "B01DJWX23C",
+          "1号": "B01DJWX23C",
+          "first": "B01DJWX23C",
+          "第二个": "B0BDDGXZY5",
+          "第二款": "B0BDDGXZY5",
+          "2号": "B0BDDGXZY5",
+          "second": "B0BDDGXZY5",
+          "第三个": "B00BBO75M0",
+          "第三款": "B00BBO75M0",
+          "3号": "B00BBO75M0",
+          "third": "B00BBO75M0",
+          "这款": "B01DJWX23C",
+          "这个": "B01DJWX23C",
+          "刚才那个": "B01DJWX23C"
+        },
+        "recent_intents": [
+          "recommend_products",
+          "compare_products"
+        ]
+      },
+      "product_ids": []
+    },
+    {
+      "case_id": "explain_recommendation",
+      "predicted_intents": [
+        "recommend_products",
+        "explain_recommendation"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "explain_recommendation"
+      ],
+      "final_intent": "explain_recommendation",
+      "expected_final_intent": "explain_recommendation",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 204.0,
+      "final_state": {
+        "session_id": "eval-explain_recommendation",
+        "user_id": "chat-eval-explain_recommendation",
+        "shopping_goal": "办公 电子产品",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [
+          "办公"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [
+          "电子产品"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B075VNFGBH",
+          "B0B335ZKXX",
+          "B0B5GMPW5Z"
+        ],
+        "active_product_refs": {
+          "第一个": "B075VNFGBH",
+          "第一款": "B075VNFGBH",
+          "1号": "B075VNFGBH",
+          "first": "B075VNFGBH",
+          "第二个": "B0B335ZKXX",
+          "第二款": "B0B335ZKXX",
+          "2号": "B0B335ZKXX",
+          "second": "B0B335ZKXX",
+          "第三个": "B0B5GMPW5Z",
+          "第三款": "B0B5GMPW5Z",
+          "3号": "B0B5GMPW5Z",
+          "third": "B0B5GMPW5Z",
+          "这款": "B075VNFGBH",
+          "这个": "B075VNFGBH",
+          "刚才那个": "B075VNFGBH"
+        },
+        "recent_intents": [
+          "recommend_products",
+          "explain_recommendation"
+        ]
+      },
+      "product_ids": []
+    },
+    {
+      "case_id": "ask_product_detail",
+      "predicted_intents": [
+        "recommend_products",
+        "ask_product"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "ask_product"
+      ],
+      "final_intent": "ask_product",
+      "expected_final_intent": "ask_product",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 190.04,
+      "final_state": {
+        "session_id": "eval-ask_product_detail",
+        "user_id": "chat-eval-ask_product_detail",
+        "shopping_goal": "数据线",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [],
+        "liked_brands": [],
+        "preferred_tags": [
+          "数据线"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B0753Y5RTG",
+          "B004TNKXBU",
+          "B00I4VL056"
+        ],
+        "active_product_refs": {
+          "第一个": "B0753Y5RTG",
+          "第一款": "B0753Y5RTG",
+          "1号": "B0753Y5RTG",
+          "first": "B0753Y5RTG",
+          "第二个": "B004TNKXBU",
+          "第二款": "B004TNKXBU",
+          "2号": "B004TNKXBU",
+          "second": "B004TNKXBU",
+          "第三个": "B00I4VL056",
+          "第三款": "B00I4VL056",
+          "3号": "B00I4VL056",
+          "third": "B00I4VL056",
+          "这款": "B0753Y5RTG",
+          "这个": "B0753Y5RTG",
+          "刚才那个": "B0753Y5RTG"
+        },
+        "recent_intents": [
+          "recommend_products",
+          "ask_product"
+        ]
+      },
+      "product_ids": []
+    },
+    {
+      "case_id": "smalltalk_fallback",
+      "predicted_intents": [
+        "smalltalk"
+      ],
+      "expected_intents": [
+        "smalltalk"
+      ],
+      "final_intent": "smalltalk",
+      "expected_final_intent": "smalltalk",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 85.34,
+      "final_state": {
+        "session_id": "eval-smalltalk_fallback",
+        "user_id": "chat-eval-smalltalk_fallback",
+        "shopping_goal": "",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [],
+        "liked_brands": [],
+        "preferred_tags": [],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [],
+        "active_product_refs": {},
+        "recent_intents": [
+          "smalltalk"
+        ]
+      },
+      "product_ids": []
+    },
+    {
+      "case_id": "brand_memory",
+      "predicted_intents": [
+        "recommend_products",
+        "record_feedback"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "record_feedback"
+      ],
+      "final_intent": "record_feedback",
+      "expected_final_intent": "record_feedback",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "product_ref_resolved": true,
+      "task_success": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 325.98,
+      "final_state": {
+        "session_id": "eval-brand_memory",
+        "user_id": "chat-eval-brand_memory",
+        "shopping_goal": "手机 保护壳 手机配件",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [
+          "手机"
+        ],
+        "liked_brands": [
+          "Bastmei"
+        ],
+        "preferred_tags": [
+          "保护壳",
+          "手机配件"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [
+          "too_expensive"
+        ],
+        "last_recommended_product_ids": [
+          "B07ZPSG8P5",
+          "B08V545TKL",
+          "B0B4R7QLP9"
+        ],
+        "active_product_refs": {
+          "第一个": "B07ZPSG8P5",
+          "第一款": "B07ZPSG8P5",
+          "1号": "B07ZPSG8P5",
+          "first": "B07ZPSG8P5",
+          "第二个": "B08V545TKL",
+          "第二款": "B08V545TKL",
+          "2号": "B08V545TKL",
+          "second": "B08V545TKL",
+          "第三个": "B0B4R7QLP9",
+          "第三款": "B0B4R7QLP9",
+          "3号": "B0B4R7QLP9",
+          "third": "B0B4R7QLP9",
+          "这款": "B07ZPSG8P5",
+          "这个": "B07ZPSG8P5",
+          "刚才那个": "B07ZPSG8P5"
+        },
+        "recent_intents": [
+          "recommend_products",
+          "record_feedback"
+        ]
+      },
+      "product_ids": [
+        "B07ZPSG8P5",
+        "B08V545TKL",
+        "B0B4R7QLP9"
+      ]
+    }
+  ]
+}

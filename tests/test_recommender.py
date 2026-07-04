@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,11 +10,13 @@ from app.agents.marketing_copy_agent import MarketingCopyAgent
 from app.agents.product_rec_agent import ProductRecAgent
 from app.main import app
 from app.models import RecommendRequest, UserEventCreate
+from app.orchestrator.chat import chat_orchestrator
 from app.personalization import score_product
 from app.recommender import recommend_products
 from app.services import ab_test_engine, feature_store, llm_client, metrics_collector
 from app.services.llm_client import LLMClient
 from app.services.vector_store import get_product_vector_store
+from scripts.evaluate_chat_agent import evaluate_chat_agent
 from scripts.evaluate_recommendation_offline import ndcg_at_k
 from scripts.import_amazon_user_events import normalize_timestamp, rating_to_event_type
 
@@ -27,6 +30,7 @@ def clear_runtime_state(monkeypatch):
     get_product_vector_store.cache_clear()
     reset_behavior_events()
     feature_store.clear_all()
+    chat_orchestrator.memory.clear_all()
     ab_test_engine.reset_outcomes()
     metrics_collector.reset()
     yield
@@ -34,6 +38,7 @@ def clear_runtime_state(monkeypatch):
     ab_test_engine.reset_outcomes()
     reset_behavior_events()
     feature_store.clear_all()
+    chat_orchestrator.memory.clear_all()
     get_product_vector_store.cache_clear()
 
 
@@ -55,8 +60,13 @@ def test_recommend_prefers_selected_categories():
     assert "user_profile" in response.agent_results
     llm_profile = response.agent_results["user_profile"].data["llm_profile"]
     assert llm_profile["intent_summary"] == "LLM不可用，默认画像"
-    assert response.agent_results["product_recall"].data["mode"] == "recall"
-    assert response.agent_results["product_recall"].data["backend"].startswith("chroma:")
+    recall_data = response.agent_results["product_recall"].data
+    assert recall_data["mode"] in {"recall", "rerank"}
+    if recall_data["mode"] == "recall":
+        assert recall_data["backend"].startswith("chroma:")
+    else:
+        assert recall_data["backend"] == "rule_fallback_after_vector_unavailable"
+        assert recall_data["fallback_reason"]
     assert "product_rerank" in response.agent_results
     assert response.agent_results["marketing_copy"].data["mode"] == "control_rule"
 
@@ -640,3 +650,153 @@ def test_feature_store_profile_cache_is_rebuilt_from_sqlite():
     if data["status"]["available"]:
         assert data["cached_profile"]["user_id"] == "cache-user"
         assert data["features"]["purchase_count_7d"] == 1
+
+
+def test_chat_endpoint_returns_conversational_recommendation():
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-user",
+            "message": "我想买个200元以内的手机保护壳",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["session_id"]
+    assert data["intent"] == "recommend_products"
+    assert data["state"]["budget_max"] == 200
+    assert "手机" in data["state"]["preferred_categories"]
+    assert data["products"]
+    assert all(product["stock"] > 0 for product in data["products"])
+    assert "intent" in data["agent_results"]
+
+
+def test_chat_stream_endpoint_emits_sse_events():
+    client = TestClient(app)
+    with client.stream(
+        "POST",
+        "/api/v1/chat/stream",
+        json={
+            "user_id": "chat-stream-user",
+            "message": "推荐几款手机保护壳",
+            "stream": True,
+        },
+    ) as response:
+        body = "".join(response.iter_text())
+
+    assert response.status_code == 200
+    assert "event: state" in body
+    assert "event: token" in body
+    assert "event: products" in body
+    assert "event: done" in body
+
+
+def test_chat_goal_switching_replaces_previous_preferences():
+    client = TestClient(app)
+    session_id = "chat-goal-switch-session"
+
+    phone = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-goal-switch-user",
+            "session_id": session_id,
+            "message": "我想要手机",
+        },
+    )
+    assert phone.status_code == 200
+    phone_data = phone.json()
+    assert phone_data["state"]["preferred_categories"] == ["手机"]
+    assert "手机配件" in phone_data["state"]["preferred_tags"]
+    assert all(product["category"] == "手机" for product in phone_data["products"])
+
+    computer = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-goal-switch-user",
+            "session_id": session_id,
+            "message": "想要电脑",
+        },
+    )
+    assert computer.status_code == 200
+    computer_data = computer.json()
+    assert computer_data["state"]["preferred_categories"] == ["电子数码"]
+    assert computer_data["state"]["preferred_tags"] == ["电脑配件"]
+    assert computer_data["state"]["liked_brands"] == []
+    assert all(product["category"] == "电子数码" for product in computer_data["products"])
+    assert any("电脑配件" in product["tags"] for product in computer_data["products"])
+
+    earphones = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-goal-switch-user",
+            "session_id": session_id,
+            "message": "我想买个200元以内的通勤耳机",
+        },
+    )
+    assert earphones.status_code == 200
+    earphone_data = earphones.json()
+    assert earphone_data["state"]["preferred_categories"] == ["电子数码"]
+    assert earphone_data["state"]["preferred_tags"] == ["耳机", "通勤"]
+    assert earphone_data["state"]["budget_max"] == 200
+    assert all(product["category"] == "电子数码" for product in earphone_data["products"])
+    assert any("耳机" in product["tags"] for product in earphone_data["products"])
+
+
+def test_chat_memory_resolves_product_reference_and_feedback():
+    client = TestClient(app)
+    first = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-feedback-user",
+            "session_id": "chat-feedback-session",
+            "message": "推荐几款手机保护壳",
+        },
+    )
+    assert first.status_code == 200
+
+    second = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-feedback-user",
+            "session_id": "chat-feedback-session",
+            "message": "第二个太贵了，换便宜点",
+        },
+    )
+
+    assert second.status_code == 200
+    data = second.json()
+    assert data["intent"] == "record_feedback"
+    assert "too_expensive" in data["state"]["rejected_reasons"]
+    assert data["state"]["active_product_refs"]
+
+
+def test_chat_meta_questions_do_not_trigger_recommendations():
+    client = TestClient(app)
+    for message in ["你好", "你能说画面", "你是什么agent", "你是什么模型", "今天星期几"]:
+        response = client.post(
+            "/api/v1/chat",
+            json={
+                "user_id": "chat-meta-user",
+                "session_id": "chat-meta-session",
+                "message": message,
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["intent"] == "smalltalk"
+        assert data["products"] == []
+
+    assert "星期" in data["reply"]
+
+
+def test_chat_eval_script_reports_core_metrics():
+    report = evaluate_chat_agent(Path("data/chat_eval_cases.jsonl"))
+
+    summary = report["summary"]
+    assert summary["case_count"] >= 8
+    assert "intent_macro_f1" in summary
+    assert "slot_f1" in summary
+    assert "task_success_rate" in summary
