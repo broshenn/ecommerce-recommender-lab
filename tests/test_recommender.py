@@ -18,6 +18,7 @@ from app.services import ab_test_engine, feature_store, llm_client, metrics_coll
 from app.services.llm_client import LLMClient
 from app.services.vector_store import get_product_vector_store
 from scripts.evaluate_chat_agent import evaluate_chat_agent
+from scripts.evaluate_query_understanding_models import evaluate_models
 from scripts.evaluate_recommendation_offline import ndcg_at_k
 from scripts.import_amazon_user_events import normalize_timestamp, rating_to_event_type
 
@@ -983,3 +984,23 @@ def test_chat_eval_script_reports_core_metrics():
     assert "smalltalk_fallback" in report["scenario_summary"]
     assert "long_term_memory" in report["scenario_summary"]
     assert report["failures"] == []
+
+
+def test_query_understanding_model_compare_reports_tradeoffs():
+    report = evaluate_models(
+        train_path=Path("data/query_understanding_train.jsonl"),
+        eval_path=Path("data/query_understanding_eval.jsonl"),
+    )
+
+    summary = report["summary"]
+    assert report["train_count"] >= 500
+    assert report["eval_count"] >= 100
+    assert "rule_baseline" in summary["completed_models"]
+    assert "char_ngram_nb_classifier" in summary["completed_models"]
+    assert "llm_classifier" in summary["skipped_models"]
+    assert "distilbert_classifier" in summary["skipped_models"]
+
+    models = {model["name"]: model for model in report["models"]}
+    assert models["char_ngram_nb_classifier"]["intent_macro_f1"] >= 0.9
+    assert models["rule_baseline"]["slot_f1"] > 0.5
+    assert report["recommendation"]["winner"]

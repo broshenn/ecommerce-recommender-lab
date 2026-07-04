@@ -1,0 +1,255 @@
+{
+  "generated_at": "2026-07-04T16:53:30.633341+00:00",
+  "train_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\query_understanding_train.jsonl",
+  "eval_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\query_understanding_eval.jsonl",
+  "train_count": 800,
+  "eval_count": 200,
+  "dataset_summary": {
+    "train": {
+      "count": 800,
+      "intent_distribution": {
+        "smalltalk": 84,
+        "refine_preferences": 128,
+        "ask_product": 99,
+        "record_feedback": 56,
+        "recommend_products": 306,
+        "compare_products": 58,
+        "explain_recommendation": 69
+      },
+      "source_distribution": {
+        "deepseek_seed_augmented": 767,
+        "deepseek_synthetic": 33
+      }
+    },
+    "eval": {
+      "count": 200,
+      "intent_distribution": {
+        "smalltalk": 24,
+        "explain_recommendation": 22,
+        "recommend_products": 87,
+        "refine_preferences": 29,
+        "compare_products": 6,
+        "record_feedback": 14,
+        "ask_product": 18
+      },
+      "source_distribution": {
+        "deepseek_seed_augmented": 193,
+        "deepseek_synthetic": 7
+      }
+    }
+  },
+  "summary": {
+    "completed_models": [
+      "rule_baseline",
+      "char_ngram_nb_classifier"
+    ],
+    "skipped_models": {
+      "llm_classifier": "Pass --include-llm to call the configured OpenAI-compatible LLM.",
+      "distilbert_classifier": "No --bert-predictions file provided."
+    },
+    "best_by_intent_macro_f1": "char_ngram_nb_classifier",
+    "best_by_latency": "char_ngram_nb_classifier"
+  },
+  "models": [
+    {
+      "name": "rule_baseline",
+      "status": "completed",
+      "description": "Current production fallback: deterministic rules in IntentAgent.",
+      "case_count": 200,
+      "intent_accuracy": 0.645,
+      "intent_macro_f1": 0.7147,
+      "intent_per_label": {
+        "ask_product": {
+          "precision": 0.3415,
+          "recall": 0.7778,
+          "f1": 0.4746,
+          "support": 18
+        },
+        "compare_products": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 6
+        },
+        "explain_recommendation": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 22
+        },
+        "recommend_products": {
+          "precision": 0.8654,
+          "recall": 0.5172,
+          "f1": 0.6475,
+          "support": 87
+        },
+        "record_feedback": {
+          "precision": 0.56,
+          "recall": 1.0,
+          "f1": 0.7179,
+          "support": 14
+        },
+        "refine_preferences": {
+          "precision": 0.2973,
+          "recall": 0.3793,
+          "f1": 0.3333,
+          "support": 29
+        },
+        "smalltalk": {
+          "precision": 1.0,
+          "recall": 0.7083,
+          "f1": 0.8293,
+          "support": 24
+        }
+      },
+      "slot_f1": 0.5963,
+      "slot_precision": 0.4967,
+      "slot_recall": 0.7458,
+      "need_recommendation_accuracy": 0.81,
+      "avg_latency_ms": 10.7716,
+      "p95_latency_ms": 16.5367,
+      "cost_level": "low",
+      "online_suitability": "excellent fallback and demo baseline",
+      "sample_errors": [
+        {
+          "text": "今天星期几 66",
+          "expected_intent": "smalltalk",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "text": "GearIT任天堂有合适的吗，预算大概150",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "text": "平时用的充电器推荐一下，价格别超过300",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "ask_product"
+        },
+        {
+          "text": "有没有评价好一点的游戏保护膜",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "ask_product"
+        },
+        {
+          "text": "今天星期几 22",
+          "expected_intent": "smalltalk",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "text": "换成键盘方向的，预算还是300",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "record_feedback"
+        },
+        {
+          "text": "平时用的手机配件推荐一下，价格别超过50",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "ask_product"
+        },
+        {
+          "text": "换成数据线方向的，预算还是80",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "record_feedback"
+        }
+      ]
+    },
+    {
+      "name": "char_ngram_nb_classifier",
+      "status": "completed",
+      "description": "Trainable intent-only baseline using character n-gram Naive Bayes.",
+      "case_count": 200,
+      "intent_accuracy": 0.985,
+      "intent_macro_f1": 0.9861,
+      "intent_per_label": {
+        "ask_product": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 18
+        },
+        "compare_products": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 6
+        },
+        "explain_recommendation": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 22
+        },
+        "recommend_products": {
+          "precision": 1.0,
+          "recall": 0.977,
+          "f1": 0.9884,
+          "support": 87
+        },
+        "record_feedback": {
+          "precision": 0.9333,
+          "recall": 1.0,
+          "f1": 0.9655,
+          "support": 14
+        },
+        "refine_preferences": {
+          "precision": 0.9333,
+          "recall": 0.9655,
+          "f1": 0.9492,
+          "support": 29
+        },
+        "smalltalk": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 24
+        }
+      },
+      "slot_f1": 0.0,
+      "slot_precision": 0.0,
+      "slot_recall": 0.0,
+      "need_recommendation_accuracy": 1.0,
+      "avg_latency_ms": 0.0701,
+      "p95_latency_ms": 0.1382,
+      "cost_level": "low",
+      "online_suitability": "good for high-frequency intent classification, weak for slots",
+      "sample_errors": [
+        {
+          "text": "想买个办公用的键盘 预算两百左右 别太吵的",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "text": "刚才那个我不要黑色的了，换成白色的，其他不变",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "record_feedback"
+        },
+        {
+          "text": "帮我找一款办公用的无线鼠标，预算两百以内，最好是罗技之类的牌子。",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        }
+      ]
+    },
+    {
+      "name": "llm_classifier",
+      "status": "skipped",
+      "description": "Optional classifier for complex natural language; not required for local demo.",
+      "skip_reason": "Pass --include-llm to call the configured OpenAI-compatible LLM."
+    },
+    {
+      "name": "distilbert_classifier",
+      "status": "skipped",
+      "description": "Use an offline DistilBERT/BERT trainer to write JSONL predictions with text and intent.",
+      "skip_reason": "No --bert-predictions file provided."
+    }
+  ],
+  "recommendation": {
+    "winner": "char_ngram_nb_classifier + rule_baseline",
+    "reason": "Use the trainable classifier for high-frequency intent classification, and keep rule extraction for slots until a sequence-labeling model is trained."
+  },
+  "notes": [
+    "rule_baseline is the production fallback used by IntentAgent today.",
+    "char_ngram_nb is a small trainable baseline for intent only; it does not extract slots.",
+    "llm_classifier and distilbert_classifier are optional to avoid making the main demo depend on external APIs or GPU training."
+  ]
+}
