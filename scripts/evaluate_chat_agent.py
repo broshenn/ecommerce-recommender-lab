@@ -28,12 +28,14 @@ from app.services import ab_test_engine, feature_store, llm_client, metrics_coll
 
 DEFAULT_CASES = PROJECT_ROOT / "data" / "chat_eval_cases.jsonl"
 DEFAULT_REPORT = PROJECT_ROOT / "reports" / "chat_agent_eval_latest.json"
+DEFAULT_MARKDOWN_REPORT = PROJECT_ROOT / "reports" / "chat_agent_eval_latest.md"
 THRESHOLDS = {
     "intent_macro_f1": 0.85,
     "slot_f1": 0.80,
     "memory_consistency_rate": 0.90,
     "product_ref_resolution_rate": 0.85,
     "task_success_rate": 0.80,
+    "tool_success_rate": 0.90,
     "budget_compliance_rate": 0.95,
     "inventory_compliance_rate": 1.00,
     "avg_latency_ms": 1500.0,
@@ -45,13 +47,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate conversational commerce agent.")
     parser.add_argument("--cases", type=Path, default=DEFAULT_CASES)
     parser.add_argument("--output", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--markdown-output", type=Path, default=DEFAULT_MARKDOWN_REPORT)
     args = parser.parse_args()
 
     report = evaluate_chat_agent(args.cases)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    args.markdown_output.parent.mkdir(parents=True, exist_ok=True)
+    args.markdown_output.write_text(render_markdown_report(report), encoding="utf-8")
     print(json.dumps(report["summary"], ensure_ascii=False, indent=2))
     print(f"Report written: {args.output}")
+    print(f"Markdown report written: {args.markdown_output}")
 
 
 def evaluate_chat_agent(cases_path: Path) -> dict[str, Any]:
@@ -66,6 +72,8 @@ def evaluate_chat_agent(cases_path: Path) -> dict[str, Any]:
         "case_count": len(case_results),
         "thresholds": THRESHOLDS,
         "summary": summary,
+        "scenario_summary": summarize_by_scenario(case_results),
+        "failures": failure_cases(case_results),
         "cases": case_results,
     }
 
@@ -110,10 +118,15 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
     intent_scores = score_sequence(predicted_intents, expected_intents)
     slot_scores = score_slots(final.state.model_dump(mode="json"), expected.get("slots", {}))
     constraints = check_constraints(responses, expected.get("constraints", {}))
+    trace_tools_by_turn = [trace_tools(response) for response in responses]
+    all_tools = [tool for tools in trace_tools_by_turn for tool in tools]
+    expected_tools = expected.get("tools", [])
+    tool_result = check_tools(responses, expected_tools)
     unsupported_claim = has_unsupported_claim(final.reply)
 
     return {
         "case_id": case["case_id"],
+        "scenario": case.get("scenario", "uncategorized"),
         "predicted_intents": predicted_intents,
         "expected_intents": expected_intents,
         "final_intent": final.intent,
@@ -126,13 +139,22 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         "slot_recall": slot_scores["recall"],
         "slot_f1": slot_scores["f1"],
         "memory_consistent": memory_consistent(final, expected.get("slots", {})),
+        "expected_tools": expected_tools,
+        "trace_tools": all_tools,
+        "trace_tools_by_turn": trace_tools_by_turn,
+        "tool_success": tool_result["tool_success"],
+        "missing_tools": tool_result["missing_tools"],
+        "tool_errors": tool_result["tool_errors"],
         "product_ref_resolved": constraints["product_ref_resolved"],
         "task_success": constraints["task_success"] and final.intent == expected.get("final_intent"),
+        "no_recommendation_guard": constraints["no_recommendation_guard"],
+        "memory_trace_present": constraints["memory_trace_present"],
         "budget_compliant": constraints["budget_compliant"],
         "inventory_compliant": constraints["inventory_compliant"],
         "recommendation_ndcg_at_k": constraints["recommendation_ndcg_at_k"],
         "unsupported_claim": unsupported_claim,
         "latency_ms": round(sum(latencies), 2),
+        "final_reply": final.reply,
         "final_state": final.state.model_dump(mode="json"),
         "product_ids": [product.product_id for product in final.products],
     }
@@ -196,16 +218,71 @@ def check_constraints(
     if constraints.get("product_ref_resolved"):
         product_ref_resolved = any(response.state.active_product_refs for response in responses)
 
+    no_recommendation_guard = True
+    if constraints.get("no_recommendation"):
+        no_recommendation_guard = not any(
+            "RecommendGraphTool" in trace_tools(response)
+            for response in responses
+        )
+    if constraints.get("no_final_products"):
+        no_recommendation_guard = no_recommendation_guard and not responses[-1].products
+
+    memory_trace_present = True
+    if constraints.get("memory_trace"):
+        memory_trace_present = any(
+            any(item.get("step") == "memory" for item in response.trace)
+            for response in responses
+        )
+
     task_success = len(final_products) >= min_products if min_products else True
     if constraints.get("product_ref_resolved"):
         task_success = task_success and product_ref_resolved
+    if constraints.get("no_recommendation") or constraints.get("no_final_products"):
+        task_success = task_success and no_recommendation_guard
+    if constraints.get("memory_trace"):
+        task_success = task_success and memory_trace_present
 
     return {
         "task_success": task_success,
         "budget_compliant": budget_compliant,
         "inventory_compliant": inventory_compliant,
         "product_ref_resolved": product_ref_resolved,
+        "no_recommendation_guard": no_recommendation_guard,
+        "memory_trace_present": memory_trace_present,
         "recommendation_ndcg_at_k": 1.0 if task_success else 0.0,
+    }
+
+
+def trace_tools(response: ChatResponse) -> list[str]:
+    return [
+        item.get("tool_name", "")
+        for item in response.trace
+        if item.get("step") == "tool" and item.get("tool_name")
+    ]
+
+
+def check_tools(
+    responses: list[ChatResponse],
+    expected_tools: list[str],
+) -> dict[str, Any]:
+    observed = [tool for response in responses for tool in trace_tools(response)]
+    missing_tools = [
+        tool for tool in expected_tools
+        if tool not in observed
+    ]
+    tool_errors = [
+        {
+            "tool_name": item.get("tool_name"),
+            "error": item.get("error"),
+        }
+        for response in responses
+        for item in response.trace
+        if item.get("step") == "tool" and item.get("success") is False
+    ]
+    return {
+        "tool_success": not missing_tools and not tool_errors,
+        "missing_tools": missing_tools,
+        "tool_errors": tool_errors,
     }
 
 
@@ -235,6 +312,8 @@ def summarize(case_results: list[dict[str, Any]]) -> dict[str, Any]:
         "memory_consistency_rate": avg_bool(item["memory_consistent"] for item in case_results),
         "product_ref_resolution_rate": avg_bool(item["product_ref_resolved"] for item in case_results),
         "task_success_rate": avg_bool(item["task_success"] for item in case_results),
+        "tool_success_rate": avg_bool(item["tool_success"] for item in case_results),
+        "no_recommendation_guard_rate": avg_bool(item["no_recommendation_guard"] for item in case_results),
         "budget_compliance_rate": avg_bool(item["budget_compliant"] for item in case_results),
         "inventory_compliance_rate": avg_bool(item["inventory_compliant"] for item in case_results),
         "recommendation_ndcg_at_k": avg(item["recommendation_ndcg_at_k"] for item in case_results),
@@ -247,6 +326,117 @@ def summarize(case_results: list[dict[str, Any]]) -> dict[str, Any]:
         for key, value in THRESHOLDS.items()
     }
     return summary
+
+
+def summarize_by_scenario(case_results: list[dict[str, Any]]) -> dict[str, Any]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for item in case_results:
+        grouped.setdefault(item["scenario"], []).append(item)
+    return {
+        scenario: {
+            "case_count": len(items),
+            "intent_f1": avg(item["intent_f1"] for item in items),
+            "slot_f1": avg(item["slot_f1"] for item in items),
+            "task_success_rate": avg_bool(item["task_success"] for item in items),
+            "tool_success_rate": avg_bool(item["tool_success"] for item in items),
+            "avg_latency_ms": avg(item["latency_ms"] for item in items),
+        }
+        for scenario, items in sorted(grouped.items())
+    }
+
+
+def failure_cases(case_results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    failures = []
+    for item in case_results:
+        failed_checks = []
+        for key in [
+            "intent_exact",
+            "memory_consistent",
+            "tool_success",
+            "product_ref_resolved",
+            "task_success",
+            "budget_compliant",
+            "inventory_compliant",
+            "no_recommendation_guard",
+        ]:
+            if item.get(key) is False:
+                failed_checks.append(key)
+        if item.get("unsupported_claim"):
+            failed_checks.append("unsupported_claim")
+        if failed_checks:
+            failures.append(
+                {
+                    "case_id": item["case_id"],
+                    "scenario": item["scenario"],
+                    "failed_checks": failed_checks,
+                    "predicted_intents": item["predicted_intents"],
+                    "expected_intents": item["expected_intents"],
+                    "missing_tools": item["missing_tools"],
+                    "latency_ms": item["latency_ms"],
+                }
+            )
+    return failures
+
+
+def render_markdown_report(report: dict[str, Any]) -> str:
+    summary = report["summary"]
+    lines = [
+        "# Chat Agent Eval Report",
+        "",
+        f"- Generated at: `{report['generated_at']}`",
+        f"- Cases: `{report['case_count']}`",
+        f"- Cases file: `{report['cases_path']}`",
+        "",
+        "## Summary",
+        "",
+        "| Metric | Value | Threshold | Passed |",
+        "|---|---:|---:|:---:|",
+    ]
+    for metric, threshold in report["thresholds"].items():
+        value = summary.get(metric)
+        passed = summary.get("passed_thresholds", {}).get(metric)
+        lines.append(
+            f"| `{metric}` | {value} | {threshold} | {'yes' if passed else 'no'} |"
+        )
+    lines.extend(
+        [
+            f"| `no_recommendation_guard_rate` | {summary.get('no_recommendation_guard_rate')} | - | - |",
+            f"| `recommendation_ndcg_at_k` | {summary.get('recommendation_ndcg_at_k')} | - | - |",
+            "",
+            "## Scenario Summary",
+            "",
+            "| Scenario | Cases | Intent F1 | Slot F1 | Task Success | Tool Success | Avg Latency ms |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for scenario, item in report["scenario_summary"].items():
+        lines.append(
+            "| "
+            f"`{scenario}` | {item['case_count']} | {item['intent_f1']} | "
+            f"{item['slot_f1']} | {item['task_success_rate']} | "
+            f"{item['tool_success_rate']} | {item['avg_latency_ms']} |"
+        )
+    lines.extend(["", "## Case Details", ""])
+    for item in report["cases"]:
+        lines.append(
+            "- "
+            f"`{item['case_id']}` ({item['scenario']}): "
+            f"intent={item['final_intent']}, "
+            f"tools={','.join(item['trace_tools']) or '-'}, "
+            f"task_success={item['task_success']}, "
+            f"latency_ms={item['latency_ms']}"
+        )
+    lines.extend(["", "## Failures", ""])
+    if report["failures"]:
+        for item in report["failures"]:
+            lines.append(
+                "- "
+                f"`{item['case_id']}` failed {', '.join(item['failed_checks'])}"
+            )
+    else:
+        lines.append("No failed cases.")
+    lines.append("")
+    return "\n".join(lines)
 
 
 def prf(precision: float, recall: float) -> dict[str, float]:

@@ -972,7 +972,14 @@ def test_chat_eval_script_reports_core_metrics():
     report = evaluate_chat_agent(Path("data/chat_eval_cases.jsonl"))
 
     summary = report["summary"]
-    assert summary["case_count"] >= 8
+    assert summary["case_count"] >= 12
     assert "intent_macro_f1" in summary
     assert "slot_f1" in summary
     assert "task_success_rate" in summary
+    assert "tool_success_rate" in summary
+    assert "no_recommendation_guard_rate" in summary
+    assert summary["tool_success_rate"] >= 0.9
+    assert report["scenario_summary"]
+    assert "smalltalk_fallback" in report["scenario_summary"]
+    assert "long_term_memory" in report["scenario_summary"]
+    assert report["failures"] == []
