@@ -674,6 +674,10 @@ def test_chat_endpoint_returns_conversational_recommendation():
     assert data["products"]
     assert all(product["stock"] > 0 for product in data["products"])
     assert "intent" in data["agent_results"]
+    intent_data = data["agent_results"]["intent"]["data"]
+    assert intent_data["source"] == "rule"
+    assert "rule_debug" in intent_data
+    assert intent_data["rule_debug"]["matched_rules"] == ["recommend_products"]
     tool_names = [item.get("tool_name") for item in data["trace"] if item.get("step") == "tool"]
     assert "PreferenceUpdateTool" in tool_names
     assert "RecommendGraphTool" in tool_names
@@ -753,7 +757,8 @@ def test_chat_goal_switching_replaces_previous_preferences():
 
 def test_intent_agent_extracts_business_slots_and_budget_ranges():
     state = ConversationState(session_id="intent-slots", user_id="intent-user")
-    result = IntentAgent()._rule_intent("想要100到300元的防水耳机，最好是Samsung", state)
+    agent = IntentAgent()
+    result = agent._rule_intent("想要100到300元的防水耳机，最好是Samsung", state)
 
     assert result.intent == "recommend_products"
     assert result.needs_recommendation is True
@@ -763,6 +768,9 @@ def test_intent_agent_extracts_business_slots_and_budget_ranges():
     assert "耳机" in result.slots["preferred_tags"]
     assert "防水" in result.slots["preferred_tags"]
     assert result.slots["liked_brands"] == ["SAMSUNG"]
+    assert agent.rules["product_synonyms"]["耳机"]["tags"] == ["耳机"]
+    assert agent._last_rule_debug["matched_keywords"]["recommend_products"] == ["想要"]
+    assert "耳机" in agent._last_rule_debug["slot_sources"]["synonyms"]
 
 
 def test_intent_agent_handles_min_budget_product_info_and_compare():

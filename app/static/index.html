@@ -595,6 +595,15 @@
           <span>预算：{{ chatBudgetText }}</span>
         </div>
 
+        <div class="state-box">
+          <strong>Query Understanding</strong>
+          <span>来源：{{ intentSourceText }}</span>
+          <span>置信度：{{ intentConfidenceText }}</span>
+          <span>触发推荐：{{ intentNeedsRecommendationText }}</span>
+          <span>Slots：{{ intentSlotsText }}</span>
+          <span>命中规则：{{ intentRuleText }}</span>
+        </div>
+
         <div class="profile-box">
           <strong>行为画像 · {{ profile.event_count || 0 }} 条行为</strong>
           <span>类目：{{ joinOrDash(profile.preferred_categories) }}</span>
@@ -806,6 +815,7 @@
           draft: "",
           chatIntent: "",
           chatState: {},
+          intentDebug: {},
           trace: [],
           messages: [
             {
@@ -853,6 +863,42 @@
               return item.step;
             })
             .join(" -> ");
+        },
+
+        intentSourceText() {
+          return this.intentDebug.source || "-";
+        },
+
+        intentConfidenceText() {
+          const value = this.intentDebug.confidence;
+          if (value == null) return "-";
+          return Number(value).toFixed(2);
+        },
+
+        intentNeedsRecommendationText() {
+          if (this.intentDebug.needs_recommendation == null) return "-";
+          return this.intentDebug.needs_recommendation ? "是" : "否";
+        },
+
+        intentSlotsText() {
+          const slots = this.intentDebug.slots || {};
+          const keys = Object.keys(slots);
+          if (!keys.length) return "-";
+          return keys
+            .map((key) => `${key}=${Array.isArray(slots[key]) ? slots[key].join("/") : slots[key]}`)
+            .join("；");
+        },
+
+        intentRuleText() {
+          const debug = this.intentDebug.rule_debug || {};
+          const keywords = debug.matched_keywords || {};
+          const hits = Object.entries(keywords)
+            .flatMap(([intent, values]) => (values || []).map((value) => `${intent}:${value}`));
+          const synonymHits = debug.slot_sources?.synonyms || [];
+          if (synonymHits.length) {
+            hits.push(`synonym:${synonymHits.join("/")}`);
+          }
+          return hits.length ? hits.join("；") : "-";
         }
       },
 
@@ -1095,9 +1141,17 @@
             }
           } else if (event === "trace") {
             this.trace.push(payload);
+            if (payload.step === "intent") {
+              this.intentDebug = {
+                ...this.intentDebug,
+                intent: payload.intent,
+                source: payload.source
+              };
+            }
           } else if (event === "done") {
             this.chatIntent = payload.intent;
             this.chatState = payload.state || this.chatState;
+            this.intentDebug = payload.agent_results?.intent?.data || this.intentDebug;
             this.sessionId = payload.session_id || this.sessionId;
             localStorage.setItem("chat_session_id", this.sessionId);
             this.syncControlsFromState(this.chatState);

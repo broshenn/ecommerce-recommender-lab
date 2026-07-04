@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import re
 import os
+from pathlib import Path
 from typing import Any
 
 from app.agents.base_agent import BaseAgent
@@ -18,6 +20,7 @@ Return JSON with these fields:
 - confidence: number from 0 to 1
 
 Do not invent discounts, inventory, or facts. Extract only what the user said."""
+DEFAULT_RULE_PATH = Path(__file__).with_name("intent_rules.json")
 
 
 class IntentAgent(BaseAgent):
@@ -25,6 +28,7 @@ class IntentAgent(BaseAgent):
 
     def __init__(self):
         super().__init__(name="intent", timeout=8.0)
+        self.rules = self._load_rules(DEFAULT_RULE_PATH)
 
     def _execute(self, **kwargs: Any) -> AgentResult:
         message: str = kwargs["message"]
@@ -38,9 +42,19 @@ class IntentAgent(BaseAgent):
         return AgentResult(
             agent_name=self.name,
             success=True,
-            data=result.model_dump(mode="json"),
+            data=self._result_payload(result),
             confidence=result.confidence,
         )
+
+    def _load_rules(self, path: Path) -> dict[str, Any]:
+        with path.open("r", encoding="utf-8") as file:
+            return json.load(file)
+
+    def _result_payload(self, result: IntentResult) -> dict[str, Any]:
+        payload = result.model_dump(mode="json")
+        payload["rule_debug"] = getattr(self, "_last_rule_debug", {})
+        payload["rule_config"] = str(DEFAULT_RULE_PATH.name)
+        return payload
 
     def _llm_intent(
         self,
@@ -72,12 +86,22 @@ class IntentAgent(BaseAgent):
         except ValueError:
             return None
         result.source = "llm"
+        self._last_rule_debug = {
+            "mode": "llm",
+            "matched_rules": [],
+            "fallback": False,
+        }
         return result
 
     def _rule_intent(self, message: str, state: ConversationState) -> IntentResult:
         text = message.strip()
-        lowered = text.lower()
         if self._is_meta_smalltalk(text):
+            self._last_rule_debug = {
+                "mode": "rule",
+                "matched_rules": ["smalltalk"],
+                "matched_keywords": {"smalltalk": self._matched_markers(text, "smalltalk")},
+                "slot_sources": {},
+            }
             return IntentResult(
                 intent="smalltalk",
                 slots={},
@@ -87,33 +111,29 @@ class IntentAgent(BaseAgent):
                 source="rule",
             )
 
-        slots = self._extract_slots(text)
+        slots, slot_debug = self._extract_slots(text)
         product_refs = self._extract_product_refs(text, state)
         confidence = 0.72
         needs_recommendation = False
+        matched_keywords: dict[str, list[str]] = {}
 
-        if self._has_any(
-            text,
-            ["比较", "对比", "哪个好", "哪款好", "哪个更", "哪款更", "区别"],
-        ) or "compare" in lowered:
+        if self._has_intent(text, "compare_products", matched_keywords):
             intent = "compare_products"
-        elif self._has_any(text, ["为什么", "原因", "解释", "为啥", "推荐理由"]) or "why" in lowered:
+        elif self._has_intent(text, "explain_recommendation", matched_keywords):
             intent = "explain_recommendation"
-        elif self._has_any(
-            text,
-            ["库存", "有货", "详情", "参数", "评分", "评价", "价格多少", "多少钱", "价格"],
-        ):
+        elif self._has_intent(text, "ask_product", matched_keywords):
             intent = "ask_product"
         elif self._looks_like_recommendation(text):
             intent = "recommend_products"
+            matched_keywords["recommend_products"] = self._matched_markers(text, "recommend_products")
             needs_recommendation = True
             confidence = 0.82
-        elif self._has_any(
-            text,
-            ["喜欢", "不喜欢", "不要", "太贵", "便宜", "换", "购买", "买了", "加入购物车", "下单"],
-        ):
+        elif self._has_intent(text, "record_feedback", matched_keywords):
             intent = "record_feedback"
-            needs_recommendation = self._has_any(text, ["换", "便宜", "重新", "再来", "替换"])
+            needs_recommendation = self._has_any(
+                text,
+                self.rules["intent_markers"]["feedback_recommend"],
+            )
             slots.update(self._feedback_slots(text))
         elif slots:
             intent = "refine_preferences"
@@ -125,6 +145,14 @@ class IntentAgent(BaseAgent):
         if intent == "record_feedback" and product_refs:
             slots["product_refs"] = product_refs
 
+        self._last_rule_debug = {
+            "mode": "rule",
+            "matched_rules": [intent],
+            "matched_keywords": matched_keywords,
+            "slot_sources": slot_debug,
+            "product_refs": product_refs,
+        }
+
         return IntentResult(
             intent=intent,
             slots=slots,
@@ -134,58 +162,44 @@ class IntentAgent(BaseAgent):
             source="rule",
         )
 
-    def _extract_slots(self, text: str) -> dict[str, Any]:
+    def _extract_slots(self, text: str) -> tuple[dict[str, Any], dict[str, Any]]:
         products = list_products()
         categories = self._unique(product.category for product in products)
         brands = self._unique(product.brand for product in products)
         tags = self._unique(tag for product in products for tag in product.tags)
         slots: dict[str, Any] = {}
+        slot_debug: dict[str, Any] = {}
 
         budget = self._extract_budget(text)
         if budget:
             slots.update(budget)
+            slot_debug["budget"] = budget
 
         matched_categories = [category for category in categories if category and category in text]
         matched_brands = [brand for brand in brands if brand and brand.lower() in text.lower()]
         matched_tags = [tag for tag in tags if tag and tag in text]
-        product_synonyms = {
-            "电脑": {"categories": ["电子数码"], "tags": ["电脑配件"]},
-            "笔记本": {"categories": ["电子数码"], "tags": ["电脑配件"]},
-            "键盘": {"categories": ["电子数码"], "tags": ["电脑配件", "键盘"]},
-            "摄像头": {"categories": ["电子数码"], "tags": ["摄像头"]},
-            "相机": {"categories": ["电子数码"], "tags": ["摄像头"]},
-            "耳机": {"categories": ["电子数码"], "tags": ["耳机"]},
-            "耳麦": {"categories": ["电子数码"], "tags": ["耳机"]},
-            "手机": {"categories": ["手机"], "tags": ["手机配件"]},
-            "保护壳": {"categories": ["手机"], "tags": ["手机配件", "保护壳"]},
-            "保护膜": {"categories": ["手机"], "tags": ["手机配件", "保护膜"]},
-            "数据线": {"categories": ["电子数码"], "tags": ["数据线"]},
-        }
-        for keyword, mapped in product_synonyms.items():
+        if matched_categories:
+            slot_debug["catalog_categories"] = matched_categories
+        if matched_brands:
+            slot_debug["catalog_brands"] = matched_brands
+        if matched_tags:
+            slot_debug["catalog_tags"] = matched_tags
+        synonym_hits = []
+        for keyword, mapped in self.rules["product_synonyms"].items():
             if keyword in text:
                 matched_categories.extend(mapped["categories"])
                 matched_tags.extend(mapped["tags"])
+                synonym_hits.append(keyword)
+        if synonym_hits:
+            slot_debug["synonyms"] = synonym_hits
 
-        generic_terms = [
-            "耳机",
-            "通勤",
-            "防水",
-            "轻便",
-            "办公",
-            "游戏",
-            "保护壳",
-            "保护膜",
-            "数据线",
-            "电脑配件",
-            "键盘",
-            "摄像头",
-            "电子产品",
-            "PlayStation",
-            "任天堂",
-        ]
-        for term in generic_terms:
+        generic_hits = []
+        for term in self.rules["generic_tags"]:
             if term in text and term not in matched_tags and term not in matched_categories:
                 matched_tags.append(term)
+                generic_hits.append(term)
+        if generic_hits:
+            slot_debug["generic_tags"] = generic_hits
 
         matched_categories = self._unique(matched_categories)
         matched_tags = self._unique(
@@ -204,11 +218,12 @@ class IntentAgent(BaseAgent):
         if goal:
             slots["shopping_goal"] = goal
 
-        return slots
+        return slots, slot_debug
 
     def _extract_budget(self, text: str) -> dict[str, float] | None:
+        joiners = "|".join(re.escape(item) for item in self.rules["budget"]["range_joiners"])
         range_match = re.search(
-            r"(\d+(?:\.\d+)?)\s*(?:元|块|块钱|人民币|rmb|RMB)?\s*(?:-|~|到|至|—)\s*"
+            rf"(\d+(?:\.\d+)?)\s*(?:元|块|块钱|人民币|rmb|RMB)?\s*(?:{joiners})\s*"
             r"(\d+(?:\.\d+)?)\s*(?:元|块|块钱|人民币|rmb|RMB)?",
             text,
         )
@@ -224,9 +239,9 @@ class IntentAgent(BaseAgent):
         if not match:
             return None
         value = float(match.group(1))
-        if any(marker in text for marker in ["以上", "起", "至少", "不低于", "不少于"]):
+        if any(marker in text for marker in self.rules["budget"]["min_markers"]):
             return {"budget_min": value}
-        if any(marker in text for marker in ["以内", "以下", "不超过", "别超过", "低于", "最多"]):
+        if any(marker in text for marker in self.rules["budget"]["max_markers"]):
             return {"budget_max": value}
         return {"budget_max": value}
 
@@ -245,13 +260,7 @@ class IntentAgent(BaseAgent):
 
     def _extract_product_refs(self, text: str, state: ConversationState) -> list[str]:
         refs = []
-        aliases = {
-            "第一个": ["第一个", "第一款", "1号", "一号", "first"],
-            "第二个": ["第二个", "第二款", "2号", "二号", "second"],
-            "第三个": ["第三个", "第三款", "3号", "三号", "third"],
-            "这款": ["这款", "这个", "刚才那个"],
-        }
-        for canonical, values in aliases.items():
+        for canonical, values in self.rules["product_refs"].items():
             if any(value in text.lower() for value in values):
                 product_id = state.active_product_refs.get(canonical)
                 refs.append(product_id or canonical)
@@ -274,41 +283,29 @@ class IntentAgent(BaseAgent):
         return slots
 
     def _looks_like_recommendation(self, text: str) -> bool:
-        return self._has_any(
-            text,
-            [
-                "推荐",
-                "找",
-                "想买",
-                "想要",
-                "想看",
-                "有没有",
-                "来个",
-                "买个",
-                "帮我挑",
-                "适合",
-                "筛",
-                "看看",
-            ],
-        )
+        return self._has_any(text, self.rules["intent_markers"]["recommend_products"])
 
     def _is_meta_smalltalk(self, text: str) -> bool:
-        lowered = text.lower()
-        meta_markers = [
-            "你好",
-            "你是谁",
-            "你是什么",
-            "什么agent",
-            "什么 agent",
-            "介绍一下",
-            "你能做什么",
-            "能说画面",
-            "看画面",
-            "看图片",
-            "看截图",
-            "说画面",
+        return self._has_any(text, self.rules["intent_markers"]["smalltalk"])
+
+    def _has_intent(
+        self,
+        text: str,
+        intent: str,
+        matched_keywords: dict[str, list[str]],
+    ) -> bool:
+        markers = self._matched_markers(text, intent)
+        if not markers:
+            return False
+        matched_keywords[intent] = markers
+        return True
+
+    def _matched_markers(self, text: str, intent: str) -> list[str]:
+        return [
+            marker
+            for marker in self.rules["intent_markers"].get(intent, [])
+            if marker.lower() in text.lower()
         ]
-        return any(marker in lowered for marker in meta_markers)
 
     def _has_any(self, text: str, markers: list[str]) -> bool:
         lowered = text.lower()
