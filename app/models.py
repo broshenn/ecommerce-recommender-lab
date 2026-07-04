@@ -155,6 +155,7 @@ class ChatRequest(BaseModel):
     session_id: str | None = None
     message: str
     stream: bool = False
+    force_experiment_group: str | None = None
 
 
 class ChatResponse(BaseModel):

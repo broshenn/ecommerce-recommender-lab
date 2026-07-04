@@ -209,6 +209,20 @@
       font-size: 13px;
     }
 
+    .experiment-select {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .experiment-select select {
+      width: auto;
+      min-height: 32px;
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+
     .chat-feed {
       max-height: 210px;
       overflow: auto;
@@ -596,7 +610,14 @@
         <div class="panel chat-box">
           <div class="chat-head">
             <strong>自然语言对话框</strong>
-            <span>对话输入会走 IntentAgent，再调用原 LangGraph 推荐链路</span>
+            <div class="experiment-select">
+              <span>实验组</span>
+              <select v-model="experimentMode" :disabled="loading">
+                <option value="control">对照组</option>
+                <option value="auto">自动 A/B</option>
+                <option value="treatment">实验组</option>
+              </select>
+            </div>
           </div>
           <div ref="chatFeed" class="chat-feed">
             <div v-for="message in messages" :key="message.id" class="bubble" :class="message.role">
@@ -734,6 +755,7 @@
         return {
           userId: "u001",
           sessionId: localStorage.getItem("chat_session_id") || "",
+          experimentMode: localStorage.getItem("experiment_mode") || "control",
           numItems: 5,
           selectedCategories: ["手机", "电子数码"],
           selectedBrands: ["Bastmei", "Sharp"],
@@ -819,8 +841,12 @@
 
         latestTraceText() {
           if (!this.trace.length) return "暂无";
-          return this.trace
-            .slice(-4)
+          const intentItem = this.trace.find((item) => item.step === "intent");
+          const tailItems = this.trace
+            .filter((item) => item.step !== "intent")
+            .slice(-4);
+          const visibleItems = intentItem ? [intentItem, ...tailItems] : tailItems;
+          return visibleItems
             .map((item) => {
               if (item.step === "tool") return item.tool_name || "tool";
               if (item.step === "intent") return `intent:${item.intent || "-"}`;
@@ -885,8 +911,17 @@
             liked_brands: this.selectedBrands,
             preferred_tags: this.selectedTags,
             budget_min: this.normalizedBudget.min,
-            budget_max: this.normalizedBudget.max
+            budget_max: this.normalizedBudget.max,
+            context: this.experimentContext()
           };
+        },
+
+        experimentContext() {
+          localStorage.setItem("experiment_mode", this.experimentMode);
+          if (this.experimentMode === "control" || this.experimentMode === "treatment") {
+            return { force_experiment_group: this.experimentMode };
+          }
+          return {};
         },
 
         async recommend() {
@@ -990,6 +1025,7 @@
 
         async sendChatMessage(text) {
           this.setLoading(true, "对话理解中");
+          localStorage.setItem("experiment_mode", this.experimentMode);
           this.messages.push({ id: crypto.randomUUID(), role: "user", content: text });
           const assistant = { id: crypto.randomUUID(), role: "assistant", content: "" };
           this.messages.push(assistant);
@@ -1003,7 +1039,8 @@
                 user_id: this.userId || "u001",
                 session_id: this.sessionId || null,
                 message: text,
-                stream: true
+                stream: true,
+                force_experiment_group: this.experimentMode === "auto" ? null : this.experimentMode
               })
             });
             if (!response.ok || !response.body) throw new Error("stream failed");

@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.behavior import list_user_events, record_event, reset_behavior_events
 from app.catalog import list_products
+from app.agents.dialogue_agent import DialogueAgent
 from app.agents.intent_agent import IntentAgent
 from app.agents.marketing_copy_agent import MarketingCopyAgent
 from app.agents.product_rec_agent import ProductRecAgent
@@ -1004,3 +1005,52 @@ def test_query_understanding_model_compare_reports_tradeoffs():
     assert models["char_ngram_nb_classifier"]["intent_macro_f1"] >= 0.9
     assert models["rule_baseline"]["slot_f1"] > 0.5
     assert report["recommendation"]["winner"]
+
+
+def test_chat_recommend_request_does_not_force_control_group():
+    state = ConversationState(
+        session_id="chat-ab-session",
+        user_id="chat-ab-user",
+        shopping_goal="电子数码 电脑配件",
+        preferred_categories=["电子数码"],
+        preferred_tags=["电脑配件"],
+        budget_max=200,
+    )
+
+    request = chat_orchestrator._recommend_request_from_state(state, {})
+
+    assert request.context["conversation_session_id"] == "chat-ab-session"
+    assert "force_experiment_group" not in request.context
+
+    forced_request = chat_orchestrator._recommend_request_from_state(
+        state,
+        {},
+        force_experiment_group="control",
+    )
+    assert forced_request.context["force_experiment_group"] == "control"
+
+
+def test_dialogue_explains_computer_catalog_maps_to_accessories():
+    product = next(
+        item for item in list_products()
+        if item.category == "电子数码" and "电脑配件" in item.tags
+    )
+    state = ConversationState(
+        session_id="dialogue-computer-session",
+        user_id="dialogue-computer-user",
+        shopping_goal="电子数码 电脑配件",
+        preferred_categories=["电子数码"],
+        preferred_tags=["电脑配件"],
+        budget_max=200,
+    )
+
+    result = DialogueAgent().run(
+        intent="recommend_products",
+        state=state,
+        products=[product],
+        marketing_copies=[],
+        extra={},
+        message="想要个200块以内的电脑",
+    )
+
+    assert "商品库主要是电脑配件" in result.data["reply"]

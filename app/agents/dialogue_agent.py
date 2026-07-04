@@ -102,6 +102,12 @@ class DialogueAgent(BaseAgent):
         if intent in {"recommend_products", "refine_preferences", "record_feedback"} and products:
             goal = state.shopping_goal or "你的需求"
             budget = f"，预算不超过 {state.budget_max:g} 元" if state.budget_max else ""
+            if (
+                any(term in message for term in ["电脑", "笔记本"])
+                and "电脑配件" in state.preferred_tags
+                and "配件" not in message
+            ):
+                return f"当前商品库主要是电脑配件，我先按{goal}{budget}筛了这几款，优先看相关度、库存和价格。"
             return f"我按{goal}{budget}筛了这几款，优先考虑相关度、库存和价格。"
         if intent == "compare_products":
             return extra.get("comparison") or "我可以基于价格、评分、库存和匹配度帮你比较这几款。"

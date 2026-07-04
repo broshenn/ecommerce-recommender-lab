@@ -75,7 +75,11 @@ class ChatOrchestrator:
             state=state,
             intent_result=intent_result,
             resolved_product_ids=resolved_product_ids,
-            recommend_request=self._recommend_request_from_state(state, memory_summary),
+            recommend_request=self._recommend_request_from_state(
+                state,
+                memory_summary,
+                force_experiment_group=request.force_experiment_group,
+            ),
         )
         for tool in self.tool_router.route(intent_result, should_recommend=should_recommend):
             tool_result = tool.run(tool_context)
@@ -207,6 +211,7 @@ class ChatOrchestrator:
         self,
         state: ConversationState,
         memory_summary: dict[str, Any] | None = None,
+        force_experiment_group: str | None = None,
     ) -> RecommendRequest:
         memory_summary = memory_summary or {}
         shopping_goal = state.shopping_goal or memory_summary.get("shopping_goal", "")
@@ -222,6 +227,13 @@ class ChatOrchestrator:
         budget_max = state.budget_max
         if budget_max is None:
             budget_max = memory_summary.get("budget_max")
+        context = {
+            "shopping_goal": shopping_goal,
+            "conversation_session_id": state.session_id,
+            "long_term_memory": self._compact_memory_summary(memory_summary),
+        }
+        if force_experiment_group in {"control", "treatment"}:
+            context["force_experiment_group"] = force_experiment_group
         return RecommendRequest(
             user_id=state.user_id,
             scene="chat",
@@ -232,12 +244,7 @@ class ChatOrchestrator:
             budget_min=budget_min,
             budget_max=budget_max,
             disliked_products=state.disliked_products,
-            context={
-                "shopping_goal": shopping_goal,
-                "conversation_session_id": state.session_id,
-                "force_experiment_group": "control",
-                "long_term_memory": self._compact_memory_summary(memory_summary),
-            },
+            context=context,
         )
 
     def _should_recommend(self, intent_result: IntentResult) -> bool:
