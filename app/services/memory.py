@@ -146,6 +146,7 @@ class MemoryService:
         facts: dict[str, Any],
         source: str,
     ) -> None:
+        existing = self._existing_fact_keys(user_id)
         rows: list[tuple[str, str, str, str, str]] = []
         now = self._now()
         for fact_type, raw_value in facts.items():
@@ -153,7 +154,12 @@ class MemoryService:
             for value in values:
                 if value in (None, "", []):
                     continue
-                rows.append((user_id, fact_type, str(value), source, now))
+                fact_value = str(value)
+                fact_key = (fact_type, fact_value, source)
+                if fact_key in existing:
+                    continue
+                existing.add(fact_key)
+                rows.append((user_id, fact_type, fact_value, source, now))
         if not rows:
             return
 
@@ -167,6 +173,48 @@ class MemoryService:
                 """,
                 rows,
             )
+
+    def user_memory_summary(self, user_id: str, limit: int = 200) -> dict[str, Any]:
+        init_db()
+        with get_connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT fact_type, fact_value
+                FROM user_memory_facts
+                WHERE user_id = ?
+                ORDER BY fact_id DESC
+                LIMIT ?
+                """,
+                (user_id, limit),
+            ).fetchall()
+
+        summary = {
+            "shopping_goal": "",
+            "budget_min": None,
+            "budget_max": None,
+            "preferred_categories": [],
+            "liked_brands": [],
+            "preferred_tags": [],
+            "rejected_reasons": [],
+        }
+        list_fields = {
+            "preferred_category": "preferred_categories",
+            "liked_brand": "liked_brands",
+            "preferred_tag": "preferred_tags",
+            "rejected_reason": "rejected_reasons",
+        }
+        for row in rows:
+            fact_type = row["fact_type"]
+            fact_value = row["fact_value"]
+            if fact_type == "shopping_goal" and not summary["shopping_goal"]:
+                summary["shopping_goal"] = fact_value
+            elif fact_type in {"budget_min", "budget_max"} and summary[fact_type] is None:
+                summary[fact_type] = self._to_float(fact_value)
+            elif fact_type in list_fields:
+                target = list_fields[fact_type]
+                if fact_value not in summary[target]:
+                    summary[target].append(fact_value)
+        return summary
 
     def clear_all(self) -> None:
         init_db()
@@ -224,3 +272,25 @@ class MemoryService:
 
     def _now(self) -> str:
         return datetime.now(timezone.utc).isoformat()
+
+    def _existing_fact_keys(self, user_id: str) -> set[tuple[str, str, str]]:
+        init_db()
+        with get_connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT fact_type, fact_value, source
+                FROM user_memory_facts
+                WHERE user_id = ?
+                """,
+                (user_id,),
+            ).fetchall()
+        return {
+            (row["fact_type"], row["fact_value"], row["source"])
+            for row in rows
+        }
+
+    def _to_float(self, value: str) -> float | None:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.behavior import record_event, reset_behavior_events
+from app.behavior import list_user_events, record_event, reset_behavior_events
 from app.catalog import list_products
 from app.agents.intent_agent import IntentAgent
 from app.agents.marketing_copy_agent import MarketingCopyAgent
@@ -807,6 +807,8 @@ def test_chat_memory_resolves_product_reference_and_feedback():
         },
     )
     assert first.status_code == 200
+    first_data = first.json()
+    disliked_product_id = first_data["products"][1]["product_id"]
 
     second = client.post(
         "/api/v1/chat",
@@ -822,9 +824,64 @@ def test_chat_memory_resolves_product_reference_and_feedback():
     assert data["intent"] == "record_feedback"
     assert "too_expensive" in data["state"]["rejected_reasons"]
     assert data["state"]["active_product_refs"]
+    assert disliked_product_id in data["state"]["disliked_products"]
+    events = list_user_events("chat-feedback-user")
+    assert any(
+        event.product_id == disliked_product_id and event.event_type == "dislike"
+        for event in events
+    )
     tool_names = [item.get("tool_name") for item in data["trace"] if item.get("step") == "tool"]
     assert "FeedbackTool" in tool_names
     assert "RecommendGraphTool" in tool_names
+
+
+def test_chat_long_term_memory_seeds_new_session_without_overriding_explicit_goal():
+    client = TestClient(app)
+    first = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-memory-user",
+            "session_id": "chat-memory-first-session",
+            "message": "我喜欢Bastmei，想看手机保护壳",
+        },
+    )
+    assert first.status_code == 200
+    assert first.json()["state"]["liked_brands"] == ["Bastmei"]
+
+    recalled = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-memory-user",
+            "session_id": "chat-memory-new-session",
+            "message": "再推荐几款",
+        },
+    )
+    assert recalled.status_code == 200
+    recalled_data = recalled.json()
+    memory_trace = [item for item in recalled_data["trace"] if item.get("step") == "memory"]
+    assert memory_trace
+    recommend_tool = next(
+        item for item in recalled_data["trace"]
+        if item.get("tool_name") == "RecommendGraphTool"
+    )
+    assert recommend_tool["input_summary"]["categories"] == ["手机"]
+    assert recommend_tool["input_summary"]["brands"] == ["Bastmei"]
+
+    switched = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-memory-user",
+            "session_id": "chat-memory-switch-session",
+            "message": "想要电脑",
+        },
+    )
+    assert switched.status_code == 200
+    switched_tool = next(
+        item for item in switched.json()["trace"]
+        if item.get("tool_name") == "RecommendGraphTool"
+    )
+    assert switched_tool["input_summary"]["categories"] == ["电子数码"]
+    assert switched_tool["input_summary"]["tags"] == ["电脑配件"]
 
 
 def test_chat_business_tools_handle_compare_explain_and_product_info():

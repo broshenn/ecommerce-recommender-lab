@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-04T15:44:21.473027+00:00",
+  "generated_at": "2026-07-04T15:52:46.456203+00:00",
   "cases_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\chat_eval_cases.jsonl",
   "case_count": 11,
   "thresholds": {
@@ -24,7 +24,7 @@
     "inventory_compliance_rate": 1.0,
     "recommendation_ndcg_at_k": 1.0,
     "fallback_rate": 0.0,
-    "avg_latency_ms": 271.7009,
+    "avg_latency_ms": 234.4482,
     "unsupported_claim_rate": 0.0,
     "passed_thresholds": {
       "intent_macro_f1": true,
@@ -63,7 +63,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 148.11,
+      "latency_ms": 141.63,
       "final_state": {
         "session_id": "eval-single_recommend_phone_case",
         "user_id": "chat-eval-single_recommend_phone_case",
@@ -140,7 +140,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 403.1,
+      "latency_ms": 366.56,
       "final_state": {
         "session_id": "eval-multi_turn_budget_refine",
         "user_id": "chat-eval-multi_turn_budget_refine",
@@ -218,7 +218,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 488.51,
+      "latency_ms": 365.21,
       "final_state": {
         "session_id": "eval-goal_switch_phone_to_computer_to_earphones",
         "user_id": "chat-eval-goal_switch_phone_to_computer_to_earphones",
@@ -291,7 +291,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 148.57,
+      "latency_ms": 136.7,
       "final_state": {
         "session_id": "eval-budget_range_brand_earphones",
         "user_id": "chat-eval-budget_range_brand_earphones",
@@ -366,7 +366,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 155.14,
+      "latency_ms": 153.69,
       "final_state": {
         "session_id": "eval-min_budget_computer_accessory",
         "user_id": "chat-eval-min_budget_computer_accessory",
@@ -440,7 +440,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 425.09,
+      "latency_ms": 367.3,
       "final_state": {
         "session_id": "eval-product_ref_feedback",
         "user_id": "chat-eval-product_ref_feedback",
@@ -455,7 +455,9 @@
           "保护壳",
           "手机配件"
         ],
-        "disliked_products": [],
+        "disliked_products": [
+          "B0B4R7QLP9"
+        ],
         "rejected_reasons": [
           "too_expensive"
         ],
@@ -518,7 +520,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 238.32,
+      "latency_ms": 210.72,
       "final_state": {
         "session_id": "eval-compare_products",
         "user_id": "chat-eval-compare_products",
@@ -587,7 +589,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 262.83,
+      "latency_ms": 210.99,
       "final_state": {
         "session_id": "eval-explain_recommendation",
         "user_id": "chat-eval-explain_recommendation",
@@ -658,7 +660,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 343.65,
+      "latency_ms": 265.25,
       "final_state": {
         "session_id": "eval-ask_product_detail",
         "user_id": "chat-eval-ask_product_detail",
@@ -727,7 +729,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 76.64,
+      "latency_ms": 70.56,
       "final_state": {
         "session_id": "eval-smalltalk_fallback",
         "user_id": "chat-eval-smalltalk_fallback",
@@ -773,7 +775,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 298.75,
+      "latency_ms": 290.32,
       "final_state": {
         "session_id": "eval-brand_memory",
         "user_id": "chat-eval-brand_memory",

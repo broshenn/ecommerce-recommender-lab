@@ -157,6 +157,7 @@ class FeedbackTool(BusinessTool):
         if event_type not in {"like", "dislike", "purchase", "view"}:
             event_type = "dislike" if context.resolved_product_ids else None
         recorded = []
+        products_by_id = {product.product_id: product for product in list_products()}
         if event_type:
             for product_id in context.resolved_product_ids[:3]:
                 record_event(
@@ -167,6 +168,12 @@ class FeedbackTool(BusinessTool):
                     )
                 )
                 recorded.append({"product_id": product_id, "event_type": event_type})
+                self._update_state_from_feedback(
+                    context.state,
+                    products_by_id.get(product_id),
+                    product_id,
+                    event_type,
+                )
         return BusinessToolResult(
             observation=ToolObservation(
                 tool_name=self.tool_name,
@@ -179,6 +186,22 @@ class FeedbackTool(BusinessTool):
             ),
             extra={"feedback": {"recorded": recorded}},
         )
+
+    def _update_state_from_feedback(
+        self,
+        state: ConversationState,
+        product: Product | None,
+        product_id: str,
+        event_type: str,
+    ) -> None:
+        if event_type == "dislike":
+            state.disliked_products = _unique([*state.disliked_products, product_id])
+            return
+        if event_type not in {"like", "purchase"} or not product:
+            return
+        state.preferred_categories = _unique([*state.preferred_categories, product.category])
+        state.liked_brands = _unique([*state.liked_brands, product.brand])
+        state.preferred_tags = _unique([*state.preferred_tags, *product.tags])
 
 
 class CompareProductTool(BusinessTool):
@@ -321,3 +344,13 @@ def _products_by_refs(
     ids = product_ids or state.last_recommended_product_ids[:fallback_count]
     products_by_id = {product.product_id: product for product in list_products()}
     return [products_by_id[product_id] for product_id in ids if product_id in products_by_id]
+
+
+def _unique(values) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        if value and value not in seen:
+            result.append(str(value))
+            seen.add(str(value))
+    return result

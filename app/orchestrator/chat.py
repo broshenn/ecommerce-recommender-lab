@@ -33,6 +33,7 @@ class ChatOrchestrator:
             user_id=request.user_id,
             session_id=request.session_id,
         )
+        memory_summary = self.memory.user_memory_summary(request.user_id)
         recent_messages = self.memory.recent_messages(state.session_id)
         self.memory.append_message(state.session_id, "user", request.message)
 
@@ -57,6 +58,14 @@ class ChatOrchestrator:
                 "latency_ms": round(intent_agent_result.latency_ms, 2),
             }
         )
+        if self._has_memory_summary(memory_summary):
+            trace.append(
+                {
+                    "step": "memory",
+                    "source": "sqlite_user_memory_facts",
+                    "summary": self._compact_memory_summary(memory_summary),
+                }
+            )
 
         self._apply_intent_to_state(state, intent_result)
         resolved_product_ids = self._resolve_product_refs(state, intent_result.product_refs)
@@ -66,7 +75,7 @@ class ChatOrchestrator:
             state=state,
             intent_result=intent_result,
             resolved_product_ids=resolved_product_ids,
-            recommend_request=self._recommend_request_from_state(state),
+            recommend_request=self._recommend_request_from_state(state, memory_summary),
         )
         for tool in self.tool_router.route(intent_result, should_recommend=should_recommend):
             tool_result = tool.run(tool_context)
@@ -194,21 +203,40 @@ class ChatOrchestrator:
             slots.get("rejected_reasons", []),
         )
 
-    def _recommend_request_from_state(self, state: ConversationState) -> RecommendRequest:
+    def _recommend_request_from_state(
+        self,
+        state: ConversationState,
+        memory_summary: dict[str, Any] | None = None,
+    ) -> RecommendRequest:
+        memory_summary = memory_summary or {}
+        shopping_goal = state.shopping_goal or memory_summary.get("shopping_goal", "")
+        preferred_categories = state.preferred_categories or memory_summary.get(
+            "preferred_categories",
+            [],
+        )
+        liked_brands = state.liked_brands or memory_summary.get("liked_brands", [])
+        preferred_tags = state.preferred_tags or memory_summary.get("preferred_tags", [])
+        budget_min = state.budget_min
+        if budget_min is None:
+            budget_min = memory_summary.get("budget_min")
+        budget_max = state.budget_max
+        if budget_max is None:
+            budget_max = memory_summary.get("budget_max")
         return RecommendRequest(
             user_id=state.user_id,
             scene="chat",
             num_items=3,
-            preferred_categories=state.preferred_categories,
-            liked_brands=state.liked_brands,
-            preferred_tags=state.preferred_tags,
-            budget_min=state.budget_min,
-            budget_max=state.budget_max,
+            preferred_categories=preferred_categories,
+            liked_brands=liked_brands,
+            preferred_tags=preferred_tags,
+            budget_min=budget_min,
+            budget_max=budget_max,
             disliked_products=state.disliked_products,
             context={
-                "shopping_goal": state.shopping_goal,
+                "shopping_goal": shopping_goal,
                 "conversation_session_id": state.session_id,
                 "force_experiment_group": "control",
+                "long_term_memory": self._compact_memory_summary(memory_summary),
             },
         )
 
@@ -251,6 +279,19 @@ class ChatOrchestrator:
             "liked_brand": state.liked_brands,
             "preferred_tag": state.preferred_tags,
             "rejected_reason": state.rejected_reasons,
+        }
+
+    def _has_memory_summary(self, memory_summary: dict[str, Any]) -> bool:
+        return any(
+            value not in (None, "", [])
+            for value in memory_summary.values()
+        )
+
+    def _compact_memory_summary(self, memory_summary: dict[str, Any]) -> dict[str, Any]:
+        return {
+            key: value[:5] if isinstance(value, list) else value
+            for key, value in memory_summary.items()
+            if value not in (None, "", [])
         }
 
     def _coalesce_number(self, value: Any, fallback: float | None) -> float | None:
