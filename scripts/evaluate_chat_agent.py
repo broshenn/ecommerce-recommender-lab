@@ -164,8 +164,14 @@ def flatten_slots(slots: dict[str, Any]) -> set[tuple[str, str]]:
         values = raw_value if isinstance(raw_value, list) else [raw_value]
         for value in values:
             if value not in (None, "", []):
-                pairs.add((key, str(value)))
+                pairs.add((key, normalize_slot_value(value)))
     return pairs
+
+
+def normalize_slot_value(value: Any) -> str:
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
 
 
 def check_constraints(
@@ -211,7 +217,7 @@ def memory_consistent(response: ChatResponse, expected_slots: dict[str, Any]) ->
             actual_values = actual if isinstance(actual, list) else [actual]
             if not all(value in actual_values for value in expected_value):
                 return False
-        elif actual != expected_value:
+        elif normalize_slot_value(actual) != normalize_slot_value(expected_value):
             return False
     return True
 

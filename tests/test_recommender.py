@@ -6,10 +6,11 @@ from fastapi.testclient import TestClient
 
 from app.behavior import record_event, reset_behavior_events
 from app.catalog import list_products
+from app.agents.intent_agent import IntentAgent
 from app.agents.marketing_copy_agent import MarketingCopyAgent
 from app.agents.product_rec_agent import ProductRecAgent
 from app.main import app
-from app.models import RecommendRequest, UserEventCreate
+from app.models import ConversationState, RecommendRequest, UserEventCreate
 from app.orchestrator.chat import chat_orchestrator
 from app.personalization import score_product
 from app.recommender import recommend_products
@@ -742,6 +743,53 @@ def test_chat_goal_switching_replaces_previous_preferences():
     assert earphone_data["state"]["budget_max"] == 200
     assert all(product["category"] == "电子数码" for product in earphone_data["products"])
     assert any("耳机" in product["tags"] for product in earphone_data["products"])
+
+
+def test_intent_agent_extracts_business_slots_and_budget_ranges():
+    state = ConversationState(session_id="intent-slots", user_id="intent-user")
+    result = IntentAgent()._rule_intent("想要100到300元的防水耳机，最好是Samsung", state)
+
+    assert result.intent == "recommend_products"
+    assert result.needs_recommendation is True
+    assert result.slots["budget_min"] == 100
+    assert result.slots["budget_max"] == 300
+    assert result.slots["preferred_categories"] == ["电子数码"]
+    assert "耳机" in result.slots["preferred_tags"]
+    assert "防水" in result.slots["preferred_tags"]
+    assert result.slots["liked_brands"] == ["SAMSUNG"]
+
+
+def test_intent_agent_handles_min_budget_product_info_and_compare():
+    agent = IntentAgent()
+    state = ConversationState(session_id="intent-branches", user_id="intent-user")
+
+    min_budget = agent._rule_intent("至少500元的电脑配件", state)
+    assert min_budget.intent == "refine_preferences"
+    assert min_budget.slots["budget_min"] == 500
+    assert min_budget.slots["preferred_categories"] == ["电子数码"]
+    assert "电脑配件" in min_budget.slots["preferred_tags"]
+
+    ask_product = agent._rule_intent("第一款库存和价格多少", state)
+    assert ask_product.intent == "ask_product"
+
+    compare = agent._rule_intent("第一个和第二个有什么区别，哪个更好", state)
+    assert compare.intent == "compare_products"
+
+
+def test_intent_agent_handles_feedback_events():
+    agent = IntentAgent()
+    state = ConversationState(session_id="intent-feedback", user_id="intent-user")
+
+    dislike = agent._rule_intent("第二个太贵了，不喜欢，换便宜点", state)
+    assert dislike.intent == "record_feedback"
+    assert dislike.needs_recommendation is True
+    assert dislike.slots["event_type"] == "dislike"
+    assert "too_expensive" in dislike.slots["rejected_reasons"]
+    assert "disliked" in dislike.slots["rejected_reasons"]
+
+    purchase = agent._rule_intent("我要购买第一个", state)
+    assert purchase.intent == "record_feedback"
+    assert purchase.slots["event_type"] == "purchase"
 
 
 def test_chat_memory_resolves_product_reference_and_feedback():

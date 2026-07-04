@@ -92,19 +92,28 @@ class IntentAgent(BaseAgent):
         confidence = 0.72
         needs_recommendation = False
 
-        if self._has_any(text, ["比较", "对比", "哪个好", "哪款好"]) or "compare" in lowered:
+        if self._has_any(
+            text,
+            ["比较", "对比", "哪个好", "哪款好", "哪个更", "哪款更", "区别"],
+        ) or "compare" in lowered:
             intent = "compare_products"
-        elif self._has_any(text, ["为什么", "原因", "解释", "为啥"]) or "why" in lowered:
+        elif self._has_any(text, ["为什么", "原因", "解释", "为啥", "推荐理由"]) or "why" in lowered:
             intent = "explain_recommendation"
-        elif self._has_any(text, ["库存", "详情", "参数", "评分", "评价", "价格多少"]):
+        elif self._has_any(
+            text,
+            ["库存", "有货", "详情", "参数", "评分", "评价", "价格多少", "多少钱", "价格"],
+        ):
             intent = "ask_product"
         elif self._looks_like_recommendation(text):
             intent = "recommend_products"
             needs_recommendation = True
             confidence = 0.82
-        elif self._has_any(text, ["喜欢", "不喜欢", "太贵", "便宜", "换", "购买", "买了", "加入购物车"]):
+        elif self._has_any(
+            text,
+            ["喜欢", "不喜欢", "不要", "太贵", "便宜", "换", "购买", "买了", "加入购物车", "下单"],
+        ):
             intent = "record_feedback"
-            needs_recommendation = self._has_any(text, ["换", "便宜", "重新", "再来"])
+            needs_recommendation = self._has_any(text, ["换", "便宜", "重新", "再来", "替换"])
             slots.update(self._feedback_slots(text))
         elif slots:
             intent = "refine_preferences"
@@ -143,9 +152,14 @@ class IntentAgent(BaseAgent):
             "电脑": {"categories": ["电子数码"], "tags": ["电脑配件"]},
             "笔记本": {"categories": ["电子数码"], "tags": ["电脑配件"]},
             "键盘": {"categories": ["电子数码"], "tags": ["电脑配件", "键盘"]},
+            "摄像头": {"categories": ["电子数码"], "tags": ["摄像头"]},
+            "相机": {"categories": ["电子数码"], "tags": ["摄像头"]},
             "耳机": {"categories": ["电子数码"], "tags": ["耳机"]},
             "耳麦": {"categories": ["电子数码"], "tags": ["耳机"]},
             "手机": {"categories": ["手机"], "tags": ["手机配件"]},
+            "保护壳": {"categories": ["手机"], "tags": ["手机配件", "保护壳"]},
+            "保护膜": {"categories": ["手机"], "tags": ["手机配件", "保护膜"]},
+            "数据线": {"categories": ["电子数码"], "tags": ["数据线"]},
         }
         for keyword, mapped in product_synonyms.items():
             if keyword in text:
@@ -164,6 +178,10 @@ class IntentAgent(BaseAgent):
             "数据线",
             "电脑配件",
             "键盘",
+            "摄像头",
+            "电子产品",
+            "PlayStation",
+            "任天堂",
         ]
         for term in generic_terms:
             if term in text and term not in matched_tags and term not in matched_categories:
@@ -189,12 +207,27 @@ class IntentAgent(BaseAgent):
         return slots
 
     def _extract_budget(self, text: str) -> dict[str, float] | None:
+        range_match = re.search(
+            r"(\d+(?:\.\d+)?)\s*(?:元|块|块钱|人民币|rmb|RMB)?\s*(?:-|~|到|至|—)\s*"
+            r"(\d+(?:\.\d+)?)\s*(?:元|块|块钱|人民币|rmb|RMB)?",
+            text,
+        )
+        if range_match:
+            left = float(range_match.group(1))
+            right = float(range_match.group(2))
+            return {
+                "budget_min": min(left, right),
+                "budget_max": max(left, right),
+            }
+
         match = re.search(r"(\d+(?:\.\d+)?)\s*(?:元|块|块钱|人民币|rmb|RMB)?", text)
         if not match:
             return None
         value = float(match.group(1))
-        if any(marker in text for marker in ["以上", "起", "至少", "不低于"]):
+        if any(marker in text for marker in ["以上", "起", "至少", "不低于", "不少于"]):
             return {"budget_min": value}
+        if any(marker in text for marker in ["以内", "以下", "不超过", "别超过", "低于", "最多"]):
+            return {"budget_max": value}
         return {"budget_max": value}
 
     def _extract_goal(
@@ -234,7 +267,7 @@ class IntentAgent(BaseAgent):
             reasons.append("disliked")
         elif "喜欢" in text:
             slots["event_type"] = "like"
-        elif "购买" in text or "买了" in text or "加入购物车" in text:
+        elif "购买" in text or "买了" in text or "加入购物车" in text or "下单" in text:
             slots["event_type"] = "purchase"
         if reasons:
             slots["rejected_reasons"] = reasons
@@ -243,7 +276,20 @@ class IntentAgent(BaseAgent):
     def _looks_like_recommendation(self, text: str) -> bool:
         return self._has_any(
             text,
-            ["推荐", "找", "想买", "想要", "想看", "有没有", "来个", "买个", "帮我挑", "适合"],
+            [
+                "推荐",
+                "找",
+                "想买",
+                "想要",
+                "想看",
+                "有没有",
+                "来个",
+                "买个",
+                "帮我挑",
+                "适合",
+                "筛",
+                "看看",
+            ],
         )
 
     def _is_meta_smalltalk(self, text: str) -> bool:
