@@ -287,6 +287,37 @@
       overflow-wrap: anywhere;
     }
 
+    .compare-panel {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fbfd;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .compare-item {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .compare-item strong {
+      color: var(--text);
+    }
+
     .llm-box {
       padding: 14px;
       display: grid;
@@ -673,8 +704,26 @@
             <button type="button" :disabled="loading" @click="useExample('想要电脑')">想要电脑</button>
             <button type="button" :disabled="loading" @click="useExample('我想买个200元以内的通勤耳机')">通勤耳机</button>
             <button type="button" :disabled="loading" @click="useExample('第二个太贵了，换便宜点')">负反馈</button>
+            <button type="button" :disabled="loading || comparingIntent" @click="compareIntentModes">对比理解</button>
           </div>
           <div class="trace-line">最近 Trace：{{ latestTraceText }}</div>
+          <div v-if="intentCompareRows.length" class="compare-panel">
+            <div class="row">
+              <strong>Intent Compare</strong>
+              <span>{{ intentCompareSummaryText }}</span>
+            </div>
+            <div class="trace-line">输入：{{ intentCompare.message }}</div>
+            <div class="compare-grid">
+              <div v-for="row in intentCompareRows" :key="row.mode" class="compare-item">
+                <strong>{{ row.mode }} · {{ row.intent }}</strong>
+                <span>source：{{ row.source }}</span>
+                <span>confidence：{{ metricText(row.confidence) }}</span>
+                <span>recommend：{{ row.needs_recommendation ? "yes" : "no" }}</span>
+                <span>slots：{{ compactSlots(row.slots) }}</span>
+                <span>{{ row.latency_ms }} ms</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="panel llm-box">
@@ -842,6 +891,8 @@
           chatState: {},
           intentDebug: {},
           queryEvalSummary: {},
+          intentCompare: {},
+          comparingIntent: false,
           trace: [],
           messages: [
             {
@@ -877,6 +928,18 @@
 
         hardEvalRows() {
           return this.queryEvalSummary?.hard_eval?.models || [];
+        },
+
+        intentCompareRows() {
+          return this.intentCompare?.modes || [];
+        },
+
+        intentCompareSummaryText() {
+          const summary = this.intentCompare?.summary;
+          if (!summary) return "-";
+          const verdict = summary.same_intent ? "intent一致" : "intent不一致";
+          const recommend = (summary.recommend_modes || []).join("/") || "none";
+          return `${verdict} · 触发推荐：${recommend}`;
         },
 
         chatBudgetText() {
@@ -973,6 +1036,15 @@
         metricText(value) {
           if (value == null) return "-";
           return Number(value).toFixed(3);
+        },
+
+        compactSlots(slots) {
+          const data = slots || {};
+          const keys = Object.keys(data);
+          if (!keys.length) return "-";
+          return keys
+            .map((key) => `${key}=${Array.isArray(data[key]) ? data[key].join("/") : data[key]}`)
+            .join("；");
         },
 
         async loadHealth() {
@@ -1116,6 +1188,52 @@
         useExample(text) {
           this.draft = text;
           this.sendChat();
+        },
+
+        latestUserMessage() {
+          const item = [...this.messages].reverse().find((message) => message.role === "user");
+          return item ? item.content : "";
+        },
+
+        async compareIntentModes() {
+          const text = this.draft || this.latestUserMessage();
+          if (!text) return;
+          this.comparingIntent = true;
+          localStorage.setItem("intent_mode", this.intentMode);
+          try {
+            const res = await fetch("/api/v1/query-understanding/compare", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_id: this.userId || "u001",
+                session_id: this.sessionId || null,
+                message: text
+              })
+            });
+            if (!res.ok) {
+              const detail = await res.text();
+              throw new Error(detail || "compare failed");
+            }
+            this.intentCompare = await res.json();
+          } catch (error) {
+            this.intentCompare = {
+              message: text,
+              summary: { same_intent: false, recommend_modes: [] },
+              modes: [
+                {
+                  mode: "error",
+                  intent: "failed",
+                  source: error.message || "unknown",
+                  confidence: null,
+                  needs_recommendation: false,
+                  slots: {},
+                  latency_ms: 0
+                }
+              ]
+            };
+          } finally {
+            this.comparingIntent = false;
+          }
         },
 
         async sendChat() {

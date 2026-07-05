@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -112,6 +113,66 @@ def query_understanding_eval_summary():
     return {
         "hard_eval": _compact_query_eval_report(hard_report),
         "synthetic_eval": _compact_query_eval_report(model_report),
+    }
+
+
+@app.post("/api/v1/query-understanding/compare")
+def query_understanding_compare(request: ChatRequest):
+    state = chat_orchestrator.memory.get_or_create_state(
+        user_id=request.user_id,
+        session_id=request.session_id,
+    )
+    recent_messages = chat_orchestrator.memory.recent_messages(state.session_id)
+    modes = []
+    for mode in ("rule", "bert", "llm"):
+        started = time.perf_counter()
+        result = chat_orchestrator.intent_agent.run(
+            message=request.message,
+            state=state,
+            recent_messages=recent_messages,
+            intent_mode=mode,
+        )
+        data = result.data
+        modes.append(
+            {
+                "mode": mode,
+                "intent": data.get("intent"),
+                "source": data.get("source"),
+                "confidence": data.get("confidence"),
+                "needs_recommendation": data.get("needs_recommendation"),
+                "slots": data.get("slots", {}),
+                "product_refs": data.get("product_refs", []),
+                "rule_debug": data.get("rule_debug", {}),
+                "latency_ms": round((time.perf_counter() - started) * 1000, 2),
+            }
+        )
+    return {
+        "message": request.message,
+        "session_id": state.session_id,
+        "summary": _compare_intent_modes(modes),
+        "modes": modes,
+    }
+
+
+def _compare_intent_modes(modes: list[dict]) -> dict:
+    intents = [item.get("intent") for item in modes]
+    slot_keys = {
+        item["mode"]: sorted((item.get("slots") or {}).keys())
+        for item in modes
+    }
+    recommend_modes = [
+        item["mode"]
+        for item in modes
+        if item.get("needs_recommendation")
+    ]
+    return {
+        "same_intent": len(set(intents)) == 1,
+        "intents": {
+            item["mode"]: item.get("intent")
+            for item in modes
+        },
+        "slot_keys": slot_keys,
+        "recommend_modes": recommend_modes,
     }
 
 

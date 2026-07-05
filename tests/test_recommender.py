@@ -1116,6 +1116,36 @@ def test_query_understanding_eval_summary_endpoint_returns_model_metrics():
     assert models["bert_rule_slots"]["hard_intent_macro_f1"] >= 0.85
 
 
+def test_query_understanding_compare_endpoint_runs_all_modes(monkeypatch):
+    def fake_classify(text, force=False):
+        return {
+            "intent": "recommend_products",
+            "confidence": 0.94,
+            "model_dir": "mock://intent-bert",
+        }
+
+    monkeypatch.setattr(intent_model_classifier, "classify", fake_classify)
+    monkeypatch.setattr(llm_client, "chat_json", lambda **kwargs: None)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/query-understanding/compare",
+        json={
+            "user_id": "compare-user",
+            "message": "鑷冲皯500鍏冪殑鐢佃剳閰嶄欢",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    rows = {row["mode"]: row for row in data["modes"]}
+    assert set(rows) == {"rule", "bert", "llm"}
+    assert rows["bert"]["source"] == "bert+rule_slots"
+    assert rows["bert"]["slots"]["budget_max"] == 500
+    assert data["summary"]["intents"]["bert"] == "recommend_products"
+    assert "bert" in data["summary"]["recommend_modes"]
+
+
 def test_chat_recommend_request_does_not_force_control_group():
     state = ConversationState(
         session_id="chat-ab-session",
