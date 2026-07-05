@@ -641,6 +641,7 @@
           <span>触发推荐：{{ intentNeedsRecommendationText }}</span>
           <span>Slots：{{ intentSlotsText }}</span>
           <span>命中规则：{{ intentRuleText }}</span>
+          <span>Guard：{{ intentGuardText }}</span>
         </div>
 
         <div class="state-box">
@@ -720,6 +721,7 @@
                 <span>confidence：{{ metricText(row.confidence) }}</span>
                 <span>recommend：{{ row.needs_recommendation ? "yes" : "no" }}</span>
                 <span>slots：{{ compactSlots(row.slots) }}</span>
+                <span>guard：{{ compareGuardText(row) }}</span>
                 <span>{{ row.latency_ms }} ms</span>
               </div>
             </div>
@@ -1001,6 +1003,13 @@
             hits.push(`synonym:${synonymHits.join("/")}`);
           }
           return hits.length ? hits.join("；") : "-";
+        },
+
+        intentGuardText() {
+          const guard = this.intentDebug.rule_debug?.business_guard;
+          if (!guard) return "-";
+          const status = guard.applied ? "applied" : "accepted";
+          return `${status} · ${guard.reason || "-"} · ${guard.candidate_intent || "-"} -> ${guard.final_intent || "-"}`;
         }
       },
 
@@ -1045,6 +1054,12 @@
           return keys
             .map((key) => `${key}=${Array.isArray(data[key]) ? data[key].join("/") : data[key]}`)
             .join("；");
+        },
+
+        compareGuardText(row) {
+          const guard = row?.rule_debug?.business_guard;
+          if (!guard) return "-";
+          return `${guard.applied ? "applied" : "accepted"}:${guard.reason}`;
         },
 
         async loadHealth() {

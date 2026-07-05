@@ -836,10 +836,15 @@ def test_intent_agent_supports_explicit_rule_and_bert_modes(monkeypatch):
         recent_messages=[],
         intent_mode="bert",
     )
-    assert bert.data["intent"] == "compare_products"
-    assert bert.data["source"] == "bert+rule_slots"
+    assert bert.data["intent"] == "refine_preferences"
+    assert bert.data["source"] == "rule_guarded_bert+rule_slots"
     assert bert.data["intent_mode"] == "bert"
     assert bert.data["slots"]["budget_max"] == 500
+    assert bert.data["rule_debug"]["business_guard"]["applied"] is True
+    assert (
+        bert.data["rule_debug"]["business_guard"]["reason"]
+        == "business_slot_recommendation_guard"
+    )
     assert calls == [True]
 
 
@@ -858,6 +863,38 @@ def test_intent_agent_handles_min_budget_product_info_and_compare():
 
     compare = agent._rule_intent("第一个和第二个有什么区别，哪个更好", state)
     assert compare.intent == "compare_products"
+
+
+def test_business_guard_prevents_llm_from_overriding_budget_need(monkeypatch):
+    monkeypatch.setattr(
+        llm_client,
+        "chat_json",
+        lambda **kwargs: {
+            "intent": "ask_product",
+            "slots": {},
+            "product_refs": [],
+            "needs_recommendation": False,
+            "confidence": 0.88,
+        },
+    )
+    agent = IntentAgent()
+    state = ConversationState(session_id="llm-guard-session", user_id="intent-user")
+
+    result = agent.run(
+        message="鑷冲皯500鍏冪殑鐢佃剳閰嶄欢",
+        state=state,
+        recent_messages=[],
+        intent_mode="llm",
+    )
+
+    assert result.data["intent"] == "refine_preferences"
+    assert result.data["source"] == "rule_guarded_llm"
+    assert result.data["slots"]["budget_max"] == 500
+    assert result.data["rule_debug"]["business_guard"]["applied"] is True
+    assert (
+        result.data["rule_debug"]["business_guard"]["reason"]
+        == "business_slot_recommendation_guard"
+    )
 
 
 def test_intent_agent_handles_feedback_events():

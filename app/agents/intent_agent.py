@@ -41,18 +41,29 @@ class IntentAgent(BaseAgent):
             intent_mode = "rule"
 
         self._last_intent_mode = intent_mode
-        result = None
-        if intent_mode == "llm":
-            result = self._llm_intent(message, state, recent_messages, force=True)
-        if result is None:
-            result = self._rule_intent(message, state)
-            if intent_mode == "bert":
-                result = self._apply_model_intent(message, result, force=True)
-            elif intent_mode == "llm":
+        rule_result = self._rule_intent(message, state)
+        rule_debug = getattr(self, "_last_rule_debug", {})
+        result = rule_result
+
+        if intent_mode == "bert":
+            result = self._apply_model_intent(message, rule_result, force=True)
+            result = self._apply_business_guard(result, rule_result, rule_debug)
+        elif intent_mode == "llm":
+            llm_result = self._llm_intent(message, state, recent_messages, force=True)
+            if llm_result is None:
                 self._last_rule_debug = {
-                    **getattr(self, "_last_rule_debug", {}),
+                    **rule_debug,
                     "llm_fallback": True,
+                    "business_guard": {
+                        "applied": False,
+                        "reason": "llm_unavailable_rule_fallback",
+                        "final_intent": rule_result.intent,
+                    },
                 }
+                result = rule_result
+            else:
+                result = self._merge_rule_slots(llm_result, rule_result)
+                result = self._apply_business_guard(result, rule_result, rule_debug)
 
         return AgentResult(
             agent_name=self.name,
@@ -156,6 +167,137 @@ class IntentAgent(BaseAgent):
             },
         }
         return merged
+
+    def _apply_business_guard(
+        self,
+        candidate: IntentResult,
+        rule_result: IntentResult,
+        rule_debug: dict[str, Any],
+    ) -> IntentResult:
+        guard = {
+            "applied": False,
+            "reason": "model_accepted",
+            "rule_intent": rule_result.intent,
+            "candidate_intent": candidate.intent,
+            "final_intent": candidate.intent,
+        }
+        candidate_debug = getattr(self, "_last_rule_debug", {})
+        debug_payload = {**rule_debug}
+        if "model_intent" in candidate_debug:
+            debug_payload["model_intent"] = candidate_debug["model_intent"]
+        if candidate_debug.get("mode") == "llm":
+            debug_payload["llm_intent"] = {
+                "fallback": candidate_debug.get("fallback", False),
+                "matched_rules": candidate_debug.get("matched_rules", []),
+            }
+        final = candidate
+        guarded_source = f"rule_guarded_{candidate.source}"
+
+        if rule_result.intent == "smalltalk" and rule_result.confidence >= 0.9:
+            final = rule_result.model_copy(
+                update={
+                    "source": guarded_source,
+                    "confidence": max(rule_result.confidence, candidate.confidence),
+                }
+            )
+            guard.update(
+                {
+                    "applied": True,
+                    "reason": "smalltalk_guard",
+                    "final_intent": final.intent,
+                }
+            )
+        elif rule_result.intent == "record_feedback" and self._has_feedback_evidence(rule_result):
+            final = rule_result.model_copy(
+                update={
+                    "source": guarded_source,
+                    "confidence": max(rule_result.confidence, candidate.confidence),
+                }
+            )
+            guard.update(
+                {
+                    "applied": True,
+                    "reason": "feedback_guard",
+                    "final_intent": final.intent,
+                }
+            )
+        elif (
+            rule_result.needs_recommendation
+            and self._has_business_slots(rule_result)
+            and candidate.intent
+            not in {"recommend_products", "refine_preferences", "record_feedback"}
+        ):
+            final = rule_result.model_copy(
+                update={
+                    "source": guarded_source,
+                    "confidence": max(rule_result.confidence, candidate.confidence),
+                }
+            )
+            guard.update(
+                {
+                    "applied": True,
+                    "reason": "business_slot_recommendation_guard",
+                    "final_intent": final.intent,
+                }
+            )
+
+        self._last_rule_debug = {**debug_payload, "business_guard": guard}
+        return final
+
+    def _merge_rule_slots(
+        self,
+        candidate: IntentResult,
+        rule_result: IntentResult,
+    ) -> IntentResult:
+        merged_slots = self._clean_slots(candidate.slots)
+        for key, value in self._clean_slots(rule_result.slots).items():
+            if isinstance(value, list):
+                merged_slots[key] = self._unique(
+                    [*merged_slots.get(key, []), *value]
+                    if isinstance(merged_slots.get(key), list)
+                    else value
+                )
+            else:
+                merged_slots[key] = value
+        product_refs = self._unique([*candidate.product_refs, *rule_result.product_refs])
+        return candidate.model_copy(
+            update={
+                "slots": merged_slots,
+                "product_refs": product_refs,
+                "needs_recommendation": (
+                    candidate.needs_recommendation or rule_result.needs_recommendation
+                ),
+            }
+        )
+
+    def _clean_slots(self, slots: dict[str, Any]) -> dict[str, Any]:
+        cleaned: dict[str, Any] = {}
+        for key, value in slots.items():
+            if value in (None, "", []):
+                continue
+            cleaned[key] = value
+        return cleaned
+
+    def _has_business_slots(self, result: IntentResult) -> bool:
+        slots = self._clean_slots(result.slots)
+        business_keys = {
+            "shopping_goal",
+            "budget_min",
+            "budget_max",
+            "preferred_categories",
+            "liked_brands",
+            "preferred_tags",
+        }
+        return any(key in slots for key in business_keys)
+
+    def _has_feedback_evidence(self, result: IntentResult) -> bool:
+        slots = self._clean_slots(result.slots)
+        return bool(
+            result.product_refs
+            or slots.get("event_type")
+            or slots.get("rejected_reasons")
+            or result.needs_recommendation
+        )
 
     def _intent_needs_recommendation(self, intent: str, fallback: bool) -> bool:
         if intent in {"recommend_products", "refine_preferences"}:
