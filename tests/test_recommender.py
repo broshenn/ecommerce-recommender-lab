@@ -20,6 +20,7 @@ from app.services.intent_classifier import intent_model_classifier
 from app.services.llm_client import LLMClient
 from app.services.vector_store import get_product_vector_store
 from scripts.evaluate_chat_agent import evaluate_chat_agent
+from scripts.evaluate_query_understanding_hard import evaluate_hard_set
 from scripts.evaluate_query_understanding_models import evaluate_models
 from scripts.evaluate_recommendation_offline import ndcg_at_k
 from scripts.import_amazon_user_events import normalize_timestamp, rating_to_event_type
@@ -1043,6 +1044,24 @@ def test_query_understanding_model_compare_reports_tradeoffs():
     assert models["char_ngram_nb_classifier"]["intent_macro_f1"] >= 0.9
     assert models["rule_baseline"]["slot_f1"] > 0.5
     assert report["recommendation"]["winner"]
+
+
+def test_query_understanding_hard_eval_reports_generalization_gaps():
+    report = evaluate_hard_set(
+        train_path=Path("data/query_understanding_train.jsonl"),
+        eval_path=Path("data/query_understanding_hard_eval.jsonl"),
+    )
+
+    assert report["case_count"] >= 30
+    assert "smalltalk" in report["scenario_distribution"]
+    assert "negative_feedback" in report["scenario_distribution"]
+    assert "unsupported_catalog" in report["scenario_distribution"]
+
+    models = {model["name"]: model for model in report["models"]}
+    assert models["rule_baseline"]["hard_slot_f1"] > 0.5
+    assert models["bert_rule_slots"]["hard_intent_macro_f1"] >= 0.85
+    assert models["bert_rule_slots"]["smalltalk_guard_rate"] >= 0.9
+    assert report["summary"]["best_by_hard_intent_macro_f1"] == "bert_rule_slots"
 
 
 def test_chat_recommend_request_does_not_force_control_group():

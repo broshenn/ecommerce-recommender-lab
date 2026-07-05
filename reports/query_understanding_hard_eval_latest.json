@@ -1,0 +1,395 @@
+{
+  "generated_at": "2026-07-05T15:39:39.905935+00:00",
+  "train_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\query_understanding_train.jsonl",
+  "eval_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\query_understanding_hard_eval.jsonl",
+  "case_count": 36,
+  "scenario_distribution": {
+    "single_recommend": 4,
+    "multi_slot": 4,
+    "goal_switch": 3,
+    "negative_feedback": 4,
+    "compare": 3,
+    "explain": 3,
+    "ask_product": 3,
+    "smalltalk": 4,
+    "unsupported_catalog": 2,
+    "edge_mixed": 6
+  },
+  "summary": {
+    "completed_models": [
+      "rule_baseline",
+      "char_ngram_nb_classifier",
+      "bert_rule_slots"
+    ],
+    "best_by_hard_intent_macro_f1": "bert_rule_slots",
+    "best_by_hard_slot_f1": "rule_baseline"
+  },
+  "models": [
+    {
+      "name": "rule_baseline",
+      "status": "completed",
+      "description": "Production rule baseline with configured keywords and slot extraction.",
+      "case_count": 36,
+      "hard_intent_accuracy": 0.6944,
+      "hard_intent_macro_f1": 0.692,
+      "hard_slot_f1": 0.7634,
+      "hard_slot_precision": 0.7812,
+      "hard_slot_recall": 0.7463,
+      "need_recommendation_accuracy": 0.8611,
+      "smalltalk_guard_rate": 1.0,
+      "negative_feedback_accuracy": 0.5,
+      "goal_switch_accuracy": 0.6667,
+      "product_ref_resolution_rate": 1.0,
+      "unsupported_catalog_guard_rate": 0.5,
+      "avg_latency_ms": 10.2579,
+      "scenario_summary": {
+        "single_recommend": {
+          "count": 4,
+          "intent_accuracy": 0.75
+        },
+        "multi_slot": {
+          "count": 4,
+          "intent_accuracy": 0.5
+        },
+        "goal_switch": {
+          "count": 3,
+          "intent_accuracy": 0.6667
+        },
+        "negative_feedback": {
+          "count": 4,
+          "intent_accuracy": 0.5
+        },
+        "compare": {
+          "count": 3,
+          "intent_accuracy": 0.6667
+        },
+        "explain": {
+          "count": 3,
+          "intent_accuracy": 1.0
+        },
+        "ask_product": {
+          "count": 3,
+          "intent_accuracy": 1.0
+        },
+        "smalltalk": {
+          "count": 4,
+          "intent_accuracy": 1.0
+        },
+        "unsupported_catalog": {
+          "count": 2,
+          "intent_accuracy": 0.5
+        },
+        "edge_mixed": {
+          "count": 6,
+          "intent_accuracy": 0.5
+        }
+      },
+      "sample_errors": [
+        {
+          "case_id": "hard_recommend_001",
+          "scenario": "single_recommend",
+          "text": "我预算就两百，通勤路上用，别太夹耳",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "case_id": "hard_refine_002",
+          "scenario": "multi_slot",
+          "text": "品牌优先 Sony，价格别太离谱",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "ask_product"
+        },
+        {
+          "case_id": "hard_refine_003",
+          "scenario": "multi_slot",
+          "text": "换成键盘方向的，预算还是300",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "record_feedback"
+        },
+        {
+          "case_id": "hard_goal_switch_003",
+          "scenario": "goal_switch",
+          "text": "从办公切到游戏吧，任天堂相关的",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "case_id": "hard_feedback_003",
+          "scenario": "negative_feedback",
+          "text": "第一款可以，类似的再来几个",
+          "expected_intent": "record_feedback",
+          "predicted_intent": "smalltalk"
+        },
+        {
+          "case_id": "hard_feedback_004",
+          "scenario": "negative_feedback",
+          "text": "我就要买刚才那个，先加购物车",
+          "expected_intent": "record_feedback",
+          "predicted_intent": "smalltalk"
+        },
+        {
+          "case_id": "hard_compare_001",
+          "scenario": "compare",
+          "text": "刚才第二个和那个 Sony 的差在哪",
+          "expected_intent": "compare_products",
+          "predicted_intent": "smalltalk"
+        },
+        {
+          "case_id": "hard_unsupported_001",
+          "scenario": "unsupported_catalog",
+          "text": "电脑不是配件，我要整机，不过库里没有就直接告诉我",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "case_id": "hard_edge_002",
+          "scenario": "edge_mixed",
+          "text": "不要再解释了，直接换一批便宜耳机",
+          "expected_intent": "record_feedback",
+          "predicted_intent": "explain_recommendation"
+        },
+        {
+          "case_id": "hard_edge_004",
+          "scenario": "edge_mixed",
+          "text": "给妈妈买，简单耐用，预算一百来块",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "smalltalk"
+        },
+        {
+          "case_id": "hard_edge_005",
+          "scenario": "edge_mixed",
+          "text": "Bose 和 Sony 哪个耳机更适合地铁",
+          "expected_intent": "compare_products",
+          "predicted_intent": "recommend_products"
+        }
+      ]
+    },
+    {
+      "name": "char_ngram_nb_classifier",
+      "status": "completed",
+      "description": "Trainable intent-only character n-gram baseline.",
+      "case_count": 36,
+      "hard_intent_accuracy": 0.7222,
+      "hard_intent_macro_f1": 0.7315,
+      "hard_slot_f1": 0.0,
+      "hard_slot_precision": 0.0,
+      "hard_slot_recall": 0.0,
+      "need_recommendation_accuracy": 0.9722,
+      "smalltalk_guard_rate": 0.75,
+      "negative_feedback_accuracy": 1.0,
+      "goal_switch_accuracy": 0.6667,
+      "product_ref_resolution_rate": 0.0,
+      "unsupported_catalog_guard_rate": 0.0,
+      "avg_latency_ms": 0.0689,
+      "scenario_summary": {
+        "single_recommend": {
+          "count": 4,
+          "intent_accuracy": 0.5
+        },
+        "multi_slot": {
+          "count": 4,
+          "intent_accuracy": 0.75
+        },
+        "goal_switch": {
+          "count": 3,
+          "intent_accuracy": 0.6667
+        },
+        "negative_feedback": {
+          "count": 4,
+          "intent_accuracy": 1.0
+        },
+        "compare": {
+          "count": 3,
+          "intent_accuracy": 0.6667
+        },
+        "explain": {
+          "count": 3,
+          "intent_accuracy": 1.0
+        },
+        "ask_product": {
+          "count": 3,
+          "intent_accuracy": 0.6667
+        },
+        "smalltalk": {
+          "count": 4,
+          "intent_accuracy": 0.75
+        },
+        "unsupported_catalog": {
+          "count": 2,
+          "intent_accuracy": 0.5
+        },
+        "edge_mixed": {
+          "count": 6,
+          "intent_accuracy": 0.6667
+        }
+      },
+      "sample_errors": [
+        {
+          "case_id": "hard_recommend_001",
+          "scenario": "single_recommend",
+          "text": "我预算就两百，通勤路上用，别太夹耳",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "case_id": "hard_recommend_003",
+          "scenario": "single_recommend",
+          "text": "想买个便宜点的数据线，日常充电用",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "record_feedback"
+        },
+        {
+          "case_id": "hard_refine_002",
+          "scenario": "multi_slot",
+          "text": "品牌优先 Sony，价格别太离谱",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "recommend_products"
+        },
+        {
+          "case_id": "hard_goal_switch_001",
+          "scenario": "goal_switch",
+          "text": "刚才看手机，现在想看电脑配件",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "case_id": "hard_compare_003",
+          "scenario": "compare",
+          "text": "这两个价格差不多，区别主要是什么",
+          "expected_intent": "compare_products",
+          "predicted_intent": "ask_product"
+        },
+        {
+          "case_id": "hard_ask_003",
+          "scenario": "ask_product",
+          "text": "Sharp 那款评价好吗",
+          "expected_intent": "ask_product",
+          "predicted_intent": "recommend_products"
+        },
+        {
+          "case_id": "hard_smalltalk_003",
+          "scenario": "smalltalk",
+          "text": "先别推荐，我只是测试一下对话框",
+          "expected_intent": "smalltalk",
+          "predicted_intent": "explain_recommendation"
+        },
+        {
+          "case_id": "hard_unsupported_001",
+          "scenario": "unsupported_catalog",
+          "text": "电脑不是配件，我要整机，不过库里没有就直接告诉我",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "refine_preferences"
+        },
+        {
+          "case_id": "hard_edge_003",
+          "scenario": "edge_mixed",
+          "text": "我不是要买耳机，我要问耳机和耳麦有什么区别",
+          "expected_intent": "compare_products",
+          "predicted_intent": "smalltalk"
+        },
+        {
+          "case_id": "hard_edge_004",
+          "scenario": "edge_mixed",
+          "text": "给妈妈买，简单耐用，预算一百来块",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "record_feedback"
+        }
+      ]
+    },
+    {
+      "name": "bert_rule_slots",
+      "status": "completed",
+      "description": "Fine-tuned BERT for intent classification plus rule-based slots.",
+      "case_count": 36,
+      "hard_intent_accuracy": 0.8889,
+      "hard_intent_macro_f1": 0.9026,
+      "hard_slot_f1": 0.7634,
+      "hard_slot_precision": 0.7812,
+      "hard_slot_recall": 0.7463,
+      "need_recommendation_accuracy": 1.0,
+      "smalltalk_guard_rate": 1.0,
+      "negative_feedback_accuracy": 1.0,
+      "goal_switch_accuracy": 0.6667,
+      "product_ref_resolution_rate": 1.0,
+      "unsupported_catalog_guard_rate": 0.5,
+      "avg_latency_ms": 427.392,
+      "scenario_summary": {
+        "single_recommend": {
+          "count": 4,
+          "intent_accuracy": 1.0
+        },
+        "multi_slot": {
+          "count": 4,
+          "intent_accuracy": 0.5
+        },
+        "goal_switch": {
+          "count": 3,
+          "intent_accuracy": 0.6667
+        },
+        "negative_feedback": {
+          "count": 4,
+          "intent_accuracy": 1.0
+        },
+        "compare": {
+          "count": 3,
+          "intent_accuracy": 1.0
+        },
+        "explain": {
+          "count": 3,
+          "intent_accuracy": 1.0
+        },
+        "ask_product": {
+          "count": 3,
+          "intent_accuracy": 1.0
+        },
+        "smalltalk": {
+          "count": 4,
+          "intent_accuracy": 1.0
+        },
+        "unsupported_catalog": {
+          "count": 2,
+          "intent_accuracy": 0.5
+        },
+        "edge_mixed": {
+          "count": 6,
+          "intent_accuracy": 1.0
+        }
+      },
+      "sample_errors": [
+        {
+          "case_id": "hard_refine_002",
+          "scenario": "multi_slot",
+          "text": "品牌优先 Sony，价格别太离谱",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "recommend_products"
+        },
+        {
+          "case_id": "hard_refine_004",
+          "scenario": "multi_slot",
+          "text": "别给我手机配件了，我要办公用的东西",
+          "expected_intent": "refine_preferences",
+          "predicted_intent": "recommend_products"
+        },
+        {
+          "case_id": "hard_goal_switch_002",
+          "scenario": "goal_switch",
+          "text": "算了不看保护壳了，给我看看耳机",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "record_feedback"
+        },
+        {
+          "case_id": "hard_unsupported_001",
+          "scenario": "unsupported_catalog",
+          "text": "电脑不是配件，我要整机，不过库里没有就直接告诉我",
+          "expected_intent": "recommend_products",
+          "predicted_intent": "record_feedback"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "This hard set is manually simulated to stress realistic phrasing, target switching, references, feedback, and smalltalk guards.",
+    "BERT is evaluated as intent-only; slots still come from the rule extractor.",
+    "Scores are more useful for relative comparison than as production guarantees."
+  ]
+}

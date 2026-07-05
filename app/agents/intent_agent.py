@@ -96,6 +96,15 @@ class IntentAgent(BaseAgent):
         return result
 
     def _apply_model_intent(self, message: str, rule_result: IntentResult) -> IntentResult:
+        if rule_result.intent == "smalltalk" and rule_result.confidence >= 0.9:
+            self._last_rule_debug = {
+                **getattr(self, "_last_rule_debug", {}),
+                "model_intent": {
+                    "skipped": True,
+                    "reason": "high_confidence_smalltalk_guard",
+                },
+            }
+            return rule_result
         model_result = intent_model_classifier.classify(message)
         if not model_result:
             return rule_result
