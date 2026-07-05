@@ -40,8 +40,8 @@ class IntentModelClassifier:
             "last_error": self._last_error,
         }
 
-    def classify(self, text: str) -> dict[str, Any] | None:
-        if not self.enabled:
+    def classify(self, text: str, force: bool = False) -> dict[str, Any] | None:
+        if not self.enabled and not force:
             return None
         if not self._ensure_loaded():
             return None

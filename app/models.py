@@ -16,6 +16,7 @@ ChatIntent = Literal[
     "ask_product",
     "smalltalk",
 ]
+ChatIntentMode = Literal["rule", "bert", "llm"]
 
 
 class Product(BaseModel):
@@ -156,6 +157,7 @@ class ChatRequest(BaseModel):
     message: str
     stream: bool = False
     force_experiment_group: str | None = None
+    intent_mode: ChatIntentMode = "rule"
 
 
 class ChatResponse(BaseModel):

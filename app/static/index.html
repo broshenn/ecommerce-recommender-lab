@@ -216,6 +216,13 @@
       white-space: nowrap;
     }
 
+    .chat-switches {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
     .experiment-select select {
       width: auto;
       min-height: 32px;
@@ -597,11 +604,20 @@
 
         <div class="state-box">
           <strong>Query Understanding</strong>
+          <span>Mode：{{ intentModeLabel }}</span>
           <span>来源：{{ intentSourceText }}</span>
           <span>置信度：{{ intentConfidenceText }}</span>
           <span>触发推荐：{{ intentNeedsRecommendationText }}</span>
           <span>Slots：{{ intentSlotsText }}</span>
           <span>命中规则：{{ intentRuleText }}</span>
+        </div>
+
+        <div class="state-box">
+          <strong>Intent Eval</strong>
+          <span v-for="row in hardEvalRows" :key="row.name">
+            {{ row.name }}：intent {{ metricText(row.hard_intent_macro_f1 || row.intent_macro_f1) }} / slot {{ metricText(row.hard_slot_f1 || row.slot_f1) }}
+          </span>
+          <span v-if="!hardEvalRows.length">-</span>
         </div>
 
         <div class="profile-box">
@@ -620,7 +636,15 @@
           <div class="chat-head">
             <strong>自然语言对话框</strong>
             <div class="experiment-select">
-              <span>实验组</span>
+              <span>Intent</span>
+              <select v-model="intentMode" :disabled="loading">
+                <option value="rule">Rule</option>
+                <option value="bert">BERT</option>
+                <option value="llm">LLM</option>
+              </select>
+            </div>
+            <div class="experiment-select">
+              <span>A/B</span>
               <select v-model="experimentMode" :disabled="loading">
                 <option value="control">对照组</option>
                 <option value="auto">自动 A/B</option>
@@ -765,6 +789,7 @@
           userId: "u001",
           sessionId: localStorage.getItem("chat_session_id") || "",
           experimentMode: localStorage.getItem("experiment_mode") || "control",
+          intentMode: localStorage.getItem("intent_mode") || "rule",
           numItems: 5,
           selectedCategories: ["手机", "电子数码"],
           selectedBrands: ["Bastmei", "Sharp"],
@@ -816,6 +841,7 @@
           chatIntent: "",
           chatState: {},
           intentDebug: {},
+          queryEvalSummary: {},
           trace: [],
           messages: [
             {
@@ -840,6 +866,19 @@
           );
         },
 
+        intentModeLabel() {
+          const labels = {
+            rule: "Rule baseline",
+            bert: "BERT intent + rule slots",
+            llm: "LLM JSON + fallback"
+          };
+          return labels[this.intentMode] || "Rule baseline";
+        },
+
+        hardEvalRows() {
+          return this.queryEvalSummary?.hard_eval?.models || [];
+        },
+
         chatBudgetText() {
           const min = this.chatState.budget_min;
           const max = this.chatState.budget_max;
@@ -859,7 +898,7 @@
           return visibleItems
             .map((item) => {
               if (item.step === "tool") return item.tool_name || "tool";
-              if (item.step === "intent") return `intent:${item.intent || "-"}`;
+              if (item.step === "intent") return `intent:${item.intent || "-"}(${item.intent_mode || this.intentMode})`;
               return item.step;
             })
             .join(" -> ");
@@ -904,6 +943,7 @@
 
       mounted() {
         this.loadHealth();
+        this.loadQueryEvalSummary();
         this.loadProfile();
         this.recommend();
       },
@@ -930,6 +970,11 @@
           return values && values.length ? values.join("、") : "-";
         },
 
+        metricText(value) {
+          if (value == null) return "-";
+          return Number(value).toFixed(3);
+        },
+
         async loadHealth() {
           try {
             const res = await fetch("/health");
@@ -945,6 +990,17 @@
           const res = await fetch(`/api/v1/users/${encodeURIComponent(userId)}/profile`);
           if (res.ok) {
             this.profile = await res.json();
+          }
+        },
+
+        async loadQueryEvalSummary() {
+          try {
+            const res = await fetch("/api/v1/query-understanding/eval-summary");
+            if (res.ok) {
+              this.queryEvalSummary = await res.json();
+            }
+          } catch {
+            this.queryEvalSummary = {};
           }
         },
 
@@ -1072,6 +1128,7 @@
         async sendChatMessage(text) {
           this.setLoading(true, "对话理解中");
           localStorage.setItem("experiment_mode", this.experimentMode);
+          localStorage.setItem("intent_mode", this.intentMode);
           this.messages.push({ id: crypto.randomUUID(), role: "user", content: text });
           const assistant = { id: crypto.randomUUID(), role: "assistant", content: "" };
           this.messages.push(assistant);
@@ -1086,6 +1143,7 @@
                 session_id: this.sessionId || null,
                 message: text,
                 stream: true,
+                intent_mode: this.intentMode,
                 force_experiment_group: this.experimentMode === "auto" ? null : this.experimentMode
               })
             });
@@ -1145,7 +1203,8 @@
               this.intentDebug = {
                 ...this.intentDebug,
                 intent: payload.intent,
-                source: payload.source
+                source: payload.source,
+                intent_mode: payload.intent_mode
               };
             }
           } else if (event === "done") {

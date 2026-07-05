@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -26,6 +27,7 @@ from app.services import ab_test_engine, feature_store, metrics_collector
 from app.services.vector_store import get_product_vector_store
 
 BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
 STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
@@ -97,6 +99,53 @@ def chat_stream(request: ChatRequest):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.get("/api/v1/query-understanding/eval-summary")
+def query_understanding_eval_summary():
+    hard_report = _load_json_report(
+        PROJECT_ROOT / "reports" / "query_understanding_hard_eval_latest.json"
+    )
+    model_report = _load_json_report(
+        PROJECT_ROOT / "reports" / "query_understanding_model_compare_latest.json"
+    )
+    return {
+        "hard_eval": _compact_query_eval_report(hard_report),
+        "synthetic_eval": _compact_query_eval_report(model_report),
+    }
+
+
+def _load_json_report(path: Path) -> dict:
+    if not path.exists():
+        return {"status": "missing", "path": str(path)}
+    with path.open("r", encoding="utf-8") as file:
+        data = json.load(file)
+    data["status"] = "available"
+    return data
+
+
+def _compact_query_eval_report(report: dict) -> dict:
+    if report.get("status") == "missing":
+        return report
+    models = []
+    for item in report.get("models", []):
+        models.append(
+            {
+                "name": item.get("name"),
+                "intent_macro_f1": item.get("intent_macro_f1"),
+                "slot_f1": item.get("slot_f1"),
+                "hard_intent_macro_f1": item.get("hard_intent_macro_f1"),
+                "hard_slot_f1": item.get("hard_slot_f1"),
+                "smalltalk_guard_rate": item.get("smalltalk_guard_rate"),
+                "avg_latency_ms": item.get("avg_latency_ms"),
+            }
+        )
+    return {
+        "status": "available",
+        "case_count": report.get("case_count") or report.get("eval_count"),
+        "summary": report.get("summary", {}),
+        "models": models,
+    }
 
 
 @app.get("/api/v1/experiments")

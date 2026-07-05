@@ -47,6 +47,7 @@ class ChatOrchestrator:
             message=request.message,
             state=state,
             recent_messages=recent_messages,
+            intent_mode=request.intent_mode,
         )
         agent_results["intent"] = intent_agent_result
         intent_result = IntentResult.model_validate(intent_agent_result.data)
@@ -55,6 +56,7 @@ class ChatOrchestrator:
                 "step": "intent",
                 "intent": intent_result.intent,
                 "source": intent_result.source,
+                "intent_mode": request.intent_mode,
                 "latency_ms": round(intent_agent_result.latency_ms, 2),
             }
         )

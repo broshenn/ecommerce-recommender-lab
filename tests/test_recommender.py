@@ -804,6 +804,45 @@ def test_optional_bert_intent_classifier_keeps_rule_slots(monkeypatch):
     assert agent._last_rule_debug["model_intent"]["model_dir"] == "mock://intent-bert"
 
 
+def test_intent_agent_supports_explicit_rule_and_bert_modes(monkeypatch):
+    calls = []
+
+    def fake_classify(text, force=False):
+        calls.append(force)
+        return {
+            "intent": "compare_products",
+            "confidence": 0.91,
+            "model_dir": "mock://intent-bert",
+        }
+
+    monkeypatch.setattr(intent_model_classifier, "classify", fake_classify)
+    agent = IntentAgent()
+    state = ConversationState(session_id="intent-mode-session", user_id="intent-user")
+
+    message = "鑷冲皯500鍏冪殑鐢佃剳閰嶄欢"
+    rule = agent.run(
+        message=message,
+        state=state,
+        recent_messages=[],
+        intent_mode="rule",
+    )
+    assert rule.data["source"] == "rule"
+    assert rule.data["intent_mode"] == "rule"
+    assert calls == []
+
+    bert = agent.run(
+        message=message,
+        state=state,
+        recent_messages=[],
+        intent_mode="bert",
+    )
+    assert bert.data["intent"] == "compare_products"
+    assert bert.data["source"] == "bert+rule_slots"
+    assert bert.data["intent_mode"] == "bert"
+    assert bert.data["slots"]["budget_max"] == 500
+    assert calls == [True]
+
+
 def test_intent_agent_handles_min_budget_product_info_and_compare():
     agent = IntentAgent()
     state = ConversationState(session_id="intent-branches", user_id="intent-user")
@@ -1062,6 +1101,19 @@ def test_query_understanding_hard_eval_reports_generalization_gaps():
     assert models["bert_rule_slots"]["hard_intent_macro_f1"] >= 0.85
     assert models["bert_rule_slots"]["smalltalk_guard_rate"] >= 0.9
     assert report["summary"]["best_by_hard_intent_macro_f1"] == "bert_rule_slots"
+
+
+def test_query_understanding_eval_summary_endpoint_returns_model_metrics():
+    client = TestClient(app)
+    response = client.get("/api/v1/query-understanding/eval-summary")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["hard_eval"]["status"] == "available"
+    models = {model["name"]: model for model in data["hard_eval"]["models"]}
+    assert "rule_baseline" in models
+    assert "bert_rule_slots" in models
+    assert models["bert_rule_slots"]["hard_intent_macro_f1"] >= 0.85
 
 
 def test_chat_recommend_request_does_not_force_control_group():

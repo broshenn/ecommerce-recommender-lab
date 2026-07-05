@@ -22,6 +22,7 @@ Return JSON with these fields:
 
 Do not invent discounts, inventory, or facts. Extract only what the user said."""
 DEFAULT_RULE_PATH = Path(__file__).with_name("intent_rules.json")
+VALID_INTENT_MODES = {"rule", "bert", "llm"}
 
 
 class IntentAgent(BaseAgent):
@@ -35,11 +36,23 @@ class IntentAgent(BaseAgent):
         message: str = kwargs["message"]
         state: ConversationState = kwargs["state"]
         recent_messages: list[ChatMessage] = kwargs.get("recent_messages", [])
+        intent_mode = kwargs.get("intent_mode", "rule")
+        if intent_mode not in VALID_INTENT_MODES:
+            intent_mode = "rule"
 
-        result = self._llm_intent(message, state, recent_messages)
+        self._last_intent_mode = intent_mode
+        result = None
+        if intent_mode == "llm":
+            result = self._llm_intent(message, state, recent_messages, force=True)
         if result is None:
             result = self._rule_intent(message, state)
-            result = self._apply_model_intent(message, result)
+            if intent_mode == "bert":
+                result = self._apply_model_intent(message, result, force=True)
+            elif intent_mode == "llm":
+                self._last_rule_debug = {
+                    **getattr(self, "_last_rule_debug", {}),
+                    "llm_fallback": True,
+                }
 
         return AgentResult(
             agent_name=self.name,
@@ -56,6 +69,8 @@ class IntentAgent(BaseAgent):
         payload = result.model_dump(mode="json")
         payload["rule_debug"] = getattr(self, "_last_rule_debug", {})
         payload["rule_config"] = str(DEFAULT_RULE_PATH.name)
+        payload["intent_mode"] = getattr(self, "_last_intent_mode", "rule")
+        payload["intent_model_status"] = intent_model_classifier.status()
         return payload
 
     def _llm_intent(
@@ -63,8 +78,13 @@ class IntentAgent(BaseAgent):
         message: str,
         state: ConversationState,
         recent_messages: list[ChatMessage],
+        force: bool = False,
     ) -> IntentResult | None:
-        if os.getenv("CHAT_LLM_ENABLED", "false").strip().lower() not in {"1", "true", "yes", "on"}:
+        if (
+            not force
+            and os.getenv("CHAT_LLM_ENABLED", "false").strip().lower()
+            not in {"1", "true", "yes", "on"}
+        ):
             return None
         history = "\n".join(
             f"{item.role}: {item.content}"
@@ -95,7 +115,12 @@ class IntentAgent(BaseAgent):
         }
         return result
 
-    def _apply_model_intent(self, message: str, rule_result: IntentResult) -> IntentResult:
+    def _apply_model_intent(
+        self,
+        message: str,
+        rule_result: IntentResult,
+        force: bool = False,
+    ) -> IntentResult:
         if rule_result.intent == "smalltalk" and rule_result.confidence >= 0.9:
             self._last_rule_debug = {
                 **getattr(self, "_last_rule_debug", {}),
@@ -105,7 +130,10 @@ class IntentAgent(BaseAgent):
                 },
             }
             return rule_result
-        model_result = intent_model_classifier.classify(message)
+        try:
+            model_result = intent_model_classifier.classify(message, force=force)
+        except TypeError:
+            model_result = intent_model_classifier.classify(message)
         if not model_result:
             return rule_result
         merged = rule_result.model_copy(
