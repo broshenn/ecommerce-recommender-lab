@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-04T16:53:30.633341+00:00",
+  "generated_at": "2026-07-05T15:23:59.495009+00:00",
   "train_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\query_understanding_train.jsonl",
   "eval_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\query_understanding_eval.jsonl",
   "train_count": 800,
@@ -41,14 +41,14 @@
   "summary": {
     "completed_models": [
       "rule_baseline",
-      "char_ngram_nb_classifier"
+      "char_ngram_nb_classifier",
+      "distilbert_classifier"
     ],
     "skipped_models": {
-      "llm_classifier": "Pass --include-llm to call the configured OpenAI-compatible LLM.",
-      "distilbert_classifier": "No --bert-predictions file provided."
+      "llm_classifier": "Pass --include-llm to call the configured OpenAI-compatible LLM."
     },
-    "best_by_intent_macro_f1": "char_ngram_nb_classifier",
-    "best_by_latency": "char_ngram_nb_classifier"
+    "best_by_intent_macro_f1": "distilbert_classifier",
+    "best_by_latency": "distilbert_classifier"
   },
   "models": [
     {
@@ -106,8 +106,8 @@
       "slot_precision": 0.4967,
       "slot_recall": 0.7458,
       "need_recommendation_accuracy": 0.81,
-      "avg_latency_ms": 10.7716,
-      "p95_latency_ms": 16.5367,
+      "avg_latency_ms": 9.6508,
+      "p95_latency_ms": 12.1213,
       "cost_level": "low",
       "online_suitability": "excellent fallback and demo baseline",
       "sample_errors": [
@@ -208,8 +208,8 @@
       "slot_precision": 0.0,
       "slot_recall": 0.0,
       "need_recommendation_accuracy": 1.0,
-      "avg_latency_ms": 0.0701,
-      "p95_latency_ms": 0.1382,
+      "avg_latency_ms": 0.062,
+      "p95_latency_ms": 0.0964,
       "cost_level": "low",
       "online_suitability": "good for high-frequency intent classification, weak for slots",
       "sample_errors": [
@@ -238,13 +238,68 @@
     },
     {
       "name": "distilbert_classifier",
-      "status": "skipped",
-      "description": "Use an offline DistilBERT/BERT trainer to write JSONL predictions with text and intent.",
-      "skip_reason": "No --bert-predictions file provided."
+      "status": "completed",
+      "description": "External DistilBERT/BERT intent classifier evaluated from saved predictions.",
+      "case_count": 200,
+      "intent_accuracy": 1.0,
+      "intent_macro_f1": 1.0,
+      "intent_per_label": {
+        "ask_product": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 18
+        },
+        "compare_products": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 6
+        },
+        "explain_recommendation": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 22
+        },
+        "recommend_products": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 87
+        },
+        "record_feedback": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 14
+        },
+        "refine_preferences": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 29
+        },
+        "smalltalk": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 24
+        }
+      },
+      "slot_f1": 0.0,
+      "slot_precision": 0.0,
+      "slot_recall": 0.0,
+      "need_recommendation_accuracy": 1.0,
+      "avg_latency_ms": 0.0,
+      "p95_latency_ms": 0.0,
+      "cost_level": "medium",
+      "online_suitability": "good after offline training, still needs slot extractor",
+      "sample_errors": []
     }
   ],
   "recommendation": {
-    "winner": "char_ngram_nb_classifier + rule_baseline",
+    "winner": "distilbert_classifier + rule_baseline",
     "reason": "Use the trainable classifier for high-frequency intent classification, and keep rule extraction for slots until a sequence-labeling model is trained."
   },
   "notes": [

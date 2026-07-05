@@ -1,18 +1,18 @@
 # Query Understanding Model Compare Report
 
-- Generated at: `2026-07-04T16:53:30.633341+00:00`
+- Generated at: `2026-07-05T15:23:59.495009+00:00`
 - Train set: `800` rows
 - Eval set: `200` rows
-- Recommendation: `char_ngram_nb_classifier + rule_baseline` - Use the trainable classifier for high-frequency intent classification, and keep rule extraction for slots until a sequence-labeling model is trained.
+- Recommendation: `distilbert_classifier + rule_baseline` - Use the trainable classifier for high-frequency intent classification, and keep rule extraction for slots until a sequence-labeling model is trained.
 
 ## Model Summary
 
 | Model | Status | Intent Acc | Intent Macro F1 | Slot F1 | Need Rec Acc | Avg Latency ms | Cost |
 |---|---|---:|---:|---:|---:|---:|---|
-| `rule_baseline` | completed | 0.645 | 0.7147 | 0.5963 | 0.81 | 10.7716 | low |
-| `char_ngram_nb_classifier` | completed | 0.985 | 0.9861 | 0.0 | 1.0 | 0.0701 | low |
+| `rule_baseline` | completed | 0.645 | 0.7147 | 0.5963 | 0.81 | 9.6508 | low |
+| `char_ngram_nb_classifier` | completed | 0.985 | 0.9861 | 0.0 | 1.0 | 0.062 | low |
 | `llm_classifier` | skipped: Pass --include-llm to call the configured OpenAI-compatible LLM. | - | - | - | - | - | - |
-| `distilbert_classifier` | skipped: No --bert-predictions file provided. | - | - | - | - | - | - |
+| `distilbert_classifier` | completed | 1.0 | 1.0 | 0.0 | 1.0 | 0.0 | medium |
 
 ## Dataset
 

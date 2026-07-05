@@ -11,11 +11,12 @@ from app.agents.intent_agent import IntentAgent
 from app.agents.marketing_copy_agent import MarketingCopyAgent
 from app.agents.product_rec_agent import ProductRecAgent
 from app.main import app
-from app.models import ConversationState, RecommendRequest, UserEventCreate
+from app.models import ConversationState, IntentResult, RecommendRequest, UserEventCreate
 from app.orchestrator.chat import chat_orchestrator
 from app.personalization import score_product
 from app.recommender import recommend_products
 from app.services import ab_test_engine, feature_store, llm_client, metrics_collector
+from app.services.intent_classifier import intent_model_classifier
 from app.services.llm_client import LLMClient
 from app.services.vector_store import get_product_vector_store
 from scripts.evaluate_chat_agent import evaluate_chat_agent
@@ -771,6 +772,35 @@ def test_intent_agent_extracts_business_slots_and_budget_ranges():
     assert agent.rules["product_synonyms"]["耳机"]["tags"] == ["耳机"]
     assert agent._last_rule_debug["matched_keywords"]["recommend_products"] == ["想要"]
     assert "耳机" in agent._last_rule_debug["slot_sources"]["synonyms"]
+
+
+def test_optional_bert_intent_classifier_keeps_rule_slots(monkeypatch):
+    def fake_classify(text):
+        return {
+            "intent": "recommend_products",
+            "confidence": 0.93,
+            "model_dir": "mock://intent-bert",
+        }
+
+    monkeypatch.setattr(intent_model_classifier, "classify", fake_classify)
+    agent = IntentAgent()
+    state = ConversationState(session_id="bert-intent", user_id="intent-user")
+
+    result = agent._apply_model_intent(
+        "预算200以内",
+        IntentResult(
+            intent="refine_preferences",
+            slots={"budget_max": 200},
+            needs_recommendation=True,
+            confidence=0.72,
+            source="rule",
+        ),
+    )
+
+    assert result.intent == "recommend_products"
+    assert result.source == "bert+rule_slots"
+    assert result.slots["budget_max"] == 200
+    assert agent._last_rule_debug["model_intent"]["model_dir"] == "mock://intent-bert"
 
 
 def test_intent_agent_handles_min_budget_product_info_and_compare():

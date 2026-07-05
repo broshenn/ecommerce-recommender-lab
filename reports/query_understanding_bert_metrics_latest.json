@@ -1,0 +1,163 @@
+{
+  "summary": {
+    "model_name": "bert-base-chinese",
+    "train_count": 800,
+    "eval_count": 200,
+    "epochs": 12,
+    "batch_size": 16,
+    "device": "cuda",
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "elapsed_seconds": 125.52
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.120086,
+      "accuracy": 0.995,
+      "macro_f1": 0.9918,
+      "avg_latency_ms": 0.5546
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.048269,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6877
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.003591,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.62
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.001721,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.7149
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.001264,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6571
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.001061,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6263
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.000916,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6667
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.00082,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6797
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.000746,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6468
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.000701,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.633
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.000672,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6133
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.000665,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "avg_latency_ms": 0.6211
+    }
+  ],
+  "metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "avg_latency_ms": 0.6347,
+    "classification_report": {
+      "recommend_products": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 87.0
+      },
+      "refine_preferences": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 29.0
+      },
+      "compare_products": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 6.0
+      },
+      "explain_recommendation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 22.0
+      },
+      "record_feedback": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 14.0
+      },
+      "ask_product": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 18.0
+      },
+      "smalltalk": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 24.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      }
+    }
+  },
+  "output_dir": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\training\\query_intent_bert",
+  "predictions_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\reports\\query_understanding_bert_predictions_latest.jsonl"
+}

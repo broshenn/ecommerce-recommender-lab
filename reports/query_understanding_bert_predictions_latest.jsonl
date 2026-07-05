@@ -1,0 +1,200 @@
+{"text": "今天星期几 66", "intent": "smalltalk", "confidence": 0.999516, "expected_intent": "smalltalk", "latency_ms": 0.6139, "slots": {}}
+{"text": "刚才那个为什么推荐给我 115", "intent": "explain_recommendation", "confidence": 0.99947, "expected_intent": "explain_recommendation", "latency_ms": 0.6139, "slots": {}}
+{"text": "帮我找个适合日常用的数据线，别太贵", "intent": "recommend_products", "confidence": 0.99978, "expected_intent": "recommend_products", "latency_ms": 0.6139, "slots": {}}
+{"text": "这款的推荐理由是什么 7", "intent": "explain_recommendation", "confidence": 0.999466, "expected_intent": "explain_recommendation", "latency_ms": 0.6139, "slots": {}}
+{"text": "第115个补充条件：预算别超过100", "intent": "refine_preferences", "confidence": 0.999521, "expected_intent": "refine_preferences", "latency_ms": 0.6139, "slots": {}}
+{"text": "GearIT任天堂有合适的吗，预算大概150", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6139, "slots": {}}
+{"text": "平时用的充电器推荐一下，价格别超过300", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.6139, "slots": {}}
+{"text": "第4个补充条件：预算别超过100", "intent": "refine_preferences", "confidence": 0.99952, "expected_intent": "refine_preferences", "latency_ms": 0.6139, "slots": {}}
+{"text": "有没有评价好一点的游戏保护膜", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.6139, "slots": {}}
+{"text": "帮我比较一下第二个和第二款的区别 68", "intent": "compare_products", "confidence": 0.999016, "expected_intent": "compare_products", "latency_ms": 0.6139, "slots": {}}
+{"text": "今天星期几 22", "intent": "smalltalk", "confidence": 0.999517, "expected_intent": "smalltalk", "latency_ms": 0.6139, "slots": {}}
+{"text": "你是什么模型呀 75", "intent": "smalltalk", "confidence": 0.999527, "expected_intent": "smalltalk", "latency_ms": 0.6139, "slots": {}}
+{"text": "你好，我先随便看看 63", "intent": "smalltalk", "confidence": 0.999523, "expected_intent": "smalltalk", "latency_ms": 0.6139, "slots": {}}
+{"text": "换成键盘方向的，预算还是300", "intent": "refine_preferences", "confidence": 0.999524, "expected_intent": "refine_preferences", "latency_ms": 0.6139, "slots": {}}
+{"text": "我喜欢第一个，类似的再来几个 44", "intent": "record_feedback", "confidence": 0.999178, "expected_intent": "record_feedback", "latency_ms": 0.6139, "slots": {}}
+{"text": "帮我找个适合日常用的存储，别太贵", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6139, "slots": {}}
+{"text": "你好，我先随便看看 4", "intent": "smalltalk", "confidence": 0.999523, "expected_intent": "smalltalk", "latency_ms": 0.5861, "slots": {}}
+{"text": "想要一个不踩雷的摄像头，偏电子数码类", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "帮我推荐个手机保护壳，iPhone用的，预算一百以内，最好带支架功能", "intent": "recommend_products", "confidence": 0.999772, "expected_intent": "recommend_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "第85个补充条件：预算别超过80", "intent": "refine_preferences", "confidence": 0.999521, "expected_intent": "refine_preferences", "latency_ms": 0.5861, "slots": {}}
+{"text": "第二个和另一个比哪个更划算 116", "intent": "compare_products", "confidence": 0.999012, "expected_intent": "compare_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "我想买500元以内的键盘", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "这款的推荐理由是什么 106", "intent": "explain_recommendation", "confidence": 0.999464, "expected_intent": "explain_recommendation", "latency_ms": 0.5861, "slots": {}}
+{"text": "这款的推荐理由是什么 77", "intent": "explain_recommendation", "confidence": 0.999464, "expected_intent": "explain_recommendation", "latency_ms": 0.5861, "slots": {}}
+{"text": "第42个补充条件：预算别超过50", "intent": "refine_preferences", "confidence": 0.999519, "expected_intent": "refine_preferences", "latency_ms": 0.5861, "slots": {}}
+{"text": "给我讲讲为啥刚才那个手机膜值这个价。", "intent": "explain_recommendation", "confidence": 0.967321, "expected_intent": "explain_recommendation", "latency_ms": 0.5861, "slots": {}}
+{"text": "推荐几款电子数码任天堂", "intent": "recommend_products", "confidence": 0.999762, "expected_intent": "recommend_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "平时用的手机配件推荐一下，价格别超过50", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "第二个为什么推荐给我 87", "intent": "explain_recommendation", "confidence": 0.999472, "expected_intent": "explain_recommendation", "latency_ms": 0.5861, "slots": {}}
+{"text": "换成数据线方向的，预算还是80", "intent": "refine_preferences", "confidence": 0.999529, "expected_intent": "refine_preferences", "latency_ms": 0.5861, "slots": {}}
+{"text": "你好，我先随便看看 51", "intent": "smalltalk", "confidence": 0.999522, "expected_intent": "smalltalk", "latency_ms": 0.5861, "slots": {}}
+{"text": "有没有评价好一点的办公键盘", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.5861, "slots": {}}
+{"text": "帮我比较一下这款和第二款的区别 8", "intent": "compare_products", "confidence": 0.999016, "expected_intent": "compare_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "最好是数据线，不要太复杂", "intent": "refine_preferences", "confidence": 0.99951, "expected_intent": "refine_preferences", "latency_ms": 0.5973, "slots": {}}
+{"text": "这款太贵了，换个便宜点的 105", "intent": "record_feedback", "confidence": 0.999184, "expected_intent": "record_feedback", "latency_ms": 0.5973, "slots": {}}
+{"text": "这个商品是什么品牌 83", "intent": "ask_product", "confidence": 0.999512, "expected_intent": "ask_product", "latency_ms": 0.5973, "slots": {}}
+{"text": "有没有Telltale的PlayStation", "intent": "recommend_products", "confidence": 0.999771, "expected_intent": "recommend_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "Moydolo电脑配件有合适的吗，预算大概200", "intent": "recommend_products", "confidence": 0.999779, "expected_intent": "recommend_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "换成充电器方向的，预算还是500", "intent": "refine_preferences", "confidence": 0.999529, "expected_intent": "refine_preferences", "latency_ms": 0.5973, "slots": {}}
+{"text": "我想买200元以内的保护膜", "intent": "recommend_products", "confidence": 0.999781, "expected_intent": "recommend_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "我喜欢这款，类似的再来几个 120", "intent": "record_feedback", "confidence": 0.999187, "expected_intent": "record_feedback", "latency_ms": 0.5973, "slots": {}}
+{"text": "你好，我先随便看看 116", "intent": "smalltalk", "confidence": 0.999524, "expected_intent": "smalltalk", "latency_ms": 0.5973, "slots": {}}
+{"text": "帮我比较一下刚才那个和第二款的区别 49", "intent": "compare_products", "confidence": 0.999009, "expected_intent": "compare_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "想要一个不踩雷的存储，偏游戏类", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "想看看办公里评分高一点的办公", "intent": "recommend_products", "confidence": 0.999773, "expected_intent": "recommend_products", "latency_ms": 0.5973, "slots": {}}
+{"text": "刚才那个库存还有多少 0", "intent": "ask_product", "confidence": 0.999506, "expected_intent": "ask_product", "latency_ms": 0.5973, "slots": {}}
+{"text": "这款的推荐理由是什么 102", "intent": "explain_recommendation", "confidence": 0.999464, "expected_intent": "explain_recommendation", "latency_ms": 0.5973, "slots": {}}
+{"text": "我喜欢第二个，类似的再来几个 67", "intent": "record_feedback", "confidence": 0.999188, "expected_intent": "record_feedback", "latency_ms": 0.5973, "slots": {}}
+{"text": "平时用的保护壳推荐一下，价格别超过500", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "有没有评价好一点的电子数码摄像头", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "换成更适合日常用的手机充电器", "intent": "refine_preferences", "confidence": 0.999516, "expected_intent": "refine_preferences", "latency_ms": 0.5585, "slots": {}}
+{"text": "我想买200元以内的键盘", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "想买个办公用的键盘 预算两百左右 别太吵的", "intent": "recommend_products", "confidence": 0.999767, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "想要一个不踩雷的办公，偏办公类", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "这款库存还有多少 40", "intent": "ask_product", "confidence": 0.999499, "expected_intent": "ask_product", "latency_ms": 0.5585, "slots": {}}
+{"text": "第1轮，给我来点办公相关的计算器", "intent": "recommend_products", "confidence": 0.999771, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "推荐几款手机保护壳", "intent": "recommend_products", "confidence": 0.99977, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "miadore鼠标有合适的吗，预算大概50", "intent": "recommend_products", "confidence": 0.999774, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "第1轮，给我来点游戏相关的办公", "intent": "recommend_products", "confidence": 0.999771, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "推荐几款手机手机", "intent": "recommend_products", "confidence": 0.999765, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "第三个库存还有多少 26", "intent": "ask_product", "confidence": 0.99951, "expected_intent": "ask_product", "latency_ms": 0.5585, "slots": {}}
+{"text": "你是什么模型呀 21", "intent": "smalltalk", "confidence": 0.999527, "expected_intent": "smalltalk", "latency_ms": 0.5585, "slots": {}}
+{"text": "有没有Mastex的键盘", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.5585, "slots": {}}
+{"text": "第20个补充条件：预算别超过100", "intent": "refine_preferences", "confidence": 0.999519, "expected_intent": "refine_preferences", "latency_ms": 0.5585, "slots": {}}
+{"text": "刚才那个评分怎么样 115", "intent": "ask_product", "confidence": 0.999501, "expected_intent": "ask_product", "latency_ms": 0.5646, "slots": {}}
+{"text": "你好，我先随便看看 95", "intent": "smalltalk", "confidence": 0.999524, "expected_intent": "smalltalk", "latency_ms": 0.5646, "slots": {}}
+{"text": "帮我找个适合日常用的电子产品，别太贵", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.5646, "slots": {}}
+{"text": "你是什么模型呀 16", "intent": "smalltalk", "confidence": 0.999527, "expected_intent": "smalltalk", "latency_ms": 0.5646, "slots": {}}
+{"text": "预算控制在500以内", "intent": "refine_preferences", "confidence": 0.999498, "expected_intent": "refine_preferences", "latency_ms": 0.5646, "slots": {}}
+{"text": "换成更适合日常用的手机手机配件", "intent": "refine_preferences", "confidence": 0.999512, "expected_intent": "refine_preferences", "latency_ms": 0.5646, "slots": {}}
+{"text": "第1轮，给我来点手机相关的办公", "intent": "recommend_products", "confidence": 0.99977, "expected_intent": "recommend_products", "latency_ms": 0.5646, "slots": {}}
+{"text": "今天星期几 50", "intent": "smalltalk", "confidence": 0.999517, "expected_intent": "smalltalk", "latency_ms": 0.5646, "slots": {}}
+{"text": "有没有评价好一点的电子数码键盘", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.5646, "slots": {}}
+{"text": "今天星期几 58", "intent": "smalltalk", "confidence": 0.999516, "expected_intent": "smalltalk", "latency_ms": 0.5646, "slots": {}}
+{"text": "这个商品是什么品牌 73", "intent": "ask_product", "confidence": 0.999513, "expected_intent": "ask_product", "latency_ms": 0.5646, "slots": {}}
+{"text": "第三个评分怎么样 4", "intent": "ask_product", "confidence": 0.999507, "expected_intent": "ask_product", "latency_ms": 0.5646, "slots": {}}
+{"text": "第47个补充条件：预算别超过200", "intent": "refine_preferences", "confidence": 0.99952, "expected_intent": "refine_preferences", "latency_ms": 0.5646, "slots": {}}
+{"text": "有没有评价好一点的手机办公", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.5646, "slots": {}}
+{"text": "这款太贵了，换个便宜点的 124", "intent": "record_feedback", "confidence": 0.999185, "expected_intent": "record_feedback", "latency_ms": 0.5646, "slots": {}}
+{"text": "换成键盘方向的，预算还是200", "intent": "refine_preferences", "confidence": 0.999524, "expected_intent": "refine_preferences", "latency_ms": 0.5646, "slots": {}}
+{"text": "推荐几款办公保护壳", "intent": "recommend_products", "confidence": 0.999769, "expected_intent": "recommend_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "我想买300元以内的摄像头", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "这个商品是什么品牌 78", "intent": "ask_product", "confidence": 0.999513, "expected_intent": "ask_product", "latency_ms": 0.6322, "slots": {}}
+{"text": "换成游戏方向的，预算还是80", "intent": "refine_preferences", "confidence": 0.999524, "expected_intent": "refine_preferences", "latency_ms": 0.6322, "slots": {}}
+{"text": "刚才那个为什么推荐给我 61", "intent": "explain_recommendation", "confidence": 0.999468, "expected_intent": "explain_recommendation", "latency_ms": 0.6322, "slots": {}}
+{"text": "第1轮，给我来点办公相关的键盘", "intent": "recommend_products", "confidence": 0.999772, "expected_intent": "recommend_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "第三个为什么推荐给我 57", "intent": "explain_recommendation", "confidence": 0.999469, "expected_intent": "explain_recommendation", "latency_ms": 0.6322, "slots": {}}
+{"text": "推荐几款游戏耳机", "intent": "recommend_products", "confidence": 0.999767, "expected_intent": "recommend_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "你好，我先随便看看 114", "intent": "smalltalk", "confidence": 0.999524, "expected_intent": "smalltalk", "latency_ms": 0.6322, "slots": {}}
+{"text": "平时用的任天堂推荐一下，价格别超过300", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "这款为什么推荐给我 63", "intent": "explain_recommendation", "confidence": 0.999455, "expected_intent": "explain_recommendation", "latency_ms": 0.6322, "slots": {}}
+{"text": "我喜欢第二个，类似的再来几个 59", "intent": "record_feedback", "confidence": 0.999187, "expected_intent": "record_feedback", "latency_ms": 0.6322, "slots": {}}
+{"text": "第二个和另一个比哪个更划算 83", "intent": "compare_products", "confidence": 0.999013, "expected_intent": "compare_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "第78个补充条件：预算别超过100", "intent": "refine_preferences", "confidence": 0.999521, "expected_intent": "refine_preferences", "latency_ms": 0.6322, "slots": {}}
+{"text": "我想买100元以内的鼠标", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6322, "slots": {}}
+{"text": "换成计算器方向的，预算还是80", "intent": "refine_preferences", "confidence": 0.999524, "expected_intent": "refine_preferences", "latency_ms": 0.6322, "slots": {}}
+{"text": "刚才那个我不要黑色的了，换成白色的，其他不变", "intent": "refine_preferences", "confidence": 0.999161, "expected_intent": "refine_preferences", "latency_ms": 0.6084, "slots": {}}
+{"text": "我喜欢刚才那个，类似的再来几个 66", "intent": "record_feedback", "confidence": 0.999181, "expected_intent": "record_feedback", "latency_ms": 0.6084, "slots": {}}
+{"text": "我想买50元以内的鼠标", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "推荐几款电子数码数据线", "intent": "recommend_products", "confidence": 0.999771, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "这款太贵了，换个便宜点的 13", "intent": "record_feedback", "confidence": 0.999185, "expected_intent": "record_feedback", "latency_ms": 0.6084, "slots": {}}
+{"text": "平时用的电子产品推荐一下，价格别超过100", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "有没有评价好一点的手机手机配件", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "有没有Nyko的办公", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "平时用的保护膜推荐一下，价格别超过50", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "第116个补充条件：预算别超过100", "intent": "refine_preferences", "confidence": 0.99952, "expected_intent": "refine_preferences", "latency_ms": 0.6084, "slots": {}}
+{"text": "想看看电子数码里评分高一点的电子产品", "intent": "recommend_products", "confidence": 0.999774, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "还是想要充电器，但别太复杂", "intent": "refine_preferences", "confidence": 0.999499, "expected_intent": "refine_preferences", "latency_ms": 0.6084, "slots": {}}
+{"text": "我想买150元以内的办公", "intent": "recommend_products", "confidence": 0.999779, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "有没有G-Shock的办公", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "有没有评价好一点的游戏数据线", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "平时用的摄像头推荐一下，价格别超过150", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6084, "slots": {}}
+{"text": "为什么之前给我推荐BELTRON的键盘？", "intent": "explain_recommendation", "confidence": 0.999169, "expected_intent": "explain_recommendation", "latency_ms": 0.61, "slots": {}}
+{"text": "换成更适合日常用的办公键盘", "intent": "refine_preferences", "confidence": 0.999508, "expected_intent": "refine_preferences", "latency_ms": 0.61, "slots": {}}
+{"text": "我想买300元以内的键盘", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.61, "slots": {}}
+{"text": "第三个太贵了，换个便宜点的 123", "intent": "record_feedback", "confidence": 0.999205, "expected_intent": "record_feedback", "latency_ms": 0.61, "slots": {}}
+{"text": "Renewable Toner计算器有合适的吗，预算大概80", "intent": "recommend_products", "confidence": 0.999779, "expected_intent": "recommend_products", "latency_ms": 0.61, "slots": {}}
+{"text": "有没有VILTROX的鼠标", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.61, "slots": {}}
+{"text": "有没有Sharp的保护膜", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.61, "slots": {}}
+{"text": "想看看电子数码里评分高一点的保护壳", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.61, "slots": {}}
+{"text": "最好是电子产品，不要太复杂", "intent": "refine_preferences", "confidence": 0.999492, "expected_intent": "refine_preferences", "latency_ms": 0.61, "slots": {}}
+{"text": "帮我找一款办公用的无线鼠标，预算两百以内，最好是罗技之类的牌子。", "intent": "recommend_products", "confidence": 0.99977, "expected_intent": "recommend_products", "latency_ms": 0.61, "slots": {}}
+{"text": "刚才那个为什么推荐给我 41", "intent": "explain_recommendation", "confidence": 0.999469, "expected_intent": "explain_recommendation", "latency_ms": 0.61, "slots": {}}
+{"text": "第三个库存还有多少 118", "intent": "ask_product", "confidence": 0.99951, "expected_intent": "ask_product", "latency_ms": 0.61, "slots": {}}
+{"text": "第73个补充条件：预算别超过100", "intent": "refine_preferences", "confidence": 0.99952, "expected_intent": "refine_preferences", "latency_ms": 0.61, "slots": {}}
+{"text": "第三个为什么推荐给我 55", "intent": "explain_recommendation", "confidence": 0.999468, "expected_intent": "explain_recommendation", "latency_ms": 0.61, "slots": {}}
+{"text": "刚才那个评分怎么样 27", "intent": "ask_product", "confidence": 0.9995, "expected_intent": "ask_product", "latency_ms": 0.61, "slots": {}}
+{"text": "我喜欢第三个，类似的再来几个 93", "intent": "record_feedback", "confidence": 0.999188, "expected_intent": "record_feedback", "latency_ms": 0.61, "slots": {}}
+{"text": "我喜欢这款，类似的再来几个 95", "intent": "record_feedback", "confidence": 0.999186, "expected_intent": "record_feedback", "latency_ms": 0.5814, "slots": {}}
+{"text": "这个商品是什么品牌 16", "intent": "ask_product", "confidence": 0.999513, "expected_intent": "ask_product", "latency_ms": 0.5814, "slots": {}}
+{"text": "想看看手机里评分高一点的办公", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.5814, "slots": {}}
+{"text": "刚才那个为什么推荐给我 49", "intent": "explain_recommendation", "confidence": 0.999468, "expected_intent": "explain_recommendation", "latency_ms": 0.5814, "slots": {}}
+{"text": "想要一个不踩雷的保护壳，偏办公类", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5814, "slots": {}}
+{"text": "换成键盘方向的，预算还是100", "intent": "refine_preferences", "confidence": 0.999524, "expected_intent": "refine_preferences", "latency_ms": 0.5814, "slots": {}}
+{"text": "刚才那个库存还有多少 96", "intent": "ask_product", "confidence": 0.999507, "expected_intent": "ask_product", "latency_ms": 0.5814, "slots": {}}
+{"text": "想要一个不踩雷的保护壳，偏手机类", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5814, "slots": {}}
+{"text": "这款的推荐理由是什么 120", "intent": "explain_recommendation", "confidence": 0.999464, "expected_intent": "explain_recommendation", "latency_ms": 0.5814, "slots": {}}
+{"text": "想看看办公里评分高一点的存储", "intent": "recommend_products", "confidence": 0.999774, "expected_intent": "recommend_products", "latency_ms": 0.5814, "slots": {}}
+{"text": "今天星期几 39", "intent": "smalltalk", "confidence": 0.999517, "expected_intent": "smalltalk", "latency_ms": 0.5814, "slots": {}}
+{"text": "我喜欢刚才那个，类似的再来几个 14", "intent": "record_feedback", "confidence": 0.999179, "expected_intent": "record_feedback", "latency_ms": 0.5814, "slots": {}}
+{"text": "有没有评价好一点的电子数码鼠标", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5814, "slots": {}}
+{"text": "刚才那个评分怎么样 41", "intent": "ask_product", "confidence": 0.999501, "expected_intent": "ask_product", "latency_ms": 0.5814, "slots": {}}
+{"text": "你是什么模型呀 23", "intent": "smalltalk", "confidence": 0.999527, "expected_intent": "smalltalk", "latency_ms": 0.5814, "slots": {}}
+{"text": "第三个评分怎么样 123", "intent": "ask_product", "confidence": 0.999508, "expected_intent": "ask_product", "latency_ms": 0.5814, "slots": {}}
+{"text": "这款的推荐理由是什么 86", "intent": "explain_recommendation", "confidence": 0.999465, "expected_intent": "explain_recommendation", "latency_ms": 0.5898, "slots": {}}
+{"text": "你好，我先随便看看 64", "intent": "smalltalk", "confidence": 0.999524, "expected_intent": "smalltalk", "latency_ms": 0.5898, "slots": {}}
+{"text": "这款的推荐理由是什么 13", "intent": "explain_recommendation", "confidence": 0.999464, "expected_intent": "explain_recommendation", "latency_ms": 0.5898, "slots": {}}
+{"text": "推荐几款办公键盘", "intent": "recommend_products", "confidence": 0.999772, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "这款库存还有多少 114", "intent": "ask_product", "confidence": 0.9995, "expected_intent": "ask_product", "latency_ms": 0.5898, "slots": {}}
+{"text": "这款的推荐理由是什么 12", "intent": "explain_recommendation", "confidence": 0.999465, "expected_intent": "explain_recommendation", "latency_ms": 0.5898, "slots": {}}
+{"text": "有没有CableCreation的任天堂", "intent": "recommend_products", "confidence": 0.99977, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "平时用的手机配件推荐一下，价格别超过300", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "还是想要计算器，但别太复杂", "intent": "refine_preferences", "confidence": 0.999497, "expected_intent": "refine_preferences", "latency_ms": 0.5898, "slots": {}}
+{"text": "有没有Marine Nautical Store的保护膜", "intent": "recommend_products", "confidence": 0.99978, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "推荐几款手机保护膜", "intent": "recommend_products", "confidence": 0.999769, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "这款的推荐理由是什么 68", "intent": "explain_recommendation", "confidence": 0.999465, "expected_intent": "explain_recommendation", "latency_ms": 0.5898, "slots": {}}
+{"text": "Kujian保护膜有合适的吗，预算大概150", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "有没有Iokmax的手机配件", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "刚才那个为什么推荐给我 15", "intent": "explain_recommendation", "confidence": 0.999467, "expected_intent": "explain_recommendation", "latency_ms": 0.5898, "slots": {}}
+{"text": "我想买200元以内的任天堂", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.5898, "slots": {}}
+{"text": "今天星期几 65", "intent": "smalltalk", "confidence": 0.999517, "expected_intent": "smalltalk", "latency_ms": 0.6069, "slots": {}}
+{"text": "我想买50元以内的存储", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6069, "slots": {}}
+{"text": "第37个补充条件：预算别超过150", "intent": "refine_preferences", "confidence": 0.99952, "expected_intent": "refine_preferences", "latency_ms": 0.6069, "slots": {}}
+{"text": "还是想要鼠标，但别太复杂", "intent": "refine_preferences", "confidence": 0.9995, "expected_intent": "refine_preferences", "latency_ms": 0.6069, "slots": {}}
+{"text": "第二个库存还有多少 110", "intent": "ask_product", "confidence": 0.99951, "expected_intent": "ask_product", "latency_ms": 0.6069, "slots": {}}
+{"text": "你好，我先随便看看 80", "intent": "smalltalk", "confidence": 0.999522, "expected_intent": "smalltalk", "latency_ms": 0.6069, "slots": {}}
+{"text": "帮我找个适合日常用的键盘，别太贵", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6069, "slots": {}}
+{"text": "你是什么模型呀 71", "intent": "smalltalk", "confidence": 0.999527, "expected_intent": "smalltalk", "latency_ms": 0.6069, "slots": {}}
+{"text": "第1轮，给我来点游戏相关的存储", "intent": "recommend_products", "confidence": 0.999774, "expected_intent": "recommend_products", "latency_ms": 0.6069, "slots": {}}
+{"text": "你是什么模型呀 15", "intent": "smalltalk", "confidence": 0.999528, "expected_intent": "smalltalk", "latency_ms": 0.6069, "slots": {}}
+{"text": "MOZA Racing任天堂有合适的吗，预算大概50", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.6069, "slots": {}}
+{"text": "这款太贵了，换个便宜点的 88", "intent": "record_feedback", "confidence": 0.999184, "expected_intent": "record_feedback", "latency_ms": 0.6069, "slots": {}}
+{"text": "你好，我先随便看看 21", "intent": "smalltalk", "confidence": 0.999524, "expected_intent": "smalltalk", "latency_ms": 0.6069, "slots": {}}
+{"text": "Bastmei和Amazon Basics的键盘哪个好啊？我主要打游戏用。", "intent": "compare_products", "confidence": 0.998873, "expected_intent": "compare_products", "latency_ms": 0.6069, "slots": {}}
+{"text": "今天星期几 78", "intent": "smalltalk", "confidence": 0.999517, "expected_intent": "smalltalk", "latency_ms": 0.6069, "slots": {}}
+{"text": "平时用的保护膜推荐一下，价格别超过100", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6069, "slots": {}}
+{"text": "有没有评价好一点的游戏鼠标", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "平时用的办公推荐一下，价格别超过200", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "有没有评价好一点的办公鼠标", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "想要一个不踩雷的数据线，偏手机类", "intent": "recommend_products", "confidence": 0.999778, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "我想买500元以内的手机配件", "intent": "recommend_products", "confidence": 0.999779, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "想要一个不踩雷的保护膜，偏电子数码类", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "平时用的办公推荐一下，价格别超过300", "intent": "recommend_products", "confidence": 0.999775, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "有没有Aspyr的数据线", "intent": "recommend_products", "confidence": 0.999776, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "平时用的数据线推荐一下，价格别超过500", "intent": "recommend_products", "confidence": 0.999779, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "这款评分怎么样 40", "intent": "ask_product", "confidence": 0.999503, "expected_intent": "ask_product", "latency_ms": 0.6068, "slots": {}}
+{"text": "刚才那个库存还有多少 56", "intent": "ask_product", "confidence": 0.999506, "expected_intent": "ask_product", "latency_ms": 0.6068, "slots": {}}
+{"text": "推荐几款办公存储", "intent": "recommend_products", "confidence": 0.999767, "expected_intent": "recommend_products", "latency_ms": 0.6068, "slots": {}}
+{"text": "第一个为什么推荐给我 84", "intent": "explain_recommendation", "confidence": 0.999469, "expected_intent": "explain_recommendation", "latency_ms": 0.6068, "slots": {}}
+{"text": "你好，我先随便看看 65", "intent": "smalltalk", "confidence": 0.999524, "expected_intent": "smalltalk", "latency_ms": 0.6068, "slots": {}}
+{"text": "刚才那个为什么推荐给我 0", "intent": "explain_recommendation", "confidence": 0.999467, "expected_intent": "explain_recommendation", "latency_ms": 0.6068, "slots": {}}
+{"text": "你好，我先随便看看 6", "intent": "smalltalk", "confidence": 0.999522, "expected_intent": "smalltalk", "latency_ms": 0.6068, "slots": {}}
+{"text": "Peonily Designs充电器有合适的吗，预算大概50", "intent": "recommend_products", "confidence": 0.99978, "expected_intent": "recommend_products", "latency_ms": 1.5547, "slots": {}}
+{"text": "第1轮，给我来点电子数码相关的耳机", "intent": "recommend_products", "confidence": 0.999773, "expected_intent": "recommend_products", "latency_ms": 1.5547, "slots": {}}
+{"text": "换成充电器方向的，预算还是300", "intent": "refine_preferences", "confidence": 0.999529, "expected_intent": "refine_preferences", "latency_ms": 1.5547, "slots": {}}
+{"text": "刚才那个太贵了，换个便宜点的 82", "intent": "record_feedback", "confidence": 0.999197, "expected_intent": "record_feedback", "latency_ms": 1.5547, "slots": {}}
+{"text": "还是想要游戏，但别太复杂", "intent": "refine_preferences", "confidence": 0.999494, "expected_intent": "refine_preferences", "latency_ms": 1.5547, "slots": {}}
+{"text": "TRUE CABLE保护壳有合适的吗，预算大概300", "intent": "recommend_products", "confidence": 0.999779, "expected_intent": "recommend_products", "latency_ms": 1.5547, "slots": {}}
+{"text": "第1轮，给我来点电子数码相关的鼠标", "intent": "recommend_products", "confidence": 0.999772, "expected_intent": "recommend_products", "latency_ms": 1.5547, "slots": {}}
+{"text": "想要一个不踩雷的充电器，偏游戏类", "intent": "recommend_products", "confidence": 0.999777, "expected_intent": "recommend_products", "latency_ms": 1.5547, "slots": {}}

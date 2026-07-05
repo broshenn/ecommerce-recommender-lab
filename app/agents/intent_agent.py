@@ -10,6 +10,7 @@ from app.agents.base_agent import BaseAgent
 from app.catalog import list_products
 from app.models import AgentResult, ChatMessage, ConversationState, IntentResult
 from app.services import llm_client
+from app.services.intent_classifier import intent_model_classifier
 
 INTENT_PROMPT = """You are an intent classifier for a conversational commerce agent.
 Return JSON with these fields:
@@ -38,6 +39,7 @@ class IntentAgent(BaseAgent):
         result = self._llm_intent(message, state, recent_messages)
         if result is None:
             result = self._rule_intent(message, state)
+            result = self._apply_model_intent(message, result)
 
         return AgentResult(
             agent_name=self.name,
@@ -92,6 +94,38 @@ class IntentAgent(BaseAgent):
             "fallback": False,
         }
         return result
+
+    def _apply_model_intent(self, message: str, rule_result: IntentResult) -> IntentResult:
+        model_result = intent_model_classifier.classify(message)
+        if not model_result:
+            return rule_result
+        merged = rule_result.model_copy(
+            update={
+                "intent": model_result["intent"],
+                "confidence": model_result["confidence"],
+                "source": "bert+rule_slots",
+                "needs_recommendation": self._intent_needs_recommendation(
+                    model_result["intent"],
+                    rule_result.needs_recommendation,
+                ),
+            }
+        )
+        self._last_rule_debug = {
+            **getattr(self, "_last_rule_debug", {}),
+            "model_intent": {
+                "intent": model_result["intent"],
+                "confidence": round(model_result["confidence"], 4),
+                "model_dir": model_result["model_dir"],
+            },
+        }
+        return merged
+
+    def _intent_needs_recommendation(self, intent: str, fallback: bool) -> bool:
+        if intent in {"recommend_products", "refine_preferences"}:
+            return True
+        if intent == "record_feedback":
+            return fallback
+        return False
 
     def _rule_intent(self, message: str, state: ConversationState) -> IntentResult:
         text = message.strip()

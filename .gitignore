@@ -13,3 +13,5 @@ chroma_db/
 training/data/
 training/logs/
 training/outputs/
+training/query_intent_bert/
+training/hf_cache/
