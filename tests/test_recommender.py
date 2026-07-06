@@ -1161,6 +1161,64 @@ def test_chat_meta_questions_do_not_trigger_recommendations():
     assert "星期" in data["reply"]
 
 
+def test_smalltalk_open_chat_can_use_llm_fallback(monkeypatch):
+    monkeypatch.setenv("CHAT_LLM_ENABLED", "true")
+    monkeypatch.setattr(
+        llm_client,
+        "chat",
+        lambda **kwargs: "可以，轻松聊两句也没问题。你想买东西时，直接告诉我预算和用途就行。",
+    )
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-smalltalk-llm-user",
+            "session_id": "chat-smalltalk-llm-session",
+            "message": "不是问商品，随便聊聊",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["intent"] == "smalltalk"
+    assert data["products"] == []
+    assert data["agent_results"]["dialogue"]["data"]["mode"] == "llm_smalltalk"
+    policy = data["agent_results"]["dialogue"]["data"]["smalltalk_policy"]
+    assert policy["category"] == "open_smalltalk"
+    assert policy["allow_llm"] is True
+
+
+def test_smalltalk_identity_uses_rule_even_when_llm_enabled(monkeypatch):
+    calls = []
+
+    def fake_chat(**kwargs):
+        calls.append(kwargs)
+        return "I should not be used here"
+
+    monkeypatch.setenv("CHAT_LLM_ENABLED", "true")
+    monkeypatch.setattr(llm_client, "chat", fake_chat)
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-smalltalk-rule-user",
+            "session_id": "chat-smalltalk-rule-session",
+            "message": "你是什么agent",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["intent"] == "smalltalk"
+    assert data["products"] == []
+    assert data["agent_results"]["dialogue"]["data"]["mode"] == "rule"
+    policy = data["agent_results"]["dialogue"]["data"]["smalltalk_policy"]
+    assert policy["allow_llm"] is False
+    assert calls == []
+
+
 def test_chat_eval_script_reports_core_metrics():
     report = evaluate_chat_agent(Path("data/chat_eval_cases.jsonl"))
 

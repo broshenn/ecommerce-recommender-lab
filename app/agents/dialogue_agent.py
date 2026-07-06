@@ -13,6 +13,11 @@ Speak in Chinese. Be friendly but not pushy. Do not claim discounts, lowest pric
 medical effects, guarantees, or inventory facts that are not present in the data.
 Keep the reply under 80 Chinese characters unless comparing products."""
 
+SMALLTALK_LLM_PROMPT = """你是一个电商导购 Agent 的闲聊兜底模块。
+只处理开放式闲聊，不要触发商品推荐，不要记录用户购物偏好。
+用中文回答，1-2 句，语气自然克制。不要编造商品价格、库存、优惠券、最低价、物流承诺或屏幕感知能力。
+如果合适，最后轻轻引导用户继续说购物需求。"""
+
 
 class DialogueAgent(BaseAgent):
     """Generates user-facing chat replies with safe rule fallback."""
@@ -27,6 +32,22 @@ class DialogueAgent(BaseAgent):
         marketing_copies: list[MarketingCopy] = kwargs.get("marketing_copies", [])
         extra: dict[str, Any] = kwargs.get("extra", {})
         message: str = kwargs.get("message", "")
+
+        if intent == "smalltalk":
+            policy = self._smalltalk_policy(message)
+            reply = None
+            mode = "rule"
+            if policy["allow_llm"]:
+                reply = self._llm_smalltalk_reply(message, policy)
+                mode = "llm_smalltalk" if reply else "rule"
+            if not reply:
+                reply = self._smalltalk_reply(message)
+            return AgentResult(
+                agent_name=self.name,
+                success=True,
+                data={"reply": reply, "mode": mode, "smalltalk_policy": policy},
+                confidence=0.8,
+            )
 
         reply = self._llm_reply(intent, state, products, marketing_copies, extra)
         mode = "llm"
@@ -89,6 +110,69 @@ class DialogueAgent(BaseAgent):
         ]
         lowered = text.lower()
         return not any(marker.lower() in lowered for marker in leaked_markers)
+
+    def _smalltalk_policy(self, message: str) -> dict[str, Any]:
+        text = message.lower()
+        if any(marker in text for marker in ["你是谁", "你是什么", "什么agent", "什么 agent", "你能做什么", "介绍一下"]):
+            return {
+                "category": "agent_identity_or_capability",
+                "allow_llm": False,
+                "reason": "stable_agent_boundary_answer",
+            }
+        if any(marker in text for marker in ["星期几", "周几", "几号", "日期", "今天"]):
+            return {
+                "category": "date_or_time",
+                "allow_llm": False,
+                "reason": "deterministic_runtime_answer",
+            }
+        if any(marker in text for marker in ["画面", "图片", "截图", "看图", "屏幕"]):
+            return {
+                "category": "visual_capability",
+                "allow_llm": False,
+                "reason": "avoid_false_visual_claim",
+            }
+        if any(marker in text for marker in ["你好", "hello", "hi", "在吗"]):
+            return {
+                "category": "greeting",
+                "allow_llm": False,
+                "reason": "simple_template_is_enough",
+            }
+        return {
+            "category": "open_smalltalk",
+            "allow_llm": True,
+            "reason": "open_ended_non_shopping_chat",
+        }
+
+    def _llm_smalltalk_reply(self, message: str, policy: dict[str, Any]) -> str | None:
+        if os.getenv("CHAT_LLM_ENABLED", "false").strip().lower() not in {"1", "true", "yes", "on"}:
+            return None
+        text = llm_client.chat(
+            system_prompt=SMALLTALK_LLM_PROMPT,
+            user_message="\n".join(
+                [
+                    f"smalltalk_policy: {policy}",
+                    f"user_message: {message}",
+                ]
+            ),
+            max_tokens=160,
+        )
+        if not text:
+            return None
+        cleaned = text.strip()
+        if not self._is_safe_reply(cleaned):
+            return None
+        unsafe_claims = [
+            "最低价",
+            "全网最低",
+            "优惠券",
+            "有货",
+            "库存充足",
+            "我能看到你的屏幕",
+            "我看到了",
+        ]
+        if any(marker in cleaned for marker in unsafe_claims):
+            return None
+        return cleaned
 
     def _rule_reply(
         self,
