@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-04T16:37:41.311749+00:00",
+  "generated_at": "2026-07-06T06:15:33.067033+00:00",
   "cases_path": "D:\\pycode\\agent\\cluade\\ecommerce-rebuild-step-by-step\\data\\chat_eval_cases.jsonl",
-  "case_count": 13,
+  "case_count": 15,
   "thresholds": {
     "intent_macro_f1": 0.85,
     "slot_f1": 0.8,
@@ -12,10 +12,12 @@
     "budget_compliance_rate": 0.95,
     "inventory_compliance_rate": 1.0,
     "avg_latency_ms": 1500.0,
-    "unsupported_claim_rate": 0.02
+    "unsupported_claim_rate": 0.02,
+    "memory_enrichment_success_rate": 0.8,
+    "smalltalk_policy_rate": 0.9
   },
   "summary": {
-    "case_count": 13,
+    "case_count": 15,
     "intent_macro_f1": 1.0,
     "slot_f1": 1.0,
     "memory_consistency_rate": 1.0,
@@ -27,8 +29,13 @@
     "inventory_compliance_rate": 1.0,
     "recommendation_ndcg_at_k": 1.0,
     "fallback_rate": 0.0,
-    "avg_latency_ms": 235.6669,
+    "avg_latency_ms": 215.4513,
     "unsupported_claim_rate": 0.0,
+    "memory_enrichment_rate": 0.1333,
+    "memory_enrichment_success_rate": 1.0,
+    "business_guard_activation_rate": 0.0,
+    "business_guard_success_rate": 1.0,
+    "smalltalk_policy_rate": 1.0,
     "passed_thresholds": {
       "intent_macro_f1": true,
       "slot_f1": true,
@@ -39,7 +46,9 @@
       "budget_compliance_rate": true,
       "inventory_compliance_rate": true,
       "avg_latency_ms": true,
-      "unsupported_claim_rate": true
+      "unsupported_claim_rate": true,
+      "memory_enrichment_success_rate": true,
+      "smalltalk_policy_rate": true
     }
   },
   "scenario_summary": {
@@ -49,7 +58,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 138.21
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 103.76
     },
     "budget_min_slots": {
       "case_count": 1,
@@ -57,7 +69,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 128.66
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 136.43
     },
     "compare_products": {
       "case_count": 1,
@@ -65,7 +80,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 203.49
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 215.41
     },
     "explain_recommendation": {
       "case_count": 1,
@@ -73,7 +91,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 221.58
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 265.7
     },
     "goal_switching": {
       "case_count": 1,
@@ -81,7 +102,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 426.3
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 351.73
     },
     "long_term_memory": {
       "case_count": 1,
@@ -89,7 +113,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 312.63
+      "memory_enrichment_rate": 1.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 306.05
     },
     "multi_turn_slot_filling": {
       "case_count": 1,
@@ -97,7 +124,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 385.03
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 359.03
     },
     "preference_memory": {
       "case_count": 1,
@@ -105,7 +135,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 252.5
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 256.73
     },
     "product_info_question": {
       "case_count": 1,
@@ -113,7 +146,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 243.56
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 206.88
     },
     "product_reference_feedback": {
       "case_count": 1,
@@ -121,7 +157,21 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 360.79
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 241.71
+    },
+    "short_term_memory": {
+      "case_count": 1,
+      "intent_f1": 1.0,
+      "slot_f1": 1.0,
+      "task_success_rate": 1.0,
+      "tool_success_rate": 1.0,
+      "memory_enrichment_rate": 1.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 298.97
     },
     "single_turn_recommend": {
       "case_count": 1,
@@ -129,7 +179,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 161.06
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 0.0,
+      "avg_latency_ms": 125.45
     },
     "smalltalk_fallback": {
       "case_count": 1,
@@ -137,7 +190,21 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 61.43
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 1.0,
+      "avg_latency_ms": 96.88
+    },
+    "smalltalk_policy": {
+      "case_count": 1,
+      "intent_f1": 1.0,
+      "slot_f1": 1.0,
+      "task_success_rate": 1.0,
+      "tool_success_rate": 1.0,
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 1.0,
+      "avg_latency_ms": 56.49
     },
     "smalltalk_state_guard": {
       "case_count": 1,
@@ -145,7 +212,10 @@
       "slot_f1": 1.0,
       "task_success_rate": 1.0,
       "tool_success_rate": 1.0,
-      "avg_latency_ms": 168.43
+      "memory_enrichment_rate": 0.0,
+      "business_guard_activation_rate": 0.0,
+      "smalltalk_policy_rate": 1.0,
+      "avg_latency_ms": 210.55
     }
   },
   "failures": [],
@@ -186,6 +256,18 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -194,7 +276,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 161.06,
+      "latency_ms": 125.45,
       "final_reply": "我按手机 保护壳 手机配件，预算不超过 200 元筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-single_recommend_phone_case",
@@ -296,6 +378,24 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -304,7 +404,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 385.03,
+      "latency_ms": 359.03,
       "final_reply": "我按手机 保护膜 手机配件，预算不超过 100 元筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-multi_turn_budget_refine",
@@ -407,6 +507,24 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -415,7 +533,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 426.3,
+      "latency_ms": 351.73,
       "final_reply": "我按电子数码 耳机 通勤，预算不超过 200 元筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-goal_switch_phone_to_computer_to_earphones",
@@ -501,6 +619,18 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -509,7 +639,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 138.21,
+      "latency_ms": 103.76,
       "final_reply": "我按电子数码 耳机 防水，预算不超过 300 元筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-budget_range_brand_earphones",
@@ -597,6 +727,18 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -605,7 +747,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 128.66,
+      "latency_ms": 136.43,
       "final_reply": "我按电子数码 电脑配件筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-min_budget_computer_accessory",
@@ -701,6 +843,21 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -709,7 +866,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 360.79,
+      "latency_ms": 241.71,
       "final_reply": "我按手机 保护壳 手机配件筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-product_ref_feedback",
@@ -807,6 +964,21 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -815,7 +987,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 203.49,
+      "latency_ms": 215.41,
       "final_reply": "Skinhub Xbox 游戏：价格 94 元，评分 5.0，库存 160。 NANANINO 保护壳：价格 94 元，评分 5.0，库存 197。",
       "final_state": {
         "session_id": "eval-compare_products",
@@ -902,6 +1074,21 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -910,7 +1097,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 221.58,
+      "latency_ms": 265.7,
       "final_reply": "Ancicraft 保护壳 的推荐依据是：品类匹配, 预算友好。",
       "final_state": {
         "session_id": "eval-explain_recommendation",
@@ -999,6 +1186,21 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -1007,7 +1209,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 243.56,
+      "latency_ms": 206.88,
       "final_reply": "Digipartspower 充电器，品牌 Digipartspower，价格 129 元，库存 747，评分 5.0。",
       "final_state": {
         "session_id": "eval-ask_product_detail",
@@ -1086,6 +1288,22 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {}
+      ],
+      "smalltalk_policy_applied": true,
+      "smalltalk_policies": [
+        {
+          "category": "date_or_time",
+          "allow_llm": false,
+          "reason": "deterministic_runtime_answer"
+        }
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -1094,8 +1312,8 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 61.43,
-      "final_reply": "按服务端当前时间，今天是 2026-07-05，星期日。",
+      "latency_ms": 96.88,
+      "final_reply": "按服务端当前时间，今天是 2026-07-06，星期一。",
       "final_state": {
         "session_id": "eval-smalltalk_fallback",
         "user_id": "chat-eval-smalltalk_fallback",
@@ -1162,6 +1380,21 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -1170,7 +1403,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 252.5,
+      "latency_ms": 256.73,
       "final_reply": "我按手机 保护壳 手机配件筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-brand_memory",
@@ -1269,6 +1502,63 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": true,
+      "memory_enrichments": [
+        {},
+        {
+          "applied": true,
+          "reason": "empty_business_slots_continuation",
+          "sources": [
+            {
+              "source": "short_term_session",
+              "slots": {
+                "shopping_goal": "手机 保护壳 手机配件",
+                "preferred_categories": [
+                  "手机"
+                ],
+                "liked_brands": [
+                  "Bastmei"
+                ],
+                "preferred_tags": [
+                  "保护壳",
+                  "手机配件"
+                ]
+              }
+            },
+            {
+              "source": "long_term_memory",
+              "slots": {
+                "preferred_categories": [
+                  "手机"
+                ],
+                "liked_brands": [
+                  "Bastmei"
+                ],
+                "preferred_tags": [
+                  "手机配件",
+                  "保护壳"
+                ]
+              }
+            }
+          ],
+          "slot_keys": [
+            "liked_brands",
+            "preferred_categories",
+            "preferred_tags",
+            "shopping_goal"
+          ]
+        }
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -1277,12 +1567,12 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 312.63,
-      "final_reply": "我按几款筛了这几款，优先考虑相关度、库存和价格。",
+      "latency_ms": 306.05,
+      "final_reply": "我按手机 保护壳 手机配件筛了这几款，优先考虑相关度、库存和价格。",
       "final_state": {
         "session_id": "eval-long_term_memory_cold_start",
         "user_id": "chat-eval-long_term_memory_cold_start",
-        "shopping_goal": "几款",
+        "shopping_goal": "手机 保护壳 手机配件",
         "budget_min": null,
         "budget_max": null,
         "preferred_categories": [
@@ -1372,6 +1662,25 @@
       "tool_success": true,
       "missing_tools": [],
       "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {},
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": true,
+      "smalltalk_policies": [
+        {},
+        {
+          "category": "agent_identity_or_capability",
+          "allow_llm": false,
+          "reason": "stable_agent_boundary_answer"
+        }
+      ],
       "product_ref_resolved": true,
       "task_success": true,
       "no_recommendation_guard": true,
@@ -1380,7 +1689,7 @@
       "inventory_compliant": true,
       "recommendation_ndcg_at_k": 1.0,
       "unsupported_claim": false,
-      "latency_ms": 168.43,
+      "latency_ms": 210.55,
       "final_reply": "当前导购对话默认用规则意图识别，CHAT_LLM_ENABLED=未启用；项目配置的大模型是 deepseek-chat。",
       "final_state": {
         "session_id": "eval-smalltalk_after_recommendation",
@@ -1421,6 +1730,238 @@
         },
         "recent_intents": [
           "recommend_products",
+          "smalltalk"
+        ]
+      },
+      "product_ids": []
+    },
+    {
+      "case_id": "short_term_memory_continuation",
+      "scenario": "short_term_memory",
+      "predicted_intents": [
+        "recommend_products",
+        "recommend_products"
+      ],
+      "expected_intents": [
+        "recommend_products",
+        "recommend_products"
+      ],
+      "final_intent": "recommend_products",
+      "expected_final_intent": "recommend_products",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "expected_tools": [
+        "PreferenceUpdateTool",
+        "RecommendGraphTool"
+      ],
+      "trace_tools": [
+        "PreferenceUpdateTool",
+        "RecommendGraphTool",
+        "PreferenceUpdateTool",
+        "RecommendGraphTool"
+      ],
+      "trace_tools_by_turn": [
+        [
+          "PreferenceUpdateTool",
+          "RecommendGraphTool"
+        ],
+        [
+          "PreferenceUpdateTool",
+          "RecommendGraphTool"
+        ]
+      ],
+      "tool_success": true,
+      "missing_tools": [],
+      "tool_errors": [],
+      "memory_enriched": true,
+      "memory_enrichments": [
+        {},
+        {
+          "applied": true,
+          "reason": "empty_business_slots_continuation",
+          "sources": [
+            {
+              "source": "short_term_session",
+              "slots": {
+                "shopping_goal": "电子数码 耳机 通勤",
+                "budget_max": 200.0,
+                "preferred_categories": [
+                  "电子数码"
+                ],
+                "preferred_tags": [
+                  "耳机",
+                  "通勤"
+                ]
+              }
+            },
+            {
+              "source": "long_term_memory",
+              "slots": {
+                "preferred_categories": [
+                  "电子数码"
+                ],
+                "preferred_tags": [
+                  "通勤",
+                  "耳机"
+                ]
+              }
+            }
+          ],
+          "slot_keys": [
+            "budget_max",
+            "preferred_categories",
+            "preferred_tags",
+            "shopping_goal"
+          ]
+        }
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {},
+        {}
+      ],
+      "smalltalk_policy_applied": false,
+      "smalltalk_policies": [
+        {},
+        {}
+      ],
+      "product_ref_resolved": true,
+      "task_success": true,
+      "no_recommendation_guard": true,
+      "memory_trace_present": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 298.97,
+      "final_reply": "我按电子数码 耳机 通勤，预算不超过 200 元筛了这几款，优先考虑相关度、库存和价格。",
+      "final_state": {
+        "session_id": "eval-short_term_memory_continuation",
+        "user_id": "chat-eval-short_term_memory_continuation",
+        "shopping_goal": "电子数码 耳机 通勤",
+        "budget_min": null,
+        "budget_max": 200.0,
+        "preferred_categories": [
+          "电子数码"
+        ],
+        "liked_brands": [],
+        "preferred_tags": [
+          "耳机",
+          "通勤"
+        ],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [
+          "B08254WPLJ",
+          "B0915C35CH",
+          "B0C48TKVX7"
+        ],
+        "active_product_refs": {
+          "第一个": "B08254WPLJ",
+          "第一款": "B08254WPLJ",
+          "1号": "B08254WPLJ",
+          "first": "B08254WPLJ",
+          "第二个": "B0915C35CH",
+          "第二款": "B0915C35CH",
+          "2号": "B0915C35CH",
+          "second": "B0915C35CH",
+          "第三个": "B0C48TKVX7",
+          "第三款": "B0C48TKVX7",
+          "3号": "B0C48TKVX7",
+          "third": "B0C48TKVX7",
+          "这款": "B08254WPLJ",
+          "这个": "B08254WPLJ",
+          "刚才那个": "B08254WPLJ"
+        },
+        "recent_intents": [
+          "recommend_products"
+        ]
+      },
+      "product_ids": [
+        "B08254WPLJ",
+        "B0915C35CH",
+        "B0C48TKVX7"
+      ]
+    },
+    {
+      "case_id": "open_smalltalk_policy",
+      "scenario": "smalltalk_policy",
+      "predicted_intents": [
+        "smalltalk"
+      ],
+      "expected_intents": [
+        "smalltalk"
+      ],
+      "final_intent": "smalltalk",
+      "expected_final_intent": "smalltalk",
+      "intent_exact": true,
+      "intent_precision": 1.0,
+      "intent_recall": 1.0,
+      "intent_f1": 1.0,
+      "slot_precision": 1.0,
+      "slot_recall": 1.0,
+      "slot_f1": 1.0,
+      "memory_consistent": true,
+      "expected_tools": [
+        "SmalltalkTool"
+      ],
+      "trace_tools": [
+        "SmalltalkTool"
+      ],
+      "trace_tools_by_turn": [
+        [
+          "SmalltalkTool"
+        ]
+      ],
+      "tool_success": true,
+      "missing_tools": [],
+      "tool_errors": [],
+      "memory_enriched": false,
+      "memory_enrichments": [
+        {}
+      ],
+      "business_guard_applied": false,
+      "business_guards": [
+        {}
+      ],
+      "smalltalk_policy_applied": true,
+      "smalltalk_policies": [
+        {
+          "category": "open_smalltalk",
+          "allow_llm": true,
+          "reason": "open_ended_non_shopping_chat"
+        }
+      ],
+      "product_ref_resolved": true,
+      "task_success": true,
+      "no_recommendation_guard": true,
+      "memory_trace_present": true,
+      "budget_compliant": true,
+      "inventory_compliant": true,
+      "recommendation_ndcg_at_k": 1.0,
+      "unsupported_claim": false,
+      "latency_ms": 56.49,
+      "final_reply": "我主要负责电商导购和推荐。你可以直接说需求，也可以问我为什么推荐某款商品。",
+      "final_state": {
+        "session_id": "eval-open_smalltalk_policy",
+        "user_id": "chat-eval-open_smalltalk_policy",
+        "shopping_goal": "",
+        "budget_min": null,
+        "budget_max": null,
+        "preferred_categories": [],
+        "liked_brands": [],
+        "preferred_tags": [],
+        "disliked_products": [],
+        "rejected_reasons": [],
+        "last_recommended_product_ids": [],
+        "active_product_refs": {},
+        "recent_intents": [
           "smalltalk"
         ]
       },

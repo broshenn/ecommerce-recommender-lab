@@ -40,6 +40,8 @@ THRESHOLDS = {
     "inventory_compliance_rate": 1.00,
     "avg_latency_ms": 1500.0,
     "unsupported_claim_rate": 0.02,
+    "memory_enrichment_success_rate": 0.80,
+    "smalltalk_policy_rate": 0.90,
 }
 
 
@@ -122,6 +124,9 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
     all_tools = [tool for tools in trace_tools_by_turn for tool in tools]
     expected_tools = expected.get("tools", [])
     tool_result = check_tools(responses, expected_tools)
+    memory_enrichments = [memory_enrichment(response) for response in responses]
+    business_guards = [business_guard(response) for response in responses]
+    smalltalk_policies = [smalltalk_policy(response) for response in responses]
     unsupported_claim = has_unsupported_claim(final.reply)
 
     return {
@@ -145,6 +150,12 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         "tool_success": tool_result["tool_success"],
         "missing_tools": tool_result["missing_tools"],
         "tool_errors": tool_result["tool_errors"],
+        "memory_enriched": any(item.get("applied") for item in memory_enrichments),
+        "memory_enrichments": memory_enrichments,
+        "business_guard_applied": any(item.get("applied") for item in business_guards),
+        "business_guards": business_guards,
+        "smalltalk_policy_applied": any(item for item in smalltalk_policies),
+        "smalltalk_policies": smalltalk_policies,
         "product_ref_resolved": constraints["product_ref_resolved"],
         "task_success": constraints["task_success"] and final.intent == expected.get("final_intent"),
         "no_recommendation_guard": constraints["no_recommendation_guard"],
@@ -230,7 +241,7 @@ def check_constraints(
     memory_trace_present = True
     if constraints.get("memory_trace"):
         memory_trace_present = any(
-            any(item.get("step") == "memory" for item in response.trace)
+            any(item.get("step") in {"memory", "query_memory"} for item in response.trace)
             for response in responses
         )
 
@@ -259,6 +270,27 @@ def trace_tools(response: ChatResponse) -> list[str]:
         for item in response.trace
         if item.get("step") == "tool" and item.get("tool_name")
     ]
+
+
+def memory_enrichment(response: ChatResponse) -> dict[str, Any]:
+    intent_data = response.agent_results.get("intent")
+    if not intent_data:
+        return {}
+    return intent_data.data.get("rule_debug", {}).get("memory_enrichment", {})
+
+
+def business_guard(response: ChatResponse) -> dict[str, Any]:
+    intent_data = response.agent_results.get("intent")
+    if not intent_data:
+        return {}
+    return intent_data.data.get("rule_debug", {}).get("business_guard", {})
+
+
+def smalltalk_policy(response: ChatResponse) -> dict[str, Any]:
+    dialogue_data = response.agent_results.get("dialogue")
+    if not dialogue_data:
+        return {}
+    return dialogue_data.data.get("smalltalk_policy", {})
 
 
 def check_tools(
@@ -305,6 +337,24 @@ def has_unsupported_claim(text: str) -> bool:
 
 
 def summarize(case_results: list[dict[str, Any]]) -> dict[str, Any]:
+    memory_expected = [
+        item for item in case_results
+        if any(
+            enrichment.get("applied")
+            for enrichment in item.get("memory_enrichments", [])
+        )
+    ]
+    guard_expected = [
+        item for item in case_results
+        if any(
+            guard.get("applied")
+            for guard in item.get("business_guards", [])
+        )
+    ]
+    smalltalk_cases = [
+        item for item in case_results
+        if item.get("final_intent") == "smalltalk"
+    ]
     summary = {
         "case_count": len(case_results),
         "intent_macro_f1": avg(item["intent_f1"] for item in case_results),
@@ -320,6 +370,20 @@ def summarize(case_results: list[dict[str, Any]]) -> dict[str, Any]:
         "fallback_rate": 0.0,
         "avg_latency_ms": avg(item["latency_ms"] for item in case_results),
         "unsupported_claim_rate": avg_bool(item["unsupported_claim"] for item in case_results),
+        "memory_enrichment_rate": avg_bool(item["memory_enriched"] for item in case_results),
+        "memory_enrichment_success_rate": (
+            avg_bool(item["task_success"] for item in memory_expected)
+            if memory_expected else 1.0
+        ),
+        "business_guard_activation_rate": avg_bool(item["business_guard_applied"] for item in case_results),
+        "business_guard_success_rate": (
+            avg_bool(item["task_success"] for item in guard_expected)
+            if guard_expected else 1.0
+        ),
+        "smalltalk_policy_rate": (
+            avg_bool(item["smalltalk_policy_applied"] for item in smalltalk_cases)
+            if smalltalk_cases else 1.0
+        ),
     }
     summary["passed_thresholds"] = {
         key: (summary[key] <= value if key in {"avg_latency_ms", "unsupported_claim_rate"} else summary[key] >= value)
@@ -339,6 +403,9 @@ def summarize_by_scenario(case_results: list[dict[str, Any]]) -> dict[str, Any]:
             "slot_f1": avg(item["slot_f1"] for item in items),
             "task_success_rate": avg_bool(item["task_success"] for item in items),
             "tool_success_rate": avg_bool(item["tool_success"] for item in items),
+            "memory_enrichment_rate": avg_bool(item["memory_enriched"] for item in items),
+            "business_guard_activation_rate": avg_bool(item["business_guard_applied"] for item in items),
+            "smalltalk_policy_rate": avg_bool(item["smalltalk_policy_applied"] for item in items),
             "avg_latency_ms": avg(item["latency_ms"] for item in items),
         }
         for scenario, items in sorted(grouped.items())
@@ -405,8 +472,8 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             "",
             "## Scenario Summary",
             "",
-            "| Scenario | Cases | Intent F1 | Slot F1 | Task Success | Tool Success | Avg Latency ms |",
-            "|---|---:|---:|---:|---:|---:|---:|",
+            "| Scenario | Cases | Intent F1 | Slot F1 | Task Success | Tool Success | Memory | Guard | Smalltalk Policy | Avg Latency ms |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
     )
     for scenario, item in report["scenario_summary"].items():
@@ -414,7 +481,9 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             "| "
             f"`{scenario}` | {item['case_count']} | {item['intent_f1']} | "
             f"{item['slot_f1']} | {item['task_success_rate']} | "
-            f"{item['tool_success_rate']} | {item['avg_latency_ms']} |"
+            f"{item['tool_success_rate']} | {item['memory_enrichment_rate']} | "
+            f"{item['business_guard_activation_rate']} | {item['smalltalk_policy_rate']} | "
+            f"{item['avg_latency_ms']} |"
         )
     lines.extend(["", "## Case Details", ""])
     for item in report["cases"]:
@@ -424,6 +493,9 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             f"intent={item['final_intent']}, "
             f"tools={','.join(item['trace_tools']) or '-'}, "
             f"task_success={item['task_success']}, "
+            f"memory={item['memory_enriched']}, "
+            f"guard={item['business_guard_applied']}, "
+            f"smalltalk_policy={item['smalltalk_policy_applied']}, "
             f"latency_ms={item['latency_ms']}"
         )
     lines.extend(["", "## Failures", ""])
