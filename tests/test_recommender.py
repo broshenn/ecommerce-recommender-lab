@@ -1001,6 +1001,82 @@ def test_chat_long_term_memory_seeds_new_session_without_overriding_explicit_goa
     assert switched_tool["input_summary"]["tags"] == ["电脑配件"]
 
 
+def test_chat_continuation_uses_short_term_query_memory():
+    client = TestClient(app)
+    session_id = "chat-short-memory-session"
+
+    first = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-short-memory-user",
+            "session_id": session_id,
+            "message": "我想买个200元以内的通勤耳机",
+        },
+    )
+    assert first.status_code == 200
+
+    second = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-short-memory-user",
+            "session_id": session_id,
+            "message": "再推荐几个",
+        },
+    )
+
+    assert second.status_code == 200
+    data = second.json()
+    assert data["intent"] == "recommend_products"
+    assert data["state"]["budget_max"] == 200
+    assert "耳机" in data["state"]["preferred_tags"]
+    intent_debug = data["agent_results"]["intent"]["data"]["rule_debug"]
+    memory = intent_debug["memory_enrichment"]
+    assert memory["applied"] is True
+    assert memory["sources"][0]["source"] == "short_term_session"
+    recommend_tool = next(
+        item for item in data["trace"]
+        if item.get("tool_name") == "RecommendGraphTool"
+    )
+    assert recommend_tool["input_summary"]["tags"] == ["耳机", "通勤"]
+
+
+def test_chat_query_understanding_uses_behavior_profile_for_empty_need():
+    product = next(item for item in list_products() if item.stock > 0)
+    record_event(
+        UserEventCreate(
+            user_id="chat-behavior-memory-user",
+            product_id=product.product_id,
+            event_type="like",
+        )
+    )
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/chat",
+        json={
+            "user_id": "chat-behavior-memory-user",
+            "session_id": "chat-behavior-memory-session",
+            "message": "给我推荐几个",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    intent_debug = data["agent_results"]["intent"]["data"]["rule_debug"]
+    memory = intent_debug["memory_enrichment"]
+    sources = {item["source"]: item["slots"] for item in memory["sources"]}
+    assert memory["applied"] is True
+    assert "behavior_profile" in sources
+    assert product.category in data["state"]["preferred_categories"]
+    assert product.brand in data["state"]["liked_brands"]
+    recommend_tool = next(
+        item for item in data["trace"]
+        if item.get("tool_name") == "RecommendGraphTool"
+    )
+    assert product.category in recommend_tool["input_summary"]["categories"]
+    assert product.brand in recommend_tool["input_summary"]["brands"]
+
+
 def test_chat_business_tools_handle_compare_explain_and_product_info():
     client = TestClient(app)
     session_id = "chat-business-tools-session"

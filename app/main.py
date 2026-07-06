@@ -15,6 +15,7 @@ from app.models import (
     ExperimentOutcome,
     ChatRequest,
     ChatResponse,
+    IntentResult,
     Product,
     RecommendRequest,
     RecommendResponse,
@@ -122,6 +123,8 @@ def query_understanding_compare(request: ChatRequest):
         user_id=request.user_id,
         session_id=request.session_id,
     )
+    memory_summary = chat_orchestrator.memory.user_memory_summary(request.user_id)
+    behavior_profile = build_user_profile(request.user_id)
     recent_messages = chat_orchestrator.memory.recent_messages(state.session_id)
     modes = []
     for mode in ("rule", "bert", "llm"):
@@ -131,6 +134,15 @@ def query_understanding_compare(request: ChatRequest):
             state=state,
             recent_messages=recent_messages,
             intent_mode=mode,
+        )
+        intent_result = IntentResult.model_validate(result.data)
+        intent_result, result = chat_orchestrator._enrich_intent_with_memory(
+            intent_result=intent_result,
+            intent_agent_result=result,
+            message=request.message,
+            state=state,
+            memory_summary=memory_summary,
+            behavior_profile=behavior_profile,
         )
         data = result.data
         modes.append(

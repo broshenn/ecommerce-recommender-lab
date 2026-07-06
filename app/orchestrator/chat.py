@@ -4,6 +4,7 @@ import json
 import time
 from typing import Any, Iterable
 
+from app.behavior import build_user_profile
 from app.agents import DialogueAgent, IntentAgent
 from app.models import (
     AgentResult,
@@ -34,6 +35,7 @@ class ChatOrchestrator:
             session_id=request.session_id,
         )
         memory_summary = self.memory.user_memory_summary(request.user_id)
+        behavior_profile = build_user_profile(request.user_id)
         recent_messages = self.memory.recent_messages(state.session_id)
         self.memory.append_message(state.session_id, "user", request.message)
 
@@ -49,8 +51,16 @@ class ChatOrchestrator:
             recent_messages=recent_messages,
             intent_mode=request.intent_mode,
         )
-        agent_results["intent"] = intent_agent_result
         intent_result = IntentResult.model_validate(intent_agent_result.data)
+        intent_result, intent_agent_result = self._enrich_intent_with_memory(
+            intent_result=intent_result,
+            intent_agent_result=intent_agent_result,
+            message=request.message,
+            state=state,
+            memory_summary=memory_summary,
+            behavior_profile=behavior_profile,
+        )
+        agent_results["intent"] = intent_agent_result
         trace.append(
             {
                 "step": "intent",
@@ -66,6 +76,18 @@ class ChatOrchestrator:
                     "step": "memory",
                     "source": "sqlite_user_memory_facts",
                     "summary": self._compact_memory_summary(memory_summary),
+                }
+            )
+        intent_memory = intent_agent_result.data.get("rule_debug", {}).get(
+            "memory_enrichment",
+            {},
+        )
+        if intent_memory:
+            trace.append(
+                {
+                    "step": "query_memory",
+                    "source": "conversation+long_term+behavior_profile",
+                    "summary": intent_memory,
                 }
             )
 
@@ -138,6 +160,154 @@ class ChatOrchestrator:
             agent_results=agent_results,
             trace=trace,
         )
+
+    def _enrich_intent_with_memory(
+        self,
+        *,
+        intent_result: IntentResult,
+        intent_agent_result: AgentResult,
+        message: str,
+        state: ConversationState,
+        memory_summary: dict[str, Any],
+        behavior_profile,
+    ) -> tuple[IntentResult, AgentResult]:
+        is_continuation = self._is_continuation_message(message)
+        if intent_result.intent == "smalltalk" and is_continuation:
+            intent_result = intent_result.model_copy(
+                update={
+                    "intent": "recommend_products",
+                    "needs_recommendation": True,
+                    "confidence": max(intent_result.confidence, 0.76),
+                    "source": f"{intent_result.source}+continuation",
+                }
+            )
+        if intent_result.intent not in {"recommend_products", "refine_preferences"}:
+            return intent_result, intent_agent_result
+        explicit_slots = self._business_slot_keys(intent_result.slots)
+        if explicit_slots and not is_continuation:
+            return intent_result, intent_agent_result
+
+        merged_slots: dict[str, Any] = {}
+        sources: list[dict[str, Any]] = []
+        self._merge_memory_source(
+            merged_slots,
+            sources,
+            "short_term_session",
+            {
+                "shopping_goal": state.shopping_goal,
+                "budget_min": state.budget_min,
+                "budget_max": state.budget_max,
+                "preferred_categories": state.preferred_categories,
+                "liked_brands": state.liked_brands,
+                "preferred_tags": state.preferred_tags,
+            },
+        )
+        self._merge_memory_source(
+            merged_slots,
+            sources,
+            "long_term_memory",
+            memory_summary,
+        )
+        self._merge_memory_source(
+            merged_slots,
+            sources,
+            "behavior_profile",
+            {
+                "preferred_categories": behavior_profile.preferred_categories,
+                "liked_brands": behavior_profile.liked_brands,
+                "preferred_tags": behavior_profile.preferred_tags,
+                "recent_views": behavior_profile.recent_views,
+            },
+        )
+        if not merged_slots:
+            return intent_result, intent_agent_result
+
+        enriched = intent_result.model_copy(
+            update={
+                "slots": {**intent_result.slots, **merged_slots},
+                "needs_recommendation": True,
+                "source": f"{intent_result.source}+memory",
+                "confidence": max(intent_result.confidence, 0.78),
+            }
+        )
+        data = dict(intent_agent_result.data)
+        rule_debug = dict(data.get("rule_debug", {}))
+        rule_debug["memory_enrichment"] = {
+            "applied": True,
+            "reason": "empty_business_slots_continuation",
+            "sources": sources,
+            "slot_keys": sorted(merged_slots.keys()),
+        }
+        data.update(enriched.model_dump(mode="json"))
+        data["rule_debug"] = rule_debug
+        return enriched, intent_agent_result.model_copy(
+            update={"data": data, "confidence": enriched.confidence}
+        )
+
+    def _is_continuation_message(self, message: str) -> bool:
+        text = message.strip().lower()
+        markers = [
+            "再推荐",
+            "再来",
+            "再给",
+            "继续",
+            "还有",
+            "换几个",
+            "换几款",
+            "推荐几个",
+            "推荐几款",
+            "more",
+            "again",
+        ]
+        return any(marker in text for marker in markers)
+
+    def _business_slot_keys(self, slots: dict[str, Any]) -> set[str]:
+        business_keys = {
+            "shopping_goal",
+            "budget_min",
+            "budget_max",
+            "preferred_categories",
+            "liked_brands",
+            "preferred_tags",
+        }
+        return {
+            key
+            for key, value in slots.items()
+            if key in business_keys and value not in (None, "", [])
+        }
+
+    def _merge_memory_source(
+        self,
+        merged_slots: dict[str, Any],
+        sources: list[dict[str, Any]],
+        source: str,
+        data: dict[str, Any],
+    ) -> None:
+        applied: dict[str, Any] = {}
+        for key in (
+            "shopping_goal",
+            "budget_min",
+            "budget_max",
+            "preferred_categories",
+            "liked_brands",
+            "preferred_tags",
+            "recent_views",
+        ):
+            value = data.get(key)
+            if value in (None, "", []):
+                continue
+            if key == "recent_views":
+                applied[key] = value[:3] if isinstance(value, list) else value
+                continue
+            if isinstance(value, list):
+                existing = merged_slots.get(key, [])
+                merged_slots[key] = self._merge(existing, value)
+                applied[key] = value[:5]
+            elif key not in merged_slots or merged_slots.get(key) in (None, ""):
+                merged_slots[key] = value
+                applied[key] = value
+        if applied:
+            sources.append({"source": source, "slots": applied})
 
     def stream_chat(self, request: ChatRequest) -> Iterable[str]:
         try:

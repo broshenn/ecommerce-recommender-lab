@@ -642,6 +642,7 @@
           <span>Slots：{{ intentSlotsText }}</span>
           <span>命中规则：{{ intentRuleText }}</span>
           <span>Guard：{{ intentGuardText }}</span>
+          <span>Memory：{{ intentMemoryText }}</span>
         </div>
 
         <div class="state-box">
@@ -1010,6 +1011,14 @@
           if (!guard) return "-";
           const status = guard.applied ? "applied" : "accepted";
           return `${status} · ${guard.reason || "-"} · ${guard.candidate_intent || "-"} -> ${guard.final_intent || "-"}`;
+        },
+
+        intentMemoryText() {
+          const memory = this.intentDebug.rule_debug?.memory_enrichment;
+          if (!memory?.applied) return "-";
+          return (memory.sources || [])
+            .map((item) => `${item.source}:${Object.keys(item.slots || {}).join("/")}`)
+            .join("；") || "-";
         }
       },
 
